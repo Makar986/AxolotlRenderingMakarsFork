@@ -1,0 +1,34 @@
+{
+	"schemaVersion": 1,
+	"id": "axolotlclient-rendering",
+	"version": "${version}",
+	"name": "AxolotlClient Rendering",
+	"description": "Rendering Library",
+	"authors": [
+		"moehreag"
+	],
+	"contributors": [
+	],
+	"contact": {
+		"homepage": "https://axolotlclient.com/",
+		"sources": "https://github.com/AxolotlClient/AxolotlClient-rendering/"
+	},
+	"license": "LGPL-3.0-or-later",
+	"icon": "assets/axolotlclient_rendering/icon.png",
+	"accessWidener": "axolotlclient-rendering.accesswidener",
+	"environment": "*",
+	"entrypoints": {
+		"client": [
+
+		]
+	},
+	"mixins": [
+		"axolotlclient-rendering.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.15.11",
+		"minecraft": "1.21.x",
+		"fabric-api": "*",
+		"axolotlclientconfig": "*"
+	}
+}

@@ -1,0 +1,21 @@
+{
+	"schemaVersion": 1,
+	"id": "axolotlclient-rendering-common",
+	"version": "${version}",
+	"name": "AxolotlClient Rendering (Common)",
+	"description": "Shared code for AxolotlClient's Rendering Library",
+	"authors": [
+		"moehreag"
+	],
+	"contributors": [
+	],
+	"contact": {
+		"homepage": "https://axolotlclient.com/",
+		"sources": "https://github.com/AxolotlClient/AxolotlClient-rendering/"
+	},
+	"license": "LGPL-3.0-or-later",
+	"icon": "assets/axolotlclient_rendering/icon.png",
+	"environment": "client",
+	"entrypoints": {
+	}
+}
