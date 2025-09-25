@@ -64,24 +64,20 @@ public record ColoredRoundedRectangleBlitRenderState(
 	public void buildVertices(VertexConsumer consumer, float z) {
 		int width = x1() - x0();
 		int height = y1() - y0();
-		consumer.addVertexWith2DPose(this.pose(), this.x0(), this.y0(), z)
-			.setUv(u0(), v0()).setColor(this.col1());
+		consumer.addVertexWith2DPose(this.pose(), this.x0(), this.y0(), z).setUv(u0(), v0()).setColor(this.col1());
 		ExRenderPipelines.addRounding(consumer, radiusTopLeft(), radiusBottomLeft(), radiusBottomRight(), radiusTopRight());
 		ExRenderPipelines.addDimensions(consumer, 0, 0, width, height);
 
-		consumer.addVertexWith2DPose(this.pose(), this.x0(), this.y1(), z);
-		consumer.setUv(u0(), v0()).setColor(this.col2());
+		consumer.addVertexWith2DPose(this.pose(), this.x0(), this.y1(), z).setUv(u0(), v1()).setColor(this.col2());
 		ExRenderPipelines.addRounding(consumer, radiusTopLeft(), radiusBottomLeft(), radiusBottomRight(), radiusTopRight());
 		ExRenderPipelines.addDimensions(consumer, 0, height, width, height);
 
 
-		consumer.addVertexWith2DPose(this.pose(), this.x1(), this.y1(), z);
-		consumer.setUv(u1(), v1()).setColor(this.col3());
+		consumer.addVertexWith2DPose(this.pose(), this.x1(), this.y1(), z).setUv(u1(), v1()).setColor(this.col3());
 		ExRenderPipelines.addRounding(consumer, radiusTopLeft(), radiusBottomLeft(), radiusBottomRight(), radiusTopRight());
 		ExRenderPipelines.addDimensions(consumer, width, height, width, height);
 
-		consumer.addVertexWith2DPose(this.pose(), this.x1(), this.y0(), z);
-		consumer.setUv(u1(), v0()).setColor(this.col4());
+		consumer.addVertexWith2DPose(this.pose(), this.x1(), this.y0(), z).setUv(u1(), v0()).setColor(this.col4());
 		ExRenderPipelines.addRounding(consumer, radiusTopLeft(), radiusBottomLeft(), radiusBottomRight(), radiusTopRight());
 		ExRenderPipelines.addDimensions(consumer, width, 0, width, height);
 	}

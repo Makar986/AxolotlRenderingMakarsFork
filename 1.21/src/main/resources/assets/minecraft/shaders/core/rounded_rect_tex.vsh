@@ -17,6 +17,7 @@ out vec4 rounding;
 void main() {
 	gl_Position = ProjMat * ModelViewMat * vec4(Position, 1.0);
 
+    texCoord0 = UV0;
 	vertexColor = Color;
 	rounding = Rounding;
 	dimensions = Dimensions;
