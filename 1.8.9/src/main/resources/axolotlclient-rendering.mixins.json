@@ -3,7 +3,12 @@
 	"package": "io.github.axolotlclient.rendering.mixin",
 	"compatibilityLevel": "JAVA_17",
 	"client": [
-
+		"BufferBuilderAccessor",
+		"GameRendererAccessor",
+		"GlStateManagerMixin",
+		"MinecraftAccessor",
+		"VertexFormatMixin",
+		"GL11Mixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

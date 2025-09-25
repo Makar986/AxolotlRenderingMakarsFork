@@ -3,7 +3,9 @@
 	"package": "io.github.axolotlclient.rendering.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
-
+		"BufferBuilderAccessor",
+		"GuiGraphicsMixin",
+		"VertexFormatElementMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

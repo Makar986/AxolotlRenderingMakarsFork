@@ -10,16 +10,8 @@ dependencies {
 	compileOnly("net.fabricmc:fabric-loader:${project.property("fabric_loader")}")
 	compileOnly("org.jetbrains:annotations:24.0.0")
 
-	// take the oldest version just to build against
-	testRuntimeOnly(compileOnly("io.github.axolotlclient:AxolotlClient-config:${project.property("config")}+1.8.9") {
-		isTransitive = false
-	})
-	testRuntimeOnly(testCompileOnly(compileOnly("io.github.axolotlclient.AxolotlClient-config:AxolotlClientConfig-common:${project.property("config")}")!!)!!)
-
-	compileOnly("io.github.axolotlclient.AxolotlClient:AxolotlClient-common:${project.property("axolotlclient")}")
 	testImplementation(compileOnly("com.google.code.gson:gson:2.10")!!)
 
-	compileOnly("org.joml:joml:1.10.8")
 	compileOnly("org.slf4j:slf4j-api:1.7.36")
 }
 

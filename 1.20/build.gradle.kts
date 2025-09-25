@@ -38,26 +38,11 @@ dependencies {
 
 	modImplementation("net.fabricmc.fabric-api:fabric-api:${fapiVersion}+${minecraftFriendly}")
 
-	modImplementation("io.github.axolotlclient:AxolotlClient-config:${project.property("config")}+${minecraftFriendly}")
-	include("io.github.axolotlclient:AxolotlClient-config:${project.property("config")}+${minecraftFriendly}")
-	modImplementation("io.github.axolotlclient.AxolotlClient-config:AxolotlClientConfig-common:${project.property("config")}")
-
-	modImplementation("io.github.axolotlclient:AxolotlClient:${project.property("axolotlclient")}+$minecraftVersion")
-	compileOnly("io.github.axolotlclient.AxolotlClient:AxolotlClient-common:${project.property("axolotlclient")}")
-
 	modCompileOnlyApi("com.terraformersmc:modmenu:8.0.0") {
 		exclude(group = "net.fabricmc")
 	}
 
 	implementation(include(project(path = ":common", configuration = "shadow"))!!)
-
-	api("org.lwjgl:lwjgl-nanovg:3.3.2")
-	runtimeOnly("org.lwjgl:lwjgl-nanovg:3.3.2:natives-linux")
-	runtimeOnly("org.lwjgl:lwjgl-nanovg:3.3.2:natives-linux-arm64")
-	runtimeOnly("org.lwjgl:lwjgl-nanovg:3.3.2:natives-windows")
-	runtimeOnly("org.lwjgl:lwjgl-nanovg:3.3.2:natives-windows-arm64")
-	runtimeOnly("org.lwjgl:lwjgl-nanovg:3.3.2:natives-macos")
-	runtimeOnly("org.lwjgl:lwjgl-nanovg:3.3.2:natives-macos-arm64")
 }
 
 tasks.processResources {
@@ -132,7 +117,6 @@ modrinth {
 	additionalFiles.set(listOf(tasks.remapSourcesJar))
 	dependencies {
 		required.project("fabric-api")
-		optional.version("axolotlclient", "${project.property("axolotlclient")}+$minecraftVersion")
 	}
 
 	// Changelog fetching: Credit LambdAurora.

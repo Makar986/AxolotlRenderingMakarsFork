@@ -14,12 +14,12 @@
 		"sources": "https://github.com/AxolotlClient/AxolotlClient-rendering/"
 	},
 	"license": "LGPL-3.0-or-later",
-	"icon": "assets/axolotlclient_rendering/icon.png",
+	"icon": "assets/axolotlclient-rendering/icon.png",
 	"accessWidener": "axolotlclient-rendering.accesswidener",
 	"environment": "*",
 	"entrypoints": {
 		"client": [
-
+			"io.github.axolotlclient.rendering.Rendering"
 		]
 	},
 	"mixins": [
@@ -28,7 +28,13 @@
 	"depends": {
 		"fabricloader": ">=0.15.11",
 		"minecraft": "1.21.x",
-		"fabric-api": "*",
-		"axolotlclientconfig": "*"
+		"fabric-api": "*"
+	},
+	"custom": {
+		"loom:injected_interfaces": {
+			"net/minecraft/class_332": [
+				"io/github/axolotlclient/rendering/GuiGraphicsExtension"
+			]
+		}
 	}
 }

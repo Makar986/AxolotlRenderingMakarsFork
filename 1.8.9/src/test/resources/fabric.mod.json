@@ -16,10 +16,13 @@
 	"environment": "client",
 	"entrypoints": {
 		"client": [
-
+			"io.github.axolotlclient.rendering.test.RenderingTestMod"
 		]
 	},
 	"depends": {
 		"axolotlclient-rendering": "*"
-	}
+	},
+	"mixins": [
+		"axolotlclient-rendering-test.mixins.json"
+	]
 }

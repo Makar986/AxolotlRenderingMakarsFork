@@ -3,7 +3,10 @@
 	"package": "io.github.axolotlclient.rendering.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
-
+		"BufferBuilderAccessor",
+		"GameRendererMixin",
+		"GuiGraphicsMixin",
+		"VertexFormatElementMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

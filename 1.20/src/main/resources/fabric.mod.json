@@ -8,7 +8,6 @@
 		"moehreag"
 	],
 	"contributors": [
-
 	],
 	"contact": {
 		"homepage": "https://axolotlclient.com/",
@@ -20,6 +19,7 @@
 	"environment": "*",
 	"entrypoints": {
 		"client": [
+			"io.github.axolotlclient.rendering.Rendering"
 		]
 	},
 	"mixins": [
@@ -28,7 +28,13 @@
 	"depends": {
 		"fabricloader": ">=0.15.11",
 		"minecraft": "<=1.20.1 >=1.20",
-		"fabric-api": "*",
-		"axolotlclientconfig": "*"
+		"fabric-api": "*"
+	},
+	"custom": {
+		"loom:injected_interfaces": {
+			"net/minecraft/class_332": [
+				"io/github/axolotlclient/rendering/GuiGraphicsExtension"
+			]
+		}
 	}
 }

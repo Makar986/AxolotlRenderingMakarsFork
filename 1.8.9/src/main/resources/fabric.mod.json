@@ -20,6 +20,7 @@
 	"environment": "*",
 	"entrypoints": {
 		"client": [
+			"io.github.axolotlclient.rendering.Rendering"
 		]
 	},
 	"mixins": [
@@ -28,7 +29,6 @@
 	"depends": {
 		"fabricloader": ">=0.15.11",
 		"minecraft": "1.8.9",
-		"osl-keybinds": "*",
-		"axolotlclientconfig": "*"
+		"osl-keybinds": "*"
 	}
 }

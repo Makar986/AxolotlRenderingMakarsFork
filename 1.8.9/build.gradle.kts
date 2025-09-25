@@ -31,40 +31,22 @@ dependencies {
 
 	modImplementation("net.fabricmc:fabric-loader:${project.property("fabric_loader")}")
 
-	modImplementation("io.github.axolotlclient:AxolotlClient-config:${project.property("config")}+$minecraftVersion") {
-		exclude(group = "org.lwjgl")
-		exclude(group = "org.slf4j")
-	}
-	include("io.github.axolotlclient:AxolotlClient-config:${project.property("config")}+$minecraftVersion")
-	modImplementation("io.github.axolotlclient.AxolotlClient-config:AxolotlClientConfig-common:${project.property("config")}")
-
-	modImplementation("io.github.axolotlclient:AxolotlClient:${project.property("axolotlclient")}+$minecraftVersion")
-	compileOnly("io.github.axolotlclient.AxolotlClient:AxolotlClient-common:${project.property("axolotlclient")}")
-
 	ploceus.dependOsl(osl)
 
 	modImplementation("com.terraformersmc:modmenu:0.3.1+mc1.8.9")
 
 	implementation(include(project(path = ":common", configuration = "shadow"))!!)
 
-	val lwjglVersion = "3.3.5"
-	api("org.lwjgl:lwjgl-nanovg:$lwjglVersion")
-	runtimeOnly("org.lwjgl:lwjgl-nanovg:${lwjglVersion}:natives-linux")
-	runtimeOnly("org.lwjgl:lwjgl-nanovg:${lwjglVersion}:natives-linux-arm64")
-	runtimeOnly("org.lwjgl:lwjgl-nanovg:${lwjglVersion}:natives-windows")
-	runtimeOnly("org.lwjgl:lwjgl-nanovg:${lwjglVersion}:natives-windows-arm64")
-	runtimeOnly("org.lwjgl:lwjgl-nanovg:${lwjglVersion}:natives-macos")
-	runtimeOnly("org.lwjgl:lwjgl-nanovg:${lwjglVersion}:natives-macos-arm64")
+	modRuntimeOnly("io.github.moehreag:legacy-lwjgl3:${project.property("legacy_lwgjl3")}")
+	include(implementation("org.joml:joml:1.10.8")!!);
+}
 
-	//compileOnly("org.lwjgl:lwjgl-glfw:${lwjglVersion}")
-
-	modImplementation("io.github.moehreag:legacy-lwjgl3:${project.property("legacy_lwgjl3")}")
-
-	implementation(include("org.joml:joml:1.10.8")!!)
+configurations.runtimeClasspath.configure {
+	exclude("org.lwjgl.lwjgl")
 }
 
 configurations.configureEach {
-	exclude("org.lwjgl.lwjgl")
+	//exclude("org.lwjgl.lwjgl")
 	resolutionStrategy {
 		dependencySubstitution {
 			substitute(module("io.netty:netty-all:4.0.23.Final")).using(module("io.netty:netty-all:4.1.9.Final"))
@@ -149,7 +131,6 @@ modrinth {
 	dependencies {
 		required.project("osl")
 		required.project("moehreag-legacy-lwjgl3")
-		optional.version("axolotlclient", "${project.property("axolotlclient")}+$minecraftVersion")
 	}
 
 	// Changelog fetching: Credit LambdAurora.
