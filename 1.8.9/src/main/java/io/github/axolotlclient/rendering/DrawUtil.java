@@ -25,7 +25,7 @@ public class DrawUtil implements GuiGraphicsExtension {
 		int radiusBottomRight = roundingPx;
 		int radiusTopRight = roundingPx;
 		var tess = Tessellator.getInstance();
-		GuiElement.fill(x0, y0, x1, y1, color);
+		GuiElement.fill(x0, y0, x1, y1, -1);
 		if (x0 < x1) {
 			int n = x0;
 			x0 = x1;
@@ -46,14 +46,10 @@ public class DrawUtil implements GuiGraphicsExtension {
 
 		glUseProgram(ExRenderPipelines.ROUNDED_RECT_PROGRAM);
 		//ShaderManager.uploadUniforms(ExRenderPipelines.ROUNDED_RECT_PROGRAM);
-		float alpha = (color >> 24 & 0xFF) / 255.0F;
-		float red = (color >> 16 & 0xFF) / 255.0F;
-		float green = (color >> 8 & 0xFF) / 255.0F;
-		float blue = (color & 0xFF) / 255.0F;
-		//GlStateManager.enableBlend();
-		//GlStateManager.disableTexture();
-		//GlStateManager.blendFuncSeparate(770, 771, 1, 0);
-		//GlStateManager.color4f(red, green, blue, alpha);
+		int alpha = (color >> 24 & 0xFF);
+		int red = (color >> 16 & 0xFF);
+		int green = (color >> 8 & 0xFF);
+		int blue = (color & 0xFF);
 		consumer.begin(7, ExRenderPipelines.ROUNDED_RECT_FORMAT);
 
 		consumer.vertex(x1, y0, z).color(red, green, blue, alpha);
@@ -74,7 +70,6 @@ public class DrawUtil implements GuiGraphicsExtension {
 		consumer.vertex(x1, y1, z).color(red, green, blue, alpha);
 		ExRenderPipelines.addRounding(consumer, radiusTopLeft, radiusBottomLeft, radiusBottomRight, radiusTopRight);
 		ExRenderPipelines.addDimensions(consumer, width, height, width, height);
-		consumer.nextVertex();
 		tess.end();
 		glUseProgram(0);
 		//effect.draw(consumer);
