@@ -5,7 +5,6 @@ import com.mojang.blaze3d.vertex.*;
 import io.github.axolotlclient.rendering.ExRenderPipelines;
 import io.github.axolotlclient.rendering.GuiGraphicsExtension;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.resources.ResourceLocation;
 import org.joml.Matrix4f;
@@ -122,7 +121,7 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 	@Unique
 	private void innerBlit(ResourceLocation atlas, int x0, int x1, int y0, int y1, float u0, float u1, float v0, float v1, int color, int roundingPx) {
 		RenderSystem.setShaderTexture(0, atlas);
-		RenderSystem.setShader(GameRenderer::getPositionTexShader);
+		RenderSystem.setShader(ExRenderPipelines::roundedRectTexShader);
 		Matrix4f matrix = this.pose.last().pose();
 		int z = 0;
 		BufferBuilder consumer = Tesselator.getInstance().getBuilder();
@@ -160,6 +159,6 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 		ExRenderPipelines.addRounding(consumer, radiusTopLeft, radiusBottomLeft, radiusBottomRight, radiusTopRight);
 		ExRenderPipelines.addDimensions(consumer, width, 0, width, height);
 		consumer.endVertex();
-		BufferUploader.drawWithShader(consumer.end());
+		Tesselator.getInstance().end();
 	}
 }

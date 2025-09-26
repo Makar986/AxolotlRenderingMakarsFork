@@ -21,5 +21,8 @@
 	},
 	"depends": {
 		"axolotlclient-rendering": "*"
-	}
+	},
+	"mixins": [
+		"axolotlclient-rendering-test.mixins.json"
+	]
 }

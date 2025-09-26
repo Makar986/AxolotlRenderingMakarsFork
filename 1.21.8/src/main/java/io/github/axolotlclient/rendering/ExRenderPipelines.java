@@ -73,7 +73,6 @@ public class ExRenderPipelines {
 		if (!(consumer instanceof BufferBuilder builder)) {
 			throw new IllegalArgumentException("Not a BufferBuilder!");
 		}
-		var accessor = ((BufferBuilderAccessor) builder);
-		return accessor.begin(element);
+		return ((BufferBuilderAccessor) builder).begin(element);
 	}
 }
