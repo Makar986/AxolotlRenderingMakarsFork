@@ -1,10 +1,10 @@
 #version 130
 
-uniform vec4 ColorModulator;
+in vec4 vertexColor;
+in vec4 rounding;
+in vec4 dimensions;
 
-varying vec4 rounding;
-varying vec4 dimensions;
-varying vec4 vertexColor;
+out vec4 fragColor;
 
 // https://www.shadertoy.com/view/4llXD7, MIT License
 float sdRoundBox(in vec2 pos, in vec2 halfDim, in vec4 radius) {
@@ -25,5 +25,5 @@ void main() {
 	if (color.a == 0.0) {
 		discard;
 	}
-	gl_FragColor = color * ColorModulator;
+	fragColor = color;
 }

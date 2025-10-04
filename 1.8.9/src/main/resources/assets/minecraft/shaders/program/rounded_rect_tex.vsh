@@ -1,13 +1,7 @@
-#version 330
+#version 130
 
-uniform mat4 ModelViewMat;
-uniform mat4 ProjMat;
-
-in vec3 Position;
-in vec4 Color;
-in vec2 UV0;
-in vec4 Rounding;
-in vec4 Dimensions;
+uniform mat4 Dimensions;
+uniform vec4 Rounding;
 
 out vec2 texCoord0;
 out vec4 vertexColor;
@@ -15,10 +9,10 @@ out vec4 dimensions;
 out vec4 rounding;
 
 void main() {
-	gl_Position = ProjMat * ModelViewMat * vec4(Position, 1.0);
+	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
 
-    texCoord0 = UV0;
-	vertexColor = Color;
+    texCoord0 = vec2(gl_MultiTexCoord0.xy);
+	vertexColor = gl_Color;
 	rounding = Rounding;
-	dimensions = Dimensions;
+	dimensions = Dimensions[gl_VertexID];
 }

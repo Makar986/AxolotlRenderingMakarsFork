@@ -6,19 +6,15 @@ import java.io.InputStreamReader;
 import java.nio.FloatBuffer;
 import java.util.stream.Collectors;
 
-import io.github.axolotlclient.rendering.mixin.GameRendererAccessor;
-import io.github.axolotlclient.rendering.mixin.MinecraftAccessor;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.render.Window;
 import net.minecraft.resource.Identifier;
-import org.joml.Matrix4f;
-import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL20;
 
 import static org.lwjgl.opengl.GL20.*;
 
 public class ShaderManager {
 
-	public static int createProgram(Identifier id) throws IOException {
+	public static Shader createProgram(Identifier id) throws IOException {
 		var vId = new Identifier(id.getNamespace(), "shaders/" + id.getPath() + ".vsh");
 		var fId = new Identifier(id.getNamespace(), "shaders/" + id.getPath() + ".fsh");
 
@@ -33,7 +29,9 @@ public class ShaderManager {
 			String programLog = glGetProgramInfoLog(program, glGetProgrami(program, GL_INFO_LOG_LENGTH));
 			throw new AssertionError("Could not link program: " + programLog);
 		}
-		return program;
+		glDeleteShader(vShader);
+		glDeleteShader(fShader);
+		return new Shader(program);
 	}
 
 	private static int createShader(Identifier resource, int type) throws IOException {
@@ -53,37 +51,41 @@ public class ShaderManager {
 		return shader;
 	}
 
-	private static final FloatBuffer floatValues = BufferUtils.createFloatBuffer(16);
-
-	private static Matrix4f getProjectionMatrix(Minecraft minecraft) {
-		var tick = ((MinecraftAccessor) minecraft).getTimer().partialTick;
-		var fov =((GameRendererAccessor) minecraft.gameRenderer).invokeGetFov(tick, true);
-		//var fov = 120;
-		Matrix4f matrix4f = new Matrix4f();
-		return matrix4f.perspective(fov * ((float) Math.PI / 180F), (float) minecraft.width / (float) minecraft.height, 0.0F, 100);
-		//return matrix4f.perspective(fov * ((float) Math.PI / 180F), (float) minecraft.width / (float) minecraft.height, 0.05F, minecraft.options.viewDistance * 2);
+	public static void safeClose(Shader shader) {
+		if (shader != null) {
+			shader.delete();
+		}
 	}
 
-	public static void uploadUniforms(int program) {
-		floatValues.clear();
-		var mc = Minecraft.getInstance();
-		var modelView = new Matrix4f(); //Rendering.MODELVIEW_MATRIX;
-		glUniformMatrix4(glGetUniformLocation(program, "ModelViewMat"), false, modelView.get(floatValues));
-		floatValues.clear();
-		var projMat = new Matrix4f();//getProjectionMatrix(mc);
-		var window = new Window(mc);
-		//projMat.ortho(0.0F, (float) window.getScaledWidth(), (float) window.getScaledHeight(), 0, 0.05f, mc.options.viewDistance * 2);
-		//var projMat = Rendering.PROJECTION_MATRIX;
-		//projMat.identity();
-		//projMat.ortho(0.0F, (float) window.getScaledWidth(), (float) window.getScaledHeight(), 0, 0.0f, 100);
-		//projMat.setOrtho(0.0F, (float)(window.getWidth() / window.getScale()), (float)(window.getHeight() / window.getScale()), 0.0F, 1000.0F, 21000.0F);
-		//projMat.ortho(0.0F, (float) window.getScaledWidth(), (float) window.getScaledHeight(), 0, 1000, 3000);
+	public record Shader(int programId) {
+		public void bind() {
+			GL20.glUseProgram(programId);
+		}
 
+		public void unbind() {
+			GL20.glUseProgram(0);
+		}
 
+		public void drawUsing(Runnable drawer) {
+			bind();
+			drawer.run();
+			unbind();
+		}
 
-		glUniformMatrix4(glGetUniformLocation(program, "ProjMat"), false, projMat.get(floatValues));
-		glUniform4f(glGetUniformLocation(program, "ColorModulator"), 1, 1, 1, 1);
-		glUniform4f(glGetUniformLocation(program, "Rounding"), 1, 1, 1, 1);
-		glUniform4f(glGetUniformLocation(program, "Dimensions"), 1, 1, 1, 1);
+		public void delete() {
+			glDeleteProgram(programId);
+		}
+
+		public void setUniform(String name, int value) {
+			glUniform1i(glGetUniformLocation(programId, name), value);
+		}
+
+		public void setUniform(String name, float v0, float v1, float v2, float v3) {
+			glUniform4f(glGetUniformLocation(programId, name), v0, v1, v2, v3);
+		}
+
+		public void setUniform(String name, FloatBuffer value) {
+			glUniformMatrix4(glGetUniformLocation(programId, name), false, value);
+		}
 	}
 }

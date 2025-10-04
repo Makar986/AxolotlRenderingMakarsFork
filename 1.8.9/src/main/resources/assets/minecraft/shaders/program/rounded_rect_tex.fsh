@@ -1,12 +1,11 @@
 #version 130
 
-uniform vec4 ColorModulator;
 uniform sampler2D Sampler0;
 
 in vec2 texCoord0;
+in vec4 vertexColor;
 in vec4 rounding;
 in vec4 dimensions;
-in vec4 vertexColor;
 
 out vec4 fragColor;
 
@@ -29,5 +28,5 @@ void main() {
 	if (color.a == 0.0) {
 		discard;
 	}
-	fragColor = color * ColorModulator;
+	fragColor = color;
 }

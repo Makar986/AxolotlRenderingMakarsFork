@@ -2,6 +2,7 @@ package io.github.axolotlclient.rendering.test;
 
 import io.github.axolotlclient.rendering.DrawUtil;
 import net.fabricmc.api.ClientModInitializer;
+import net.minecraft.resource.Identifier;
 
 
 public class RenderingTestMod implements ClientModInitializer {
@@ -16,5 +17,7 @@ public class RenderingTestMod implements ClientModInitializer {
 		guiGraphics.axolotlclient_rendering$roundedRect(80, 100, 180, 160, 0xFF777777, 9);
 		guiGraphics.axolotlclient_rendering$roundedRect(80, 10, 180, 30, 0x77777777, 9);
 		guiGraphics.axolotlclient_rendering$roundedRect(80, 50, 180, 70, 0xAA777777, 100);
+		guiGraphics.axolotlclient_rendering$roundedBlit(new Identifier("minecraft", "textures/gui/title/background/panorama_0.png"),
+			200, 20, 0.f,0, 200, 200, 200, 200, 200);
 	}
 }

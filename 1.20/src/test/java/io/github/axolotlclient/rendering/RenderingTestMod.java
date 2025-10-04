@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.resources.ResourceLocation;
 import org.joml.Matrix4f;
 
 public class RenderingTestMod implements ClientModInitializer {
@@ -14,6 +15,8 @@ public class RenderingTestMod implements ClientModInitializer {
 			guiGraphics.axolotlclient_rendering$roundedRect(80, 100, 180, 160, 0xFF777777, 9);
 			guiGraphics.axolotlclient_rendering$roundedRect(80, 10, 180, 30, 0x77777777, 9);
 			guiGraphics.axolotlclient_rendering$roundedRect(80, 50, 180, 70, 0xAA777777, 100);
+			guiGraphics.axolotlclient_rendering$roundedBlit(new ResourceLocation("minecraft", "textures/gui/title/background/panorama_0.png"),
+				200, 20, 0.f,0, 200, 200, 200, 200, 200);
 			Matrix4f matrix4f = guiGraphics.pose().last().pose();
 
 			// Why. I would like to know which gl states this resets.

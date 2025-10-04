@@ -1,14 +1,14 @@
 package io.github.axolotlclient.rendering;
 
 import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.platform.MemoryTracker;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tessellator;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiElement;
 import net.minecraft.resource.Identifier;
 import org.spongepowered.asm.mixin.Unique;
-
-import static org.lwjgl.opengl.GL20.glUseProgram;
 
 public class DrawUtil implements GuiGraphicsExtension {
 
@@ -20,60 +20,26 @@ public class DrawUtil implements GuiGraphicsExtension {
 
 	@Override
 	public void axolotlclient_rendering$roundedRect(int x0, int y0, int x1, int y1, int color, int roundingPx) {
-		int radiusTopLeft = roundingPx;
-		int radiusBottomLeft = roundingPx;
-		int radiusBottomRight = roundingPx;
-		int radiusTopRight = roundingPx;
-		var tess = Tessellator.getInstance();
-		GuiElement.fill(x0, y0, x1, y1, -1);
-		if (x0 < x1) {
-			int n = x0;
-			x0 = x1;
-			x1 = n;
-		}
-
-		if (y0 < y1) {
-			int n = y0;
-			y0 = y1;
-			y1 = n;
-		}
 		int width = Math.abs(x1 - x0);
 		int height = Math.abs(y1 - y0);
-		var consumer = tess.getBuilder();
-
-		//color = -1;
-		int z = 0;
-
-		glUseProgram(ExRenderPipelines.ROUNDED_RECT_PROGRAM);
-		//ShaderManager.uploadUniforms(ExRenderPipelines.ROUNDED_RECT_PROGRAM);
-		int alpha = (color >> 24 & 0xFF);
-		int red = (color >> 16 & 0xFF);
-		int green = (color >> 8 & 0xFF);
-		int blue = (color & 0xFF);
-		consumer.begin(7, ExRenderPipelines.ROUNDED_RECT_FORMAT);
-
-		consumer.vertex(x1, y0, z).color(red, green, blue, alpha);
-		ExRenderPipelines.addRounding(consumer, radiusTopLeft, radiusBottomLeft, radiusBottomRight, radiusTopRight);
-		ExRenderPipelines.addDimensions(consumer, width, 0, width, height);
-		consumer.nextVertex();
-
-		consumer.vertex(x0, y0, z).color(red, green, blue, alpha);
-		ExRenderPipelines.addRounding(consumer, radiusTopLeft, radiusBottomLeft, radiusBottomRight, radiusTopRight);
-		ExRenderPipelines.addDimensions(consumer, 0, 0, width, height);
-		consumer.nextVertex();
-
-		consumer.vertex(x0, y1, z).color(red, green, blue, alpha);
-		ExRenderPipelines.addRounding(consumer, radiusTopLeft, radiusBottomLeft, radiusBottomRight, radiusTopRight);
-		ExRenderPipelines.addDimensions(consumer, 0, height, width, height);
-		consumer.nextVertex();
-
-		consumer.vertex(x1, y1, z).color(red, green, blue, alpha);
-		ExRenderPipelines.addRounding(consumer, radiusTopLeft, radiusBottomLeft, radiusBottomRight, radiusTopRight);
-		ExRenderPipelines.addDimensions(consumer, width, height, width, height);
-		tess.end();
-		glUseProgram(0);
-		//effect.draw(consumer);
-		//effect.clear();
+		var shader = ExRenderPipelines.ROUNDED_RECT_PROGRAM;
+		shader.bind();
+		shader.setUniform("Rounding",
+			/*radiusTopLeft*/ roundingPx,
+			/*radiusTopRight*/ roundingPx,
+			/*radiusBottomLeft*/ roundingPx,
+			/*radiusBottomRight*/ roundingPx);
+		var buf = MemoryTracker.createFloatBuffer(16);
+		buf.put(new float[]{
+			width, 0, width, height,
+			0, 0, width, height,
+			0, height, width, height,
+			width, height, width, height
+		});
+		buf.flip();
+		shader.setUniform("Dimensions", buf);
+		GuiElement.fill(x0, y0, x1, y1, color);
+		shader.unbind();
 	}
 
 	@Override
@@ -130,42 +96,36 @@ public class DrawUtil implements GuiGraphicsExtension {
 
 	@Unique
 	private void innerBlit(Identifier atlas, int x0, int x1, int y0, int y1, float u0, float u1, float v0, float v1, int color, int roundingPx) {
-		/*int z = 0;
+		var tex = Minecraft.getInstance().getTextureManager().get(atlas);
+		if (tex == null) return;
+		int width = Math.abs(x1 - x0);
+		int height = Math.abs(y1 - y0);
+		var shader = ExRenderPipelines.ROUNDED_RECT_TEX_PROGRAM;
 		Minecraft.getInstance().getTextureManager().bind(atlas);
-		BufferBuilder consumer = Tessellator.getInstance().getBuilder();
-		var effect = ExRenderPipelines.ROUNDED_RECT_TEX_SHADER;
-		effect.apply();
-		consumer.begin(7, ExRenderPipelines.ROUNDED_RECT_TEX_FORMAT);
-		int width = x1 - x0;
-		int height = y1 - y0;
-		int radiusTopLeft = roundingPx;
-		int radiusBottomLeft = roundingPx;
-		int radiusBottomRight = roundingPx;
-		int radiusTopRight = roundingPx;
-		consumer.vertex(x0, y0, z)
-			.texture(u0, v0).color(color >> 16 & 0xFF, color >> 8 & 0xFF, color & 0xFF, color >> 24 & 0xFF);
-		ExRenderPipelines.addRounding(consumer, radiusTopLeft, radiusBottomLeft, radiusBottomRight, radiusTopRight);
-		ExRenderPipelines.addDimensions(consumer, 0, 0, width, height);
-		consumer.nextVertex();
-
-		consumer.vertex(x0, y1, z);
-		consumer.texture(u0, v0).color(color >> 16 & 0xFF, color >> 8 & 0xFF, color & 0xFF, color >> 24 & 0xFF);
-		ExRenderPipelines.addRounding(consumer, radiusTopLeft, radiusBottomLeft, radiusBottomRight, radiusTopRight);
-		ExRenderPipelines.addDimensions(consumer, 0, height, width, height);
-		consumer.nextVertex();
-
-		consumer.vertex(x1, y1, z);
-		consumer.texture(u1, v1).color(color >> 16 & 0xFF, color >> 8 & 0xFF, color & 0xFF, color >> 24 & 0xFF);
-		ExRenderPipelines.addRounding(consumer, radiusTopLeft, radiusBottomLeft, radiusBottomRight, radiusTopRight);
-		ExRenderPipelines.addDimensions(consumer, width, height, width, height);
-		consumer.nextVertex();
-
-		consumer.vertex(x1, y0, z);
-		consumer.texture(u1, v0).color(color >> 16 & 0xFF, color >> 8 & 0xFF, color & 0xFF, color >> 24 & 0xFF);
-		ExRenderPipelines.addRounding(consumer, radiusTopLeft, radiusBottomLeft, radiusBottomRight, radiusTopRight);
-		ExRenderPipelines.addDimensions(consumer, width, 0, width, height);
-		consumer.nextVertex();
-		Tessellator.getInstance().end();
-		effect.clear();*/
+		shader.bind();
+		shader.setUniform("Rounding",
+			/*radiusTopLeft*/ roundingPx,
+			/*radiusTopRight*/ roundingPx,
+			/*radiusBottomLeft*/ roundingPx,
+			/*radiusBottomRight*/ roundingPx);
+		var buf = MemoryTracker.createFloatBuffer(16);
+		buf.put(new float[]{
+			width, 0, width, height,
+			0, 0, width, height,
+			0, height, width, height,
+			width, height, width, height
+		});
+		buf.flip();
+		shader.setUniform("Dimensions", buf);
+		GlStateManager.color4f((color >> 16 & 0xFF) / 255f, (color >> 8 & 0xFF) / 255f, (color & 0xFF) / 255f, (color >> 24 & 0xFF) / 255f);
+		Tessellator tessellator = Tessellator.getInstance();
+		BufferBuilder bufferBuilder = tessellator.getBuilder();
+		bufferBuilder.begin(7, DefaultVertexFormat.POSITION_TEX);
+		bufferBuilder.vertex(x0, y1, 0.0).texture(u0, v1).nextVertex();
+		bufferBuilder.vertex(x1, y1, 0.0).texture(u1, v1).nextVertex();
+		bufferBuilder.vertex(x1, y0, 0.0).texture(u1, v0).nextVertex();
+		bufferBuilder.vertex(x0, y0, 0.0).texture(u0, v0).nextVertex();
+		tessellator.end();
+		shader.unbind();
 	}
 }

@@ -1,18 +1,16 @@
 #version 130
 
-varying vec3 Position;
-varying vec4 Color;
-varying vec4 Rounding;
-varying vec4 Dimensions;
+uniform mat4 Dimensions;
+uniform vec4 Rounding;
 
-varying vec4 vertexColor;
-varying vec4 dimensions;
-varying vec4 rounding;
+out vec4 vertexColor;
+out vec4 dimensions;
+out vec4 rounding;
 
 void main() {
-    gl_Position = gl_ModelViewMatrix * gl_ProjectionMatrix * vec4(Position, 1.0);
+    gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
 
-	vertexColor = Color;
+    vertexColor = gl_Color;
     rounding = Rounding;
-    dimensions = Dimensions;
+    dimensions = Dimensions[gl_VertexID];
 }

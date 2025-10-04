@@ -25,6 +25,11 @@ loom {
 	}
 }
 
+repositories {
+	mavenCentral()
+	maven { url = uri("https://jitpack.io") }
+}
+
 dependencies {
 	minecraft("com.mojang:minecraft:$minecraftVersion")
 	mappings("net.ornithemc:feather:$feather")
@@ -38,7 +43,6 @@ dependencies {
 	implementation(include(project(path = ":common", configuration = "shadow"))!!)
 
 	modRuntimeOnly("io.github.moehreag:legacy-lwjgl3:${project.property("legacy_lwgjl3")}")
-	include(implementation("org.joml:joml:1.10.8")!!);
 }
 
 configurations.runtimeClasspath.configure {
@@ -70,6 +74,13 @@ tasks.runClient {
 	}
 	classpath(sourceSets.getByName("test").runtimeClasspath)
 	jvmArgs("-XX:+AllowEnhancedClassRedefinition -XX:+IgnoreUnrecognizedVMOptions")
+	/*environment(
+		"__GLX_VENDOR_LIBRARY_NAME" to "mesa",
+		"__EGL_VENDOR_LIBRARY_FILENAMES" to "/usr/share/glvnd/egl_vendor.d/50_mesa.json",
+		"MESA_LOADER_DRIVER_OVERRIDE" to "zink",
+		"GALLIUM_DRIVER" to "zink",
+		"LIBGL_KOPPER_DRI2" to "1",
+	)*/
 }
 
 tasks.withType(JavaCompile::class).configureEach {
