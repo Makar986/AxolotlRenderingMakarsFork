@@ -21,11 +21,11 @@ public class ExRenderPipelines {
 			"This should not be possible unless other mods are broken.");
 	}
 
-	public static final int NUM_CUSTOM_VERTEX_FORMAT_ELEMENTS = 2;
-	// rounding is a vec4
-	public static final VertexFormatElement ROUNDING = VertexFormatElement.register(nextUnusedVFEIndex(), 0, VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.GENERIC, 4);
-	// dimensions is a vec2
-	public static final VertexFormatElement DIMENSIONS = VertexFormatElement.register(nextUnusedVFEIndex(), 0, VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.GENERIC, 4);
+	public static final int NUM_CUSTOM_VERTEX_FORMAT_ELEMENTS = 3;
+	private static final VertexFormatElement ROUNDING = VertexFormatElement.register(nextUnusedVFEIndex(), 0, VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.GENERIC, 4);
+	private static final VertexFormatElement DIMENSIONS = VertexFormatElement.register(nextUnusedVFEIndex(), 0, VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.GENERIC, 4);
+	private static final VertexFormatElement OUTLINE_WIDTH = VertexFormatElement.register(nextUnusedVFEIndex(), 0, VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.GENERIC, 1);
+
 	public static RenderPipeline ROUNDED_RECT = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
 		.withLocation(ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID, "rounded_rect"))
 		.withVertexShader(ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID, "core/rounded_rect"))
@@ -47,6 +47,29 @@ public class ExRenderPipelines {
 			.add("Rounding", ROUNDING)
 			.add("Dimensions", DIMENSIONS)
 			.build(), VertexFormat.Mode.QUADS).build());
+	public static RenderPipeline ROUNDED_RECT_OUTLINE = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
+		.withLocation(ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID, "rounded_rect_outline"))
+		.withVertexShader(ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID, "core/rounded_rect_outline"))
+		.withFragmentShader(ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID, "core/rounded_rect_outline"))
+		.withVertexFormat(VertexFormat.builder()
+			.add("Position", VertexFormatElement.POSITION)
+			.add("Color", VertexFormatElement.COLOR)
+			.add("Rounding", ROUNDING)
+			.add("Dimensions", DIMENSIONS)
+			.add("OutlineWidth", OUTLINE_WIDTH)
+			.build(), VertexFormat.Mode.QUADS).build());
+	public static RenderPipeline ROUNDED_RECT_TEX_OUTLINE = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
+		.withLocation(ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID, "rounded_rect_tex_outline"))
+		.withVertexShader(ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID, "core/rounded_rect_tex_outline"))
+		.withFragmentShader(ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID, "core/rounded_rect_tex_outline"))
+		.withVertexFormat(VertexFormat.builder()
+			.add("Position", VertexFormatElement.POSITION)
+			.add("Color", VertexFormatElement.COLOR)
+			.add("UV0", VertexFormatElement.UV0)
+			.add("Rounding", ROUNDING)
+			.add("Dimensions", DIMENSIONS)
+			.add("OutlineWidth", OUTLINE_WIDTH)
+			.build(), VertexFormat.Mode.QUADS).build());
 
 	public static void addRounding(VertexConsumer consumer, float tl, float bl, float br, float tr) {
 		var offset = beginElement(consumer, ROUNDING);
@@ -65,6 +88,13 @@ public class ExRenderPipelines {
 			MemoryUtil.memPutFloat(offset + 4L, relY);
 			MemoryUtil.memPutFloat(offset + 8L, width);
 			MemoryUtil.memPutFloat(offset + 12L, height);
+		}
+	}
+
+	public static void addOutlineWidth(VertexConsumer consumer, float outlineWidth) {
+		var offset = beginElement(consumer, OUTLINE_WIDTH);
+		if (offset != -1) {
+			MemoryUtil.memPutFloat(offset, outlineWidth);
 		}
 	}
 

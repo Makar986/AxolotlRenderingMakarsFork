@@ -22,23 +22,27 @@ public class ExRenderPipelines {
 			"This should not be possible unless other mods are broken.");
 	}
 
-	public static final int NUM_CUSTOM_VERTEX_FORMAT_ELEMENTS = 2;
-	// rounding is a vec4
+	public static final int NUM_CUSTOM_VERTEX_FORMAT_ELEMENTS = 3;
 	public static final VertexFormatElement ROUNDING = VertexFormatElement.register(nextUnusedVFEIndex(), 0, VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.GENERIC, 4);
-	// dimensions is a vec2
 	public static final VertexFormatElement DIMENSIONS = VertexFormatElement.register(nextUnusedVFEIndex(), 0, VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.GENERIC, 4);
+	private static final VertexFormatElement OUTLINE_WIDTH = VertexFormatElement.register(nextUnusedVFEIndex(), 0, VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.GENERIC, 1);
 
 	@ApiStatus.Internal
-	public static ShaderInstance ROUNDED_RECT_SHADER;
+	public static ShaderInstance ROUNDED_RECT_SHADER, ROUNDED_RECT_TEX_SHADER, ROUNDED_RECT_OUTLINE_SHADER, ROUNDED_RECT_TEX_OUTLINE_SHADER;
 
-	private static ShaderInstance roundedRectShader() {
-		return ROUNDED_RECT_SHADER;
-	}
-
-	public static final VertexFormat ROUNDED_RECT_FORMAT = VertexFormat.builder().add("Position", VertexFormatElement.POSITION)
+	public static final VertexFormat ROUNDED_RECT_FORMAT = VertexFormat.builder()
+		.add("Position", VertexFormatElement.POSITION)
 		.add("Color", VertexFormatElement.COLOR)
 		.add("Rounding", ROUNDING)
 		.add("Dimensions", DIMENSIONS)
+		.build();
+
+	public static final VertexFormat ROUNDED_RECT_OUTLINE_FORMAT = VertexFormat.builder()
+		.add("Position", VertexFormatElement.POSITION)
+		.add("Color", VertexFormatElement.COLOR)
+		.add("Rounding", ROUNDING)
+		.add("Dimensions", DIMENSIONS)
+		.add("OutlineWidth", OUTLINE_WIDTH)
 		.build();
 
 	public static RenderType ROUNDED_RECT = RenderType.create(RenderingCommon.MODID + ":rounded_rect",
@@ -46,7 +50,17 @@ public class ExRenderPipelines {
 		VertexFormat.Mode.QUADS,
 		RenderType.SMALL_BUFFER_SIZE,
 		RenderType.CompositeState.builder()
-			.setShaderState(new RenderStateShard.ShaderStateShard(ExRenderPipelines::roundedRectShader))
+			.setShaderState(new RenderStateShard.ShaderStateShard(() -> ExRenderPipelines.ROUNDED_RECT_SHADER))
+			.setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
+			.setDepthTestState(RenderStateShard.LEQUAL_DEPTH_TEST)
+			.createCompositeState(false));
+
+	public static RenderType ROUNDED_RECT_OUTLINE = RenderType.create(RenderingCommon.MODID + ":rounded_rect_outline",
+		ROUNDED_RECT_OUTLINE_FORMAT,
+		VertexFormat.Mode.QUADS,
+		RenderType.SMALL_BUFFER_SIZE,
+		RenderType.CompositeState.builder()
+			.setShaderState(new RenderStateShard.ShaderStateShard(() -> ExRenderPipelines.ROUNDED_RECT_OUTLINE_SHADER))
 			.setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
 			.setDepthTestState(RenderStateShard.LEQUAL_DEPTH_TEST)
 			.createCompositeState(false));
@@ -57,6 +71,15 @@ public class ExRenderPipelines {
 		.add("Color", VertexFormatElement.COLOR)
 		.add("Rounding", ROUNDING)
 		.add("Dimensions", DIMENSIONS)
+		.build();
+
+	public static final VertexFormat ROUNDED_RECT_TEX_OUTLINE_FORMAT = VertexFormat.builder()
+		.add("Position", VertexFormatElement.POSITION)
+		.add("UV0", VertexFormatElement.UV0)
+		.add("Color", VertexFormatElement.COLOR)
+		.add("Rounding", ROUNDING)
+		.add("Dimensions", DIMENSIONS)
+		.add("OutlineWidth", OUTLINE_WIDTH)
 		.build();
 
 	public static void addRounding(VertexConsumer consumer, float tl, float bl, float br, float tr) {
@@ -76,6 +99,13 @@ public class ExRenderPipelines {
 			MemoryUtil.memPutFloat(offset + 4L, relY);
 			MemoryUtil.memPutFloat(offset + 8L, width);
 			MemoryUtil.memPutFloat(offset + 12L, height);
+		}
+	}
+
+	public static void addOutlineWidth(VertexConsumer consumer, float outlineWidth) {
+		var offset = beginElement(consumer, OUTLINE_WIDTH);
+		if (offset != -1) {
+			MemoryUtil.memPutFloat(offset, outlineWidth);
 		}
 	}
 

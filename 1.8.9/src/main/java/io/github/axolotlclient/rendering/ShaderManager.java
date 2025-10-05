@@ -51,9 +51,11 @@ public class ShaderManager {
 		return shader;
 	}
 
-	public static void safeClose(Shader shader) {
-		if (shader != null) {
-			shader.delete();
+	public static void safeClose(Shader... shaders) {
+		for (var shader : shaders) {
+			if (shader != null) {
+				shader.delete();
+			}
 		}
 	}
 
@@ -76,8 +78,8 @@ public class ShaderManager {
 			glDeleteProgram(programId);
 		}
 
-		public void setUniform(String name, int value) {
-			glUniform1i(glGetUniformLocation(programId, name), value);
+		public void setUniform(String name, float value) {
+			glUniform1f(glGetUniformLocation(programId, name), value);
 		}
 
 		public void setUniform(String name, float v0, float v1, float v2, float v3) {

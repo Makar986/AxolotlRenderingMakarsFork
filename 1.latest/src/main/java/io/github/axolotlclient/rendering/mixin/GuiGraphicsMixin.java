@@ -2,10 +2,7 @@ package io.github.axolotlclient.rendering.mixin;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.textures.GpuTextureView;
-import io.github.axolotlclient.rendering.ColoredRoundedRectangleBlitRenderState;
-import io.github.axolotlclient.rendering.ColoredRoundedRectangleRenderState;
-import io.github.axolotlclient.rendering.ExRenderPipelines;
-import io.github.axolotlclient.rendering.GuiGraphicsExtension;
+import io.github.axolotlclient.rendering.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.render.TextureSetup;
@@ -41,67 +38,26 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 		guiRenderState.submitGuiElement(new ColoredRoundedRectangleRenderState(ExRenderPipelines.ROUNDED_RECT,
 			TextureSetup.noTexture(),
 			new Matrix3x2f(pose()),
-			x0,
-			y0,
-			x1,
-			y1,
-			color,
-			color,
-			color,
-			color,
-			roundingPx,
-			roundingPx,
-			roundingPx,
-			roundingPx,
+			x0, y0, x1, y1,
+			color, color, color, color,
+			roundingPx, roundingPx, roundingPx, roundingPx,
 			scissorStack.peek()));
 	}
 
 	@Override
-	public void axolotlclient_rendering$roundedBlit(
-		ResourceLocation atlas, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight, int color, int rounding
-	) {
-		this.axolotlclient_rendering$roundedBlit(atlas, x, y, u, v, width, height, width, height, textureWidth, textureHeight, color, rounding);
-	}
-
-	@Override
-	public void axolotlclient_rendering$roundedBlit(ResourceLocation atlas, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight, int rounding) {
-		this.axolotlclient_rendering$roundedBlit(atlas, x, y, u, v, width, height, width, height, textureWidth, textureHeight, rounding);
-	}
-
-	@Override
-	public void axolotlclient_rendering$roundedBlit(
-		ResourceLocation atlas,
-		int x,
-		int y,
-		float u,
-		float v,
-		int width,
-		int height,
-		int uWidth,
-		int vHeight,
-		int textureWidth,
-		int textureHeight,
-		int rounding
-	) {
-		this.axolotlclient_rendering$roundedBlit(atlas, x, y, u, v, width, height, uWidth, vHeight, textureWidth, textureHeight, -1, rounding);
+	public void axolotlclient_rendering$outlineRoundedRect(int x0, int y0, int x1, int y1, int color, int roundingPx, float outlineWidth) {
+		guiRenderState.submitGuiElement(new ColoredRoundedRectangleOutlineRenderState(ExRenderPipelines.ROUNDED_RECT_OUTLINE,
+			TextureSetup.noTexture(),
+			new Matrix3x2f(pose()),
+			x0, y0, x1, y1,
+			color, color, color, color,
+			roundingPx, roundingPx, roundingPx, roundingPx,
+			outlineWidth, scissorStack.peek()));
 	}
 
 	@Override
 	public void axolotlclient_rendering$roundedBlit(ResourceLocation location, int x, int y, float u, float v, int width, int height, int uWidth, int vHeight, int textureWidth, int textureHeight, int color, int roundingPx) {
-		this.innerBlit(
-			ExRenderPipelines.ROUNDED_RECT_TEX,
-			location,
-			x,
-			x + width,
-			y,
-			y + height,
-			(u + 0.0F) / textureWidth,
-			(u + uWidth) / textureWidth,
-			(v + 0.0F) / textureHeight,
-			(v + vHeight) / textureHeight,
-			color,
-			roundingPx
-		);
+		this.innerBlit(ExRenderPipelines.ROUNDED_RECT_TEX, location, x, x + width, y, y + height, u / textureWidth, (u + uWidth) / textureWidth, v / textureHeight, (v + vHeight) / textureHeight, color, roundingPx);
 	}
 
 	@Override
@@ -112,37 +68,45 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 	@Unique
 	private void innerBlit(RenderPipeline pipeline, ResourceLocation atlas, int x0, int x1, int y0, int y1, float u0, float u1, float v0, float v1, int color, int rounding) {
 		GpuTextureView gpuTextureView = this.minecraft.getTextureManager().getTexture(atlas).getTextureView();
-		this.submitBlit(pipeline, gpuTextureView, x0, y0, x1, y1, u0, u1, v0, v1, color, rounding);
+		this.guiRenderState.submitGuiElement(
+			new ColoredRoundedRectangleBlitRenderState(
+				pipeline,
+				TextureSetup.singleTexture(gpuTextureView),
+				new Matrix3x2f(this.pose()),
+				x0, y0, x1, y1,
+				u0, u1, v0, v1,
+				color, color, color, color,
+				rounding, rounding, rounding, rounding,
+				this.scissorStack.peek()
+			)
+		);
+	}
+
+	@Override
+	public void axolotlclient_rendering$outlineRoundedBlit(ResourceLocation location, int x, int y, float u, float v, int width, int height, int uWidth, int vHeight, int textureWidth, int textureHeight, int color, int roundingPx, float outlineWidth) {
+		this.innerBlit(ExRenderPipelines.ROUNDED_RECT_TEX_OUTLINE, location, x, x + width, y, y + height,
+			u / textureWidth, (u + uWidth) / textureWidth, v / textureHeight, (v + vHeight) / textureHeight, color, roundingPx, outlineWidth);
+	}
+
+	@Override
+	public void axolotlclient_rendering$outlineRoundedBlit(ResourceLocation atlas, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1, int rounding, float outlineWidth) {
+		this.innerBlit(ExRenderPipelines.ROUNDED_RECT_TEX_OUTLINE, atlas, x0, x1, y0, y1, u0, u1, v0, v1, -1, rounding, outlineWidth);
 	}
 
 	@Unique
-	private void submitBlit(
-		RenderPipeline pipeline, GpuTextureView atlasTexture, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1, int color, int rounding
-	) {
-		this.guiRenderState
-			.submitGuiElement(
-				new ColoredRoundedRectangleBlitRenderState(
-					pipeline,
-					TextureSetup.singleTexture(atlasTexture),
-					new Matrix3x2f(this.pose()),
-					x0,
-					y0,
-					x1,
-					y1,
-					u0,
-					u1,
-					v0,
-					v1,
-					color,
-					color,
-					color,
-					color,
-					rounding,
-					rounding,
-					rounding,
-					rounding,
-					this.scissorStack.peek()
-				)
-			);
+	private void innerBlit(RenderPipeline pipeline, ResourceLocation atlas, int x0, int x1, int y0, int y1, float u0, float u1, float v0, float v1, int color, int rounding, float outlineWidth) {
+		GpuTextureView gpuTextureView = this.minecraft.getTextureManager().getTexture(atlas).getTextureView();
+		this.guiRenderState.submitGuiElement(
+			new ColoredRoundedRectangleBlitOutlineRenderState(
+				pipeline,
+				TextureSetup.singleTexture(gpuTextureView),
+				new Matrix3x2f(this.pose()),
+				x0, y0, x1, y1,
+				u0, u1, v0, v1,
+				color, color, color, color,
+				rounding, rounding, rounding, rounding,
+				outlineWidth, this.scissorStack.peek()
+			)
+		);
 	}
 }

@@ -7,10 +7,11 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.gui.render.state.GuiElementRenderState;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix3x2f;
 
-@Environment(EnvType.CLIENT)
+@ApiStatus.Internal
 public record ColoredRoundedRectangleRenderState(
 	RenderPipeline pipeline,
 	TextureSetup textureSetup,

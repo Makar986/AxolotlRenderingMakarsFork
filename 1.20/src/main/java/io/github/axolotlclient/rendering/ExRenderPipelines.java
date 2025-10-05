@@ -8,22 +8,12 @@ import net.minecraft.client.renderer.ShaderInstance;
 import org.jetbrains.annotations.ApiStatus;
 
 public class ExRenderPipelines {
-
-	// rounding is a vec4
 	public static final VertexFormatElement ROUNDING = new VertexFormatElement(0, VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.GENERIC, 4);
-	// dimensions is a vec2
 	public static final VertexFormatElement DIMENSIONS = new VertexFormatElement(0, VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.GENERIC, 4);
+	private static final VertexFormatElement OUTLINE_WIDTH = new VertexFormatElement(0, VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.GENERIC, 1);
 
 	@ApiStatus.Internal
-	public static ShaderInstance ROUNDED_RECT_SHADER, ROUNDED_RECT_TEX_SHADER;
-
-	private static ShaderInstance roundedRectShader() {
-		return ROUNDED_RECT_SHADER;
-	}
-
-	public static ShaderInstance roundedRectTexShader() {
-		return ROUNDED_RECT_TEX_SHADER;
-	}
+	public static ShaderInstance ROUNDED_RECT_SHADER, ROUNDED_RECT_TEX_SHADER, ROUNDED_RECT_OUTLINE_SHADER, ROUNDED_RECT_TEX_OUTLINE_SHADER;
 
 	public static final VertexFormat ROUNDED_RECT_FORMAT = new VertexFormat(ImmutableMap.<String, VertexFormatElement>builder()
 		.put("Position", DefaultVertexFormat.ELEMENT_POSITION)
@@ -32,12 +22,30 @@ public class ExRenderPipelines {
 		.put("Dimensions", DIMENSIONS)
 		.build());
 
+	public static final VertexFormat ROUNDED_RECT_OUTLINE_FORMAT = new VertexFormat(ImmutableMap.<String, VertexFormatElement>builder()
+		.put("Position", DefaultVertexFormat.ELEMENT_POSITION)
+		.put("Color", DefaultVertexFormat.ELEMENT_COLOR)
+		.put("Rounding", ROUNDING)
+		.put("Dimensions", DIMENSIONS)
+		.put("OutlineWidth", OUTLINE_WIDTH)
+		.build());
+
 	public static RenderType ROUNDED_RECT = RenderType.create(RenderingCommon.MODID + ":rounded_rect",
 		ROUNDED_RECT_FORMAT,
 		VertexFormat.Mode.QUADS,
 		RenderType.SMALL_BUFFER_SIZE,
 		RenderType.CompositeState.builder()
-			.setShaderState(new RenderStateShard.ShaderStateShard(ExRenderPipelines::roundedRectShader))
+			.setShaderState(new RenderStateShard.ShaderStateShard(() -> ExRenderPipelines.ROUNDED_RECT_SHADER))
+			.setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
+			.setDepthTestState(RenderStateShard.LEQUAL_DEPTH_TEST)
+			.createCompositeState(false));
+
+	public static RenderType ROUNDED_RECT_OUTLINE = RenderType.create(RenderingCommon.MODID + ":rounded_rect_outline",
+		ROUNDED_RECT_OUTLINE_FORMAT,
+		VertexFormat.Mode.QUADS,
+		RenderType.SMALL_BUFFER_SIZE,
+		RenderType.CompositeState.builder()
+			.setShaderState(new RenderStateShard.ShaderStateShard(() -> ExRenderPipelines.ROUNDED_RECT_OUTLINE_SHADER))
 			.setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
 			.setDepthTestState(RenderStateShard.LEQUAL_DEPTH_TEST)
 			.createCompositeState(false));
@@ -48,6 +56,15 @@ public class ExRenderPipelines {
 		.put("Color", DefaultVertexFormat.ELEMENT_COLOR)
 		.put("Rounding", ROUNDING)
 		.put("Dimensions", DIMENSIONS)
+		.build());
+
+	public static final VertexFormat ROUNDED_RECT_TEX_OUTLINE_FORMAT = new VertexFormat(ImmutableMap.<String, VertexFormatElement>builder()
+		.put("Position", DefaultVertexFormat.ELEMENT_POSITION)
+		.put("UV0", DefaultVertexFormat.ELEMENT_UV0)
+		.put("Color", DefaultVertexFormat.ELEMENT_COLOR)
+		.put("Rounding", ROUNDING)
+		.put("Dimensions", DIMENSIONS)
+		.put("OutlineWidth", OUTLINE_WIDTH)
 		.build());
 
 	public static void addRounding(VertexConsumer consumer, float tl, float bl, float br, float tr) {
@@ -72,4 +89,11 @@ public class ExRenderPipelines {
 		builder.nextElement();
 	}
 
+	public static void addOutlineWidth(VertexConsumer consumer, float outlineWidth) {
+		if (!(consumer instanceof BufferBuilder builder)) {
+			throw new IllegalArgumentException("Not a BufferBuilder!");
+		}
+		builder.putFloat(0, outlineWidth);
+		builder.nextElement();
+	}
 }
