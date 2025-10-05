@@ -4,7 +4,7 @@ import net.minecraft.client.gui.navigation.ScreenRectangle;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix3x2f;
 
-public class DrawUtil {
+final class DrawUtil {
 
 	@Nullable
 	static ScreenRectangle getBounds(int x0, int y0, int x1, int y1, Matrix3x2f pose, @Nullable ScreenRectangle scissorArea) {

@@ -3,7 +3,7 @@
 	"package": "io.github.axolotlclient.rendering.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
-		"EntityRendererMixin"
+
 	],
 	"injectors": {
 		"defaultRequire": 1
