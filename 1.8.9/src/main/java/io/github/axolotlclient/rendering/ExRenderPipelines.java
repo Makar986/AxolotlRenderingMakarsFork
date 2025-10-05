@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 
 import net.minecraft.resource.Identifier;
+import net.ornithemc.osl.lifecycle.api.client.MinecraftClientEvents;
 import net.ornithemc.osl.resource.loader.api.ResourceLoaderEvents;
 
 public class ExRenderPipelines {
@@ -19,6 +20,9 @@ public class ExRenderPipelines {
 				ROUNDED_RECT_OUTLINE_PROGRAM, ROUNDED_RECT_TEX_OUTLINE_PROGRAM);
 			load();
 		});
+		MinecraftClientEvents.STOP.register(mc ->
+			ShaderManager.safeClose(ROUNDED_RECT_PROGRAM, ROUNDED_RECT_TEX_PROGRAM,
+				ROUNDED_RECT_OUTLINE_PROGRAM, ROUNDED_RECT_TEX_OUTLINE_PROGRAM));
 	}
 
 	private static void load() {

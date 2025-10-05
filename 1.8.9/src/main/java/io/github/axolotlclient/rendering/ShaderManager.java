@@ -8,10 +8,12 @@ import java.util.stream.Collectors;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.resource.Identifier;
+import org.jetbrains.annotations.ApiStatus;
 import org.lwjgl.opengl.GL20;
 
 import static org.lwjgl.opengl.GL20.*;
 
+@ApiStatus.Internal
 public class ShaderManager {
 
 	public static Shader createProgram(Identifier id) throws IOException {
@@ -66,12 +68,6 @@ public class ShaderManager {
 
 		public void unbind() {
 			GL20.glUseProgram(0);
-		}
-
-		public void drawUsing(Runnable drawer) {
-			bind();
-			drawer.run();
-			unbind();
 		}
 
 		public void delete() {
