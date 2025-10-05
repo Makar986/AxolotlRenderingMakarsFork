@@ -73,8 +73,8 @@ public class DrawUtil implements GuiGraphicsExtension {
 	}
 
 	@Override
-	public void axolotlclient_rendering$roundedBlit(Identifier atlas, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1, int rounding) {
-		this.innerBlit(atlas, x0, x1, y0, y1, u0, u1, v0, v1, -1, rounding);
+	public void axolotlclient_rendering$roundedBlit(Identifier atlas, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1, int color, int rounding) {
+		this.innerBlit(atlas, x0, x1, y0, y1, u0, u1, v0, v1, color, rounding);
 	}
 
 	@Unique
@@ -118,8 +118,8 @@ public class DrawUtil implements GuiGraphicsExtension {
 	}
 
 	@Override
-	public void axolotlclient_rendering$outlineRoundedBlit(Identifier atlas, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1, int rounding, float outlineWidth) {
-		this.innerBlit(atlas, x0, x1, y0, y1, u0, u1, v0, v1, -1, rounding, outlineWidth);
+	public void axolotlclient_rendering$outlineRoundedBlit(Identifier atlas, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1, int color, int rounding, float outlineWidth) {
+		this.innerBlit(atlas, x0, x1, y0, y1, u0, u1, v0, v1, color, rounding, outlineWidth);
 	}
 
 	@Unique
