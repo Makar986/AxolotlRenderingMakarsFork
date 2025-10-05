@@ -36,6 +36,7 @@ public class ExRenderPipelines {
 			.add("Rounding", ROUNDING)
 			.add("Dimensions", DIMENSIONS)
 			.build(), VertexFormat.Mode.QUADS).build());
+
 	public static RenderPipeline ROUNDED_RECT_TEX = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
 		.withLocation(ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID, "rounded_rect_tex"))
 		.withVertexShader(ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID, "core/rounded_rect_tex"))
@@ -47,6 +48,7 @@ public class ExRenderPipelines {
 			.add("Rounding", ROUNDING)
 			.add("Dimensions", DIMENSIONS)
 			.build(), VertexFormat.Mode.QUADS).build());
+
 	public static RenderPipeline ROUNDED_RECT_OUTLINE = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
 		.withLocation(ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID, "rounded_rect_outline"))
 		.withVertexShader(ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID, "core/rounded_rect_outline"))
@@ -58,6 +60,7 @@ public class ExRenderPipelines {
 			.add("Dimensions", DIMENSIONS)
 			.add("OutlineWidth", OUTLINE_WIDTH)
 			.build(), VertexFormat.Mode.QUADS).build());
+
 	public static RenderPipeline ROUNDED_RECT_TEX_OUTLINE = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
 		.withLocation(ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID, "rounded_rect_tex_outline"))
 		.withVertexShader(ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID, "core/rounded_rect_tex_outline"))

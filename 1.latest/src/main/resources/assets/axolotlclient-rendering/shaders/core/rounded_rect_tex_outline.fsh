@@ -26,7 +26,7 @@ void main() {
 	vec2 hDim = dimensions.zw/2.;
 	vec4 round = min(rounding-outlineWidth, min(hDim.x, hDim.y));
 	float d = abs(sdRoundBox(dimensions.xy-hDim, hDim-outlineWidth, round)) - outlineWidth;
-	color.a *= 1.0-smoothstep(0.0, 1.0, d);
+	color.a *= 1.0-smoothstep(0.0, fwidth(d), d);
 
 	if (color.a == 0.0) {
 		discard;
