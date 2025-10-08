@@ -26,8 +26,7 @@ loom {
 }
 
 repositories {
-	maven("https://maven.noxcrew.com/public")
-	maven("https://maven.enginehub.org/repo/")
+	mavenCentral()
 }
 
 dependencies {
@@ -46,6 +45,9 @@ dependencies {
 	modCompileOnly("com.terraformersmc:modmenu:13.0.0-beta.1")
 
 	implementation(include(project(path = ":common", configuration = "shadow"))!!)
+
+	//include(implementation("org.lwjgl:lwjgl-freetype:3.3.3")!!)
+	include(implementation("org.lwjgl:lwjgl-harfbuzz:3.3.3")!!)
 }
 
 tasks.processResources {

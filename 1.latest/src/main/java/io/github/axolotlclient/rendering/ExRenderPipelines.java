@@ -1,10 +1,9 @@
 package io.github.axolotlclient.rendering;
 
+import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormatElement;
+import com.mojang.blaze3d.platform.DepthTestFunction;
+import com.mojang.blaze3d.vertex.*;
 import io.github.axolotlclient.rendering.mixin.BufferBuilderAccessor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.ResourceLocation;
@@ -73,6 +72,12 @@ public class ExRenderPipelines {
 			.add("Dimensions", DIMENSIONS)
 			.add("OutlineWidth", OUTLINE_WIDTH)
 			.build(), VertexFormat.Mode.QUADS).build());
+
+	public static RenderPipeline FONT = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
+		.withLocation(ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID, "font"))
+		.withVertexShader(ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID, "core/font"))
+		.withFragmentShader(ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID, "core/font"))
+		.build());
 
 	public static void addRounding(VertexConsumer consumer, float tl, float bl, float br, float tr) {
 		var offset = beginElement(consumer, ROUNDING);

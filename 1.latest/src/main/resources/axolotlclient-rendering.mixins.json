@@ -1,13 +1,14 @@
 {
-	"required": true,
-	"package": "io.github.axolotlclient.rendering.mixin",
-	"compatibilityLevel": "JAVA_21",
-	"client": [
-		"BufferBuilderAccessor",
-		"GuiGraphicsMixin",
-		"VertexFormatElementMixin"
-	],
-	"injectors": {
-		"defaultRequire": 1
-	}
+  "required": true,
+  "package": "io.github.axolotlclient.rendering.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [
+	"BufferBuilderAccessor",
+	"GuiGraphicsMixin",
+	"VertexFormatElementMixin",
+	"WindowMixin"
+  ],
+  "injectors": {
+	"defaultRequire": 1
+  }
 }
