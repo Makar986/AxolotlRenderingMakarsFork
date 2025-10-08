@@ -22,7 +22,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.locale.Language;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.ApiStatus;
 import org.joml.Matrix3x2f;
@@ -165,7 +169,7 @@ public class Font implements AutoCloseable {
 
 	public void resize(int mcSize) {
 		this.mcSize = mcSize;
-		var size = mcSize*Minecraft.getInstance().getWindow().getGuiScale();
+		var size = mcSize * Minecraft.getInstance().getWindow().getGuiScale();
 		if (FT_Set_Pixel_Sizes(face, size, size) != FT_Err_Ok) {
 			throw new RuntimeException("Can't set font size " + size);
 		}
@@ -205,18 +209,26 @@ public class Font implements AutoCloseable {
 		MemoryUtil.memFree(fontMem);
 	}
 
-	public void renderText(GuiGraphics graphics, String text, float x, float y, int color, int alignFlags) {
+	public void renderText(GuiGraphics graphics, FormattedCharSequence text, float x, float y, int color, int alignFlags) {
 		var built = buildText(text);
 
 		renderTextCommon(graphics, color, x, y, alignFlags, built);
 	}
 
+	public void renderText(GuiGraphics graphics, FormattedCharSequence text, float x, float y, int color) {
+		renderText(graphics, text, x, y, color, 0);
+	}
+
+	public void renderText(GuiGraphics graphics, Component text, float x, float y, int color) {
+		renderText(graphics, text.getVisualOrderText(), x, y, color);
+	}
+
 	public void renderText(GuiGraphics graphics, String text, float x, float y, int color) {
-		renderText(graphics, text, x, y+7, color, 0);
+		renderText(graphics, Language.getInstance().getVisualOrder(FormattedText.of(text)), x, y, color);
 	}
 
 	public float width(String text) {
-		var built = buildText(text);
+		var built = buildText(Language.getInstance().getVisualOrder(FormattedText.of(text)));
 		return built.textBox()[2] - built.textBox()[0];
 	}
 
@@ -224,25 +236,20 @@ public class Font implements AutoCloseable {
 		return lineHeight;
 	}
 
-	public float height(String text) {
-		var built = buildText(text);
-		return built.textBox()[3] - built.textBox()[1];
-	}
-
-	private BuiltText buildText(String text) {
-		float penX = 0;
-		float penY = 0;
+	private BuiltText buildText(FormattedCharSequence text) {
+		final float[] penX = {0};
+		final float[] penY = {0};
 		var screenAndTexCoords = new Int2ObjectOpenHashMap<List<CoordData>>();
 		var fontBox = new float[]{Float.MAX_VALUE, Float.MAX_VALUE, Float.MIN_VALUE, Float.MIN_VALUE};
 
-		int prevGlyphI = 0;
+		final int[] prevGlyphI = {0};
 
-		for (var codePt : text.codePoints().toArray()) {
+		text.accept((index, style, codePt) -> {
 			if (codePt == '\n') {
-				penX = 0;
-				penY += lineHeight;
-				prevGlyphI = 0;
-				continue;
+				penX[0] = 0;
+				penY[0] += lineHeight;
+				prevGlyphI[0] = 0;
+				return true;
 			}
 
 			int pageNo = codePt >> 8;
@@ -253,38 +260,31 @@ public class Font implements AutoCloseable {
 
 			var c = page.charInfo[codePt & 0xFF];
 
-			if (hasKerningInfo && prevGlyphI == 1 && c.glyphI == 1) {
+			if (hasKerningInfo && prevGlyphI[0] == 1 && c.glyphI == 1) {
 				try (FT_Vector kerning = FT_Vector.create()) {
-					if (FT_Get_Kerning(face, prevGlyphI, c.glyphI, FT_KERNING_DEFAULT, kerning) != FT_Err_Ok) {
-						log.error("Can't load kerning for {} ({})", Integer.toHexString(codePt), Character.toString(codePt));
-					}
-					penX += kerning.x() / 64f;
-					penY = kerning.y() / 64f;
+					FT_Get_Kerning(face, prevGlyphI[0], c.glyphI, FT_KERNING_DEFAULT, kerning);
+					penX[0] += kerning.x() / 64f;
+					penY[0] = kerning.y() / 64f;
 				}
 			}
 
-			int texRow = ((codePt >> 4) & 0xF) + 1;
-			int texCol = codePt & 0xF;
-
-			float texOriginX = texCol * cellBox.width() - cellBox.x0;
-			float texOriginY = texRow * cellBox.height() + cellBox.y0;
 			var list = screenAndTexCoords.computeIfAbsent(pageNo, unused -> new ArrayList<>());
 
-			list.add(new CoordData(pageNo, penX + c.bbox.x0, penY - c.bbox.y0,
-				(texOriginX + c.bbox.x0) / texWidth, (texOriginY - c.bbox.y0) / texHeight,
-				(texOriginX + c.bbox.x1) / texWidth, (texOriginY - c.bbox.y1) / texHeight,
-				c.bbox.x1 - c.bbox.x0, c.bbox.y0 - c.bbox.y1));
+			list.add(new CoordData(penX[0] + c.bbox.x0, penY[0] - c.bbox.y0,
+				c.u0, c.v0, c.u1, c.v1,
+				c.bbox.width(), c.bbox.height()));
 
-			fontBox[0] = Math.min(fontBox[0], penX + c.bbox.x0);
-			fontBox[1] = Math.min(fontBox[1], penY - c.bbox.y0);
-			fontBox[2] = Math.max(fontBox[2], penX + c.bbox.x1);
-			fontBox[3] = Math.max(fontBox[3], penY - c.bbox.y1);
+			fontBox[0] = Math.min(fontBox[0], penX[0] + c.bbox.x0);
+			fontBox[1] = Math.min(fontBox[1], penY[0] - c.bbox.y0);
+			fontBox[2] = Math.max(fontBox[2], penX[0] + c.bbox.x1);
+			fontBox[3] = Math.max(fontBox[3], penY[0] - c.bbox.y1);
 
-			penX += c.advanceX / 64f;
-			penY += c.advanceY / 64f;
+			penX[0] += c.advanceX / 64f;
+			penY[0] += c.advanceY / 64f;
 
-			prevGlyphI = c.glyphI;
-		}
+			prevGlyphI[0] = c.glyphI;
+			return true;
+		});
 
 
 		return new BuiltText(screenAndTexCoords, fontBox);
@@ -297,14 +297,40 @@ public class Font implements AutoCloseable {
 		var page = new Page();
 		pageMap.put(pageNo, page);
 
-		var texData = new NativeImage(NativeImage.Format.LUMINANCE, texWidth, texHeight, false);
-		MemoryUtil.memSet(texData.getPointer(), 0, (long) texWidth * texHeight);
+		int tWidth, tHeight;
+		{
+			int rowWidth = 0, maxRowWidth = 0, rowHeight = 0, totalHeight = 0;
+			for (int codePt = pageNo << 8; codePt < (pageNo + 1) << 8; codePt++) {
+				int tblRow = (codePt >> 4) & 0xF;
+				var glyphI = FT_Get_Char_Index(face, codePt);
+				if (FT_Load_Glyph(face, glyphI, FT_LOAD_NO_BITMAP | FT_LOAD_BITMAP_METRICS_ONLY) != FT_Err_Ok) {
+					log.error("Error loading glyph for: {} ({})", Integer.toHexString(codePt), Character.toString(codePt));
+					continue;
+				}
+
+				var bmp = face.glyph().bitmap();
+				rowWidth += bmp.width() + 2;
+				rowHeight = Math.max(bmp.rows(), rowHeight);
+				if (((codePt + 1 >> 4) & 0xF) != tblRow) {
+					maxRowWidth = Math.max(rowWidth, maxRowWidth);
+					rowWidth = 0;
+					totalHeight += rowHeight + 2;
+					rowHeight = 0;
+				}
+			}
+			tWidth = maxRowWidth + 2;
+			tHeight = totalHeight + 2;
+		}
+
+		var texData = new NativeImage(NativeImage.Format.LUMINANCE, tWidth, tHeight, false);
+		MemoryUtil.memSet(texData.getPointer(), 0, (long) tWidth * tHeight);
 		var slot = face.glyph();
 
+		int curX = 2;
+		int curY = 2;
+		int rowHeight = 0;
 		for (int codePt = pageNo << 8; codePt < (pageNo + 1) << 8; codePt++) {
 			int tblRow = (codePt >> 4) & 0xF;
-			tblRow += 1;
-			int tblCol = codePt & 0xF;
 
 			var glyphI = FT_Get_Char_Index(face, codePt);
 			if (FT_Load_Glyph(face, glyphI, FT_LOAD_RENDER) != FT_Err_Ok) {
@@ -312,33 +338,45 @@ public class Font implements AutoCloseable {
 				continue;
 			}
 			var bmp = slot.bitmap();
-			var c = new CharInfo();
-			page.charInfo[codePt & 0xFF] = c;
-			c.originX = -cellBox.x0 + slot.bitmap_left();
-			c.originY = cellBox.y0 - slot.bitmap_top();
+			final int width = bmp.width();
+			final int height = bmp.rows();
+
+			var c = page.charInfo[codePt & 0xFF] = new CharInfo();
 			c.bbox.x0 = slot.bitmap_left();
 			c.bbox.y0 = slot.bitmap_top();
 			c.bbox.x1 = bmp.width() + slot.bitmap_left();
-			c.bbox.y1 = slot.bitmap_top() - bmp.rows();
+			c.bbox.y1 = slot.bitmap_top() + bmp.rows();
 			c.advanceX = slot.advance().x();
 			c.advanceY = slot.advance().y();
 			c.glyphI = glyphI;
-			int size = bmp.width() * bmp.rows();
-			var buffer = bmp.buffer(size);
 
-			if (buffer == null) {
-				continue;
+			var tblImgY = curY;
+			var tblImgX = curX;
+
+			c.u0 = (float) (tblImgX) / texData.getWidth();
+			c.v0 = (float) (tblImgY) / texData.getHeight();
+			c.u1 = (float) (tblImgX + bmp.width()) / texData.getWidth();
+			c.v1 = (float) (tblImgY + bmp.rows()) / texData.getHeight();
+
+			curX += width + 2;
+			rowHeight = Math.max(rowHeight, height);
+			{
+				var buffer = bmp.buffer(bmp.width() * bmp.rows());
+				if (buffer == null) {
+					continue;
+				}
+				for (int y = 0; y < height; y++) {
+					for (int x = 0; x < width; x++) {
+						long l = (tblImgX + x + (long) (tblImgY + y) * texData.getWidth());
+						MemoryUtil.memPutByte(texData.getPointer() + l, buffer.get(y * width + x));
+					}
+				}
 			}
 
-			var tblImgY = tblRow * cellBox.height() + cellBox.y0 - slot.bitmap_top();
-			var tblImgX = tblCol * cellBox.width() - cellBox.x0 + slot.bitmap_left();
-			int width = bmp.width();
-			int height = bmp.rows();
-			for (int y = 0; y < height; y++) {
-				for (int x = 0; x < width; x++) {
-					long l = (tblImgX + x + (long) (tblImgY + y) * texWidth);
-					MemoryUtil.memPutByte(texData.getPointer() + l, buffer.get(y * width + x));
-				}
+			if (((codePt + 1 >> 4) & 0xF) != tblRow) {
+				curX = 2;
+				curY += rowHeight + 2;
+				rowHeight = 0;
 			}
 		}
 
@@ -371,10 +409,11 @@ public class Font implements AutoCloseable {
 		};
 
 		graphics.pose().pushMatrix();
-		graphics.pose().translate(x, y);
-		graphics.pose().translate(startOffset[0], startOffset[1]);
+		graphics.pose().translate(x, y + 7);
+		graphics.pose().translate(-startOffset[0], -startOffset[1]);
 		var scale = Minecraft.getInstance().getWindow().getGuiScale();
-		graphics.pose().scale(1f/scale);
+		graphics.fill(0, 0, (int) textBox[2], -(int) textBox[3], 0x77FF5555);
+		graphics.pose().scale(1f / scale);
 
 		renderTextCommon(graphics, color, builtText);
 		graphics.pose().popMatrix();
@@ -419,10 +458,10 @@ public class Font implements AutoCloseable {
 	@AllArgsConstructor
 	@RequiredArgsConstructor
 	static class CharInfo {
-		int originX, originY;
 		float advanceX, advanceY;
 		Bbox bbox = new Bbox();
 		int glyphI;
+		float u0, v0, u1, v1;
 	}
 
 	static class Page {
@@ -432,7 +471,6 @@ public class Font implements AutoCloseable {
 
 	@AllArgsConstructor
 	public static class CoordData {
-		int pageNo;
 		public float x, y, u, v, u1, v1;
 		public int width, height;
 	}

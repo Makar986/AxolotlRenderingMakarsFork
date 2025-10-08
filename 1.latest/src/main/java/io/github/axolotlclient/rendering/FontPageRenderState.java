@@ -10,6 +10,7 @@ import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.gui.render.state.GuiElementRenderState;
 import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix3x2f;
 
@@ -19,19 +20,19 @@ public record FontPageRenderState(ResourceLocation tex, Matrix3x2f pose, List<Fo
 	public void buildVertices(VertexConsumer vertexConsumer) {
 		for (var g : glyphs) {
 			vertexConsumer.addVertexWith2DPose(this.pose(), g.x, g.y).setUv(g.u, g.v).setColor(this.color());
-			vertexConsumer.addVertexWith2DPose(this.pose(), g.x, g.y+g.height).setUv(g.u, g.v1).setColor(this.color());
-			vertexConsumer.addVertexWith2DPose(this.pose(), g.x+g.width, g.y+g.height).setUv(g.u1, g.v1).setColor(this.color());
-			vertexConsumer.addVertexWith2DPose(this.pose(), g.x+g.width, g.y).setUv(g.u1, g.v).setColor(this.color());
+			vertexConsumer.addVertexWith2DPose(this.pose(), g.x, g.y + g.height).setUv(g.u, g.v1).setColor(this.color());
+			vertexConsumer.addVertexWith2DPose(this.pose(), g.x + g.width, g.y + g.height).setUv(g.u1, g.v1).setColor(this.color());
+			vertexConsumer.addVertexWith2DPose(this.pose(), g.x + g.width, g.y).setUv(g.u1, g.v).setColor(this.color());
 		}
 	}
 
 	@Override
-	public RenderPipeline pipeline() {
+	public @NotNull RenderPipeline pipeline() {
 		return ExRenderPipelines.FONT;
 	}
 
 	@Override
-	public TextureSetup textureSetup() {
+	public @NotNull TextureSetup textureSetup() {
 		return TextureSetup.singleTexture(Minecraft.getInstance().getTextureManager().getTexture(tex).getTextureView());
 	}
 
