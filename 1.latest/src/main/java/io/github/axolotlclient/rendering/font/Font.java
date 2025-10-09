@@ -17,6 +17,7 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.textures.FilterMode;
 import io.github.axolotlclient.rendering.FontRenderStates;
 import io.github.axolotlclient.rendering.RenderingCommon;
+import io.github.axolotlclient.rendering.util.ARGB;
 import it.unimi.dsi.fastutil.floats.Float2ObjectMap;
 import it.unimi.dsi.fastutil.floats.Float2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -82,7 +83,7 @@ public class Font implements AutoCloseable {
 			if (ftLib == 0L) {
 				try (MemoryStack memoryStack = MemoryStack.stackPush()) {
 					PointerBuffer buf = memoryStack.mallocPointer(1);
-					if (FreeType.FT_Init_FreeType(buf) != FT_Err_Ok) {
+					if (FT_Init_FreeType(buf) != FT_Err_Ok) {
 						throw new IllegalStateException("initializing FreeType lib");
 					}
 					ftLib = buf.get();
@@ -186,7 +187,7 @@ public class Font implements AutoCloseable {
 				}
 			}
 
-			if (FreeType.FT_Select_Charmap(face, FreeType.FT_ENCODING_UNICODE) != FT_Err_Ok) {
+			if (FT_Select_Charmap(face, FT_ENCODING_UNICODE) != FT_Err_Ok) {
 				FT_Done_Face(face);
 				throw new IOException("No unicode charmap in font");
 			}
@@ -617,8 +618,8 @@ public class Font implements AutoCloseable {
 			c.y0 = slot.bitmap_top();
 			c.x1 = bmp.width() + slot.bitmap_left();
 			c.y1 = slot.bitmap_top() + bmp.rows();
-			c.advanceX = slot.advance().x()/64f;
-			c.advanceY = slot.advance().y()/64f;
+			c.advanceX = slot.advance().x() / 64f;
+			c.advanceY = slot.advance().y() / 64f;
 			c.glyphI = glyphI;
 			glyphsByWidth.computeIfAbsent(c.advanceX, unused -> new IntArrayList()).add(codePt);
 
@@ -668,8 +669,8 @@ public class Font implements AutoCloseable {
 			c.y0 = slot.bitmap_top();
 			c.x1 = bmp.width() + slot.bitmap_left();
 			c.y1 = slot.bitmap_top() + bmp.rows();
-			c.advanceX = slot.advance().x()/64f;
-			c.advanceY = slot.advance().y()/64f;
+			c.advanceX = slot.advance().x() / 64f;
+			c.advanceY = slot.advance().y() / 64f;
 			c.glyphI = glyphI;
 
 			var tblImgY = curY;
@@ -687,11 +688,9 @@ public class Font implements AutoCloseable {
 				if (buffer == null) {
 					continue;
 				}
-				for (int y = 0; y < height; y++) {
-					for (int x = 0; x < width; x++) {
-						long l = (tblImgX + x + (long) (tblImgY + y) * texData.getWidth());
-						MemoryUtil.memPutByte(texData.getPointer() + l, buffer.get(y * width + x));
-					}
+				long src = MemoryUtil.memAddress(buffer);
+				for (int y = 0;y<height;y++){
+					MemoryUtil.memCopy(src + ((long) y * width), texData.getPointer()+(tblImgX + (long) (tblImgY + y) * tWidth), width);
 				}
 			}
 

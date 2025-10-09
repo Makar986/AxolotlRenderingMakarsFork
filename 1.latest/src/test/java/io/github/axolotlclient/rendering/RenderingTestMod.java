@@ -39,6 +39,7 @@ public class RenderingTestMod implements ClientModInitializer {
 				var t = "Example §otext§r §nwith§r §kmultiple§r §mwords and §5some §a§lcolors§r.";
 				guiGraphics.drawString(Minecraft.getInstance().font, t, 20, 100, -1);
 				font.renderText(guiGraphics, t, 20, 110, -1);
+				;
 			});
 	}
 }
