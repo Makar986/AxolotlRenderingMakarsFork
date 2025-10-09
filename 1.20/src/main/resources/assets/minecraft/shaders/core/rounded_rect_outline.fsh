@@ -1,6 +1,6 @@
 #version 330
 
-#moj_import <minecraft:dynamictransforms.glsl>
+uniform vec4 ColorModulator;
 
 in float outlineWidth;
 in vec4 rounding;

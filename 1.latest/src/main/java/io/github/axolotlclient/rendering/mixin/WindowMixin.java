@@ -1,7 +1,7 @@
 package io.github.axolotlclient.rendering.mixin;
 
 import com.mojang.blaze3d.platform.Window;
-import io.github.axolotlclient.rendering.font.textogl.Font;
+import io.github.axolotlclient.rendering.font.Font;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;

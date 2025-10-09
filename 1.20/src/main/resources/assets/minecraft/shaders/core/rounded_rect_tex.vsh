@@ -4,8 +4,8 @@ uniform mat4 ModelViewMat;
 uniform mat4 ProjMat;
 
 in vec3 Position;
-in vec4 Color;
 in vec2 UV0;
+in vec4 Color;
 in vec4 Rounding;
 in vec4 Dimensions;
 

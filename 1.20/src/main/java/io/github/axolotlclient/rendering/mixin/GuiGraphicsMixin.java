@@ -111,14 +111,13 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 		consumer.begin(VertexFormat.Mode.QUADS, ExRenderPipelines.ROUNDED_RECT_TEX_FORMAT);
 		int width = x1 - x0;
 		int height = y1 - y0;
-		consumer.vertex(matrix, x0, y0, z)
-			.uv(u0, v0).color(color);
+		consumer.vertex(matrix, x0, y0, z).uv(u0, v0).color(color);
 		ExRenderPipelines.addRounding(consumer, roundingPx, roundingPx, roundingPx, roundingPx);
 		ExRenderPipelines.addDimensions(consumer, 0, 0, width, height);
 		consumer.endVertex();
 
 		consumer.vertex(matrix, x0, y1, z);
-		consumer.uv(u0, v0).color(color);
+		consumer.uv(u0, v1).color(color);
 		ExRenderPipelines.addRounding(consumer, roundingPx, roundingPx, roundingPx, roundingPx);
 		ExRenderPipelines.addDimensions(consumer, 0, height, width, height);
 		consumer.endVertex();
@@ -134,7 +133,7 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 		ExRenderPipelines.addRounding(consumer, roundingPx, roundingPx, roundingPx, roundingPx);
 		ExRenderPipelines.addDimensions(consumer, width, 0, width, height);
 		consumer.endVertex();
-		Tesselator.getInstance().end();
+		BufferUploader.drawWithShader(consumer.end());
 	}
 
 	@Override
@@ -157,15 +156,14 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 		consumer.begin(VertexFormat.Mode.QUADS, ExRenderPipelines.ROUNDED_RECT_TEX_OUTLINE_FORMAT);
 		int width = x1 - x0;
 		int height = y1 - y0;
-		consumer.vertex(matrix, x0, y0, z)
-			.uv(u0, v0).color(color);
+		consumer.vertex(matrix, x0, y0, z).uv(u0, v0).color(color);
 		ExRenderPipelines.addRounding(consumer, roundingPx, roundingPx, roundingPx, roundingPx);
 		ExRenderPipelines.addDimensions(consumer, 0, 0, width, height);
 		ExRenderPipelines.addOutlineWidth(consumer, outlineWidth);
 		consumer.endVertex();
 
 		consumer.vertex(matrix, x0, y1, z);
-		consumer.uv(u0, v0).color(color);
+		consumer.uv(u0, v1).color(color);
 		ExRenderPipelines.addRounding(consumer, roundingPx, roundingPx, roundingPx, roundingPx);
 		ExRenderPipelines.addDimensions(consumer, 0, height, width, height);
 		ExRenderPipelines.addOutlineWidth(consumer, outlineWidth);
@@ -184,6 +182,6 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 		ExRenderPipelines.addDimensions(consumer, width, 0, width, height);
 		ExRenderPipelines.addOutlineWidth(consumer, outlineWidth);
 		consumer.endVertex();
-		Tesselator.getInstance().end();
+		BufferUploader.drawWithShader(consumer.end());
 	}
 }

@@ -2,7 +2,7 @@ package io.github.axolotlclient.rendering;
 
 import java.io.IOException;
 
-import io.github.axolotlclient.rendering.font.textogl.Font;
+import io.github.axolotlclient.rendering.font.Font;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.minecraft.client.Minecraft;
@@ -17,7 +17,7 @@ public class RenderingTestMod implements ClientModInitializer {
 			(guiGraphics, deltaTracker) -> {
 				if (font == null) {
 					try {
-						font = Font.read(this.getClass().getResourceAsStream("/assets/axolotlclient_rendering/Inter-Regular.ttf"),
+						font = Font.read(this.getClass().getResourceAsStream("/assets/axolotlclient_rendering/fonts/InterVariable.woff2"),
 							9);
 					} catch (IOException e) {
 						throw new RuntimeException(e);
@@ -33,10 +33,10 @@ public class RenderingTestMod implements ClientModInitializer {
 					300, 120, 100);
 				guiGraphics.axolotlclient_rendering$outlineCircleBlit(ResourceLocation.fromNamespaceAndPath("minecraft", "textures/gui/title/background/panorama_1.png"),
 					300, 120, -1, 100, 5f);
-				var t = "Example text with multiple words";
+				var t = "Example text with multiple words and §5some §a§lcolors§r.";
 				var w = Minecraft.getInstance().font.width(t);
 				guiGraphics.drawString(Minecraft.getInstance().font, t, 20, 100, -1);
-				font.renderText(guiGraphics, t, 20+w+2, 100, -1);
+				font.renderText(guiGraphics, t, 20, 110, -1);
 			});
 	}
 }

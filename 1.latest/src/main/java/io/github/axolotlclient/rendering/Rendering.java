@@ -1,6 +1,6 @@
 package io.github.axolotlclient.rendering;
 
-import io.github.axolotlclient.rendering.font.textogl.Font;
+import io.github.axolotlclient.rendering.font.Font;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
 import net.minecraft.resources.ResourceLocation;
