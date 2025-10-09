@@ -11,14 +11,17 @@ import net.minecraft.resources.ResourceLocation;
 public class RenderingTestMod implements ClientModInitializer {
 	private Font font;
 
+	@SuppressWarnings("DataFlowIssue")
 	@Override
 	public void onInitializeClient() {
 		HudElementRegistry.addLast(ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID, "test_hud"),
 			(guiGraphics, deltaTracker) -> {
 				if (font == null) {
 					try {
-						font = Font.read(this.getClass().getResourceAsStream("/assets/axolotlclient_rendering/fonts/InterVariable.woff2"),
+						font = Font.read(this.getClass().getResourceAsStream("/assets/axolotlclient_rendering/fonts/InterVariable.ttf"),
 							9);
+						font.addSubFont(Font.TAG_ITALIC, Font.ITALIC_ENABLED, Font.read(this.getClass().getResourceAsStream("/assets/axolotlclient_rendering/fonts/InterVariable-Italic.ttf"),
+							9));
 					} catch (IOException e) {
 						throw new RuntimeException(e);
 					}
@@ -33,8 +36,7 @@ public class RenderingTestMod implements ClientModInitializer {
 					300, 120, 100);
 				guiGraphics.axolotlclient_rendering$outlineCircleBlit(ResourceLocation.fromNamespaceAndPath("minecraft", "textures/gui/title/background/panorama_1.png"),
 					300, 120, -1, 100, 5f);
-				var t = "Example text with multiple words and §5some §a§lcolors§r.";
-				var w = Minecraft.getInstance().font.width(t);
+				var t = "Example §otext§r §nwith§r §kmultiple§r §mwords and §5some §a§lcolors§r.";
 				guiGraphics.drawString(Minecraft.getInstance().font, t, 20, 100, -1);
 				font.renderText(guiGraphics, t, 20, 110, -1);
 			});
