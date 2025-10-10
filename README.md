@@ -4,7 +4,7 @@ Small(-ish) rendering library integrated into Minecraft's rendering
 
 Current features:
 
-- Shader-based rendering of rounded rectangles (circles)
+- Shader-based rendering of rounded rectangles (/circles)
 	- Also textured
 - Convenient rendering of TrueType fonts using FreeType
 
