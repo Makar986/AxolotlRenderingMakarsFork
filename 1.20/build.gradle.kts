@@ -71,7 +71,7 @@ java {
 
 tasks.runClient {
 	classpath(sourceSets.getByName("test").runtimeClasspath)
-	jvmArgs("-XX:+AllowEnhancedClassRedefinition -XX:+IgnoreUnrecognizedVMOptions")
+	jvmArgs("-XX:+AllowEnhancedClassRedefinition", "-XX:+IgnoreUnrecognizedVMOptions")
 }
 
 // Configure the maven publication

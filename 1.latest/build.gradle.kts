@@ -47,7 +47,7 @@ dependencies {
 	implementation(include(project(path = ":common", configuration = "shadow"))!!)
 
 	//include(implementation("org.lwjgl:lwjgl-freetype:3.3.3")!!)
-	include(implementation("org.lwjgl:lwjgl-harfbuzz:3.3.3")!!)
+	//include(implementation("org.lwjgl:lwjgl-harfbuzz:3.3.3")!!)
 }
 
 tasks.processResources {
@@ -73,11 +73,11 @@ java {
 
 tasks.runClient {
 	classpath(sourceSets.getByName("test").runtimeClasspath)
-	jvmArgs("-XX:+AllowEnhancedClassRedefinition -XX:+IgnoreUnrecognizedVMOptions")
+	jvmArgs("-XX:+AllowEnhancedClassRedefinition", "-XX:+IgnoreUnrecognizedVMOptions")
 }
 
 tasks.runServer {
-	jvmArgs("-XX:+AllowEnhancedClassRedefinition -XX:+IgnoreUnrecognizedVMOptions")
+	jvmArgs("-XX:+AllowEnhancedClassRedefinition", "-XX:+IgnoreUnrecognizedVMOptions")
 }
 
 // Configure the maven publication

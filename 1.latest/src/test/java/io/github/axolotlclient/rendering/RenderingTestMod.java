@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import io.github.axolotlclient.rendering.font.Font;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
@@ -39,7 +40,9 @@ public class RenderingTestMod implements ClientModInitializer {
 				var t = "Example §otext§r §nwith§r §kmultiple§r §mwords and §5some §a§lcolors§r.";
 				guiGraphics.drawString(Minecraft.getInstance().font, t, 20, 100, -1);
 				font.renderText(guiGraphics, t, 20, 110, -1);
-				;
 			});
+		ClientLifecycleEvents.CLIENT_STOPPING.register(mc -> {
+			if (font != null) font.close();
+		});
 	}
 }

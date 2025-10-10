@@ -73,14 +73,7 @@ tasks.runClient {
 		jvmArgs("-Dorg.lwjgl.glfw.libname=$glfwPath")
 	}
 	classpath(sourceSets.getByName("test").runtimeClasspath)
-	jvmArgs("-XX:+AllowEnhancedClassRedefinition -XX:+IgnoreUnrecognizedVMOptions")
-	/*environment(
-		"__GLX_VENDOR_LIBRARY_NAME" to "mesa",
-		"__EGL_VENDOR_LIBRARY_FILENAMES" to "/usr/share/glvnd/egl_vendor.d/50_mesa.json",
-		"MESA_LOADER_DRIVER_OVERRIDE" to "zink",
-		"GALLIUM_DRIVER" to "zink",
-		"LIBGL_KOPPER_DRI2" to "1",
-	)*/
+	jvmArgs("-XX:+AllowEnhancedClassRedefinition", "-XX:+IgnoreUnrecognizedVMOptions")
 }
 
 tasks.withType(JavaCompile::class).configureEach {

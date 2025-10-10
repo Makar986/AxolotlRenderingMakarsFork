@@ -6,7 +6,9 @@
 		"BufferBuilderAccessor",
 		"GameRendererMixin",
 		"GuiGraphicsMixin",
-		"VertexFormatElementMixin"
+		"NativeImageAccessor",
+		"VertexFormatElementMixin",
+		"WindowMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

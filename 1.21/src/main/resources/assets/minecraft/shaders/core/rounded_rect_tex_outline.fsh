@@ -1,6 +1,6 @@
 #version 330
 
-#moj_import <minecraft:dynamictransforms.glsl>
+uniform vec4 ColorModulator;
 
 uniform sampler2D Sampler0;
 

@@ -1,13 +1,30 @@
 package io.github.axolotlclient.rendering;
 
+import java.io.IOException;
+
+import io.github.axolotlclient.rendering.font.Font;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 
 public class RenderingTestMod implements ClientModInitializer {
+	private Font font;
+
 	@Override
 	public void onInitializeClient() {
 		HudRenderCallback.EVENT.register((guiGraphics, deltaTracker) -> {
+			if (font == null) {
+				try {
+					font = Font.read(this.getClass().getResourceAsStream("/assets/axolotlclient_rendering/fonts/InterVariable.ttf"),
+						9);
+					font.addSubFont(Font.TAG_ITALIC, Font.ITALIC_ENABLED, Font.read(this.getClass().getResourceAsStream("/assets/axolotlclient_rendering/fonts/InterVariable-Italic.ttf"),
+						9));
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+			}
 			guiGraphics.axolotlclient_rendering$roundedRect(10, 10, 60, 60, 0xFF777777, 5);
 			guiGraphics.axolotlclient_rendering$outlineRoundedRect(10, 10, 60, 60, 0xFF77AAAA, 5, 3);
 			guiGraphics.axolotlclient_rendering$roundedRect(80, 100, 180, 160, 0xFF777777, 9);
@@ -18,6 +35,12 @@ public class RenderingTestMod implements ClientModInitializer {
 				300, 120, 100);
 			guiGraphics.axolotlclient_rendering$outlineCircleBlit(ResourceLocation.fromNamespaceAndPath("minecraft", "textures/gui/title/background/panorama_1.png"),
 				300, 120, -1, 100, 5f);
+			var t = "Example §otext§r §nwith§r §kmultiple§r §mwords and §5some §a§lcolors§r.";
+			guiGraphics.drawString(Minecraft.getInstance().font, t, 20, 100, -1);
+			font.renderText(guiGraphics, t, 20, 110, -1);
+		});
+		ClientLifecycleEvents.CLIENT_STOPPING.register(mc -> {
+			if (font != null) font.close();
 		});
 	}
 }

@@ -42,7 +42,10 @@ import org.joml.Matrix3x2f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
-import org.lwjgl.util.freetype.*;
+import org.lwjgl.util.freetype.FT_Face;
+import org.lwjgl.util.freetype.FT_MM_Var;
+import org.lwjgl.util.freetype.FT_Vector;
+import org.lwjgl.util.freetype.TT_OS2;
 
 import static org.lwjgl.util.freetype.FreeType.*;
 
@@ -50,9 +53,9 @@ import static org.lwjgl.util.freetype.FreeType.*;
 @Slf4j
 public class Font implements AutoCloseable {
 
-	public static final long TAG_WEIGHT = FT_MAKE_TAG('w', 'g', 'h', 't');
-	public static final long TAG_WIDTH = FT_MAKE_TAG('w', 'h', 't', 'h');
-	public static final long TAG_ITALIC = FT_MAKE_TAG('i', 't', 'a', 'l');
+	public static final long TAG_WEIGHT = makeVariantTag('w', 'g', 'h', 't');
+	public static final long TAG_WIDTH = makeVariantTag('w', 'h', 't', 'h');
+	public static final long TAG_ITALIC = makeVariantTag('i', 't', 'a', 'l');
 	public static final float WEIGHT_REGULAR = 400;
 	public static final float WEIGHT_BOLD = 700;
 	public static final float ITALIC_ENABLED = 1;
@@ -62,7 +65,11 @@ public class Font implements AutoCloseable {
 	@ApiStatus.Internal
 	public static void reload() {
 		Font.fonts.removeIf(w -> w.refersTo(null));
-		Font.fonts.forEach(w -> w.get().clearPageMap());
+		Font.fonts.forEach(w -> {
+			Font f = w.get();
+			f.clearPageMap();
+			f.loadGlyphDimensions();
+		});
 	}
 
 	public static void onScaleChange() {
@@ -180,7 +187,7 @@ public class Font implements AutoCloseable {
 					variations.put(a.tag(), new ObjectFloatMutablePair<>(new Variations.Axis(true, f16Dot16ToFP32(a.minimum()), f16Dot16ToFP32(a.def()), f16Dot16ToFP32(a.maximum()), a.tag(), a.strid()), a.def()));
 				}
 				synchronized (LIBRARY_LOCK) {
-					FT_Done_MM_Var(ftLib, variants);
+					FT_Done_MM_Var(getLibrary(), variants);
 				}
 				if (hasVariant(TAG_WEIGHT)) {
 					setVariant(TAG_WEIGHT, WEIGHT_REGULAR);
@@ -322,6 +329,13 @@ public class Font implements AutoCloseable {
 		hasKerningInfo = FT_HAS_KERNING(face);
 
 		clearPageMap();
+		loadGlyphDimensions();
+	}
+
+	private void loadGlyphDimensions() {
+		for (var i = 0; i < 0xFFF; i += 256) {
+			getPage(i, false);
+		}
 	}
 
 	private void clearPageMap() {
@@ -336,16 +350,16 @@ public class Font implements AutoCloseable {
 	public void close() {
 		subFonts.forEach(SubFont::close);
 		clearPageMap();
-		FT_Done_Face(face);
 
-		if (fontMem != null) {
-			MemoryUtil.memFree(fontMem);
-		}
 		synchronized (LIBRARY_LOCK) {
+			FT_Done_Face(face);
 			if (--ftRefCount == 0) {
 				FT_Done_FreeType(ftLib);
 				ftLib = 0;
 			}
+		}
+		if (fontMem != null) {
+			MemoryUtil.memFree(fontMem);
 		}
 	}
 
@@ -655,23 +669,14 @@ public class Font implements AutoCloseable {
 		for (int codePt = pageNo << 8; codePt < (pageNo + 1) << 8; codePt++) {
 			int tblRow = (codePt >> 4) & 0xF;
 
-			var glyphI = FT_Get_Char_Index(face, codePt);
-			if (FT_Load_Glyph(face, glyphI, FT_LOAD_RENDER) != FT_Err_Ok) {
+			var c = page.charInfo[codePt & 0xFF];
+			if (FT_Load_Glyph(face, c.glyphI, FT_LOAD_RENDER) != FT_Err_Ok) {
 				log.error("Error loading glyph for render: {} ({})", Integer.toHexString(codePt), Character.toString(codePt));
 				continue;
 			}
 			var bmp = slot.bitmap();
 			final int width = bmp.width();
 			final int height = bmp.rows();
-
-			var c = page.charInfo[codePt & 0xFF] = new CharInfo();
-			c.x0 = slot.bitmap_left();
-			c.y0 = slot.bitmap_top();
-			c.x1 = bmp.width() + slot.bitmap_left();
-			c.y1 = slot.bitmap_top() + bmp.rows();
-			c.advanceX = slot.advance().x() / 64f;
-			c.advanceY = slot.advance().y() / 64f;
-			c.glyphI = glyphI;
 
 			var tblImgY = curY;
 			var tblImgX = curX;
@@ -689,8 +694,8 @@ public class Font implements AutoCloseable {
 					continue;
 				}
 				long src = MemoryUtil.memAddress(buffer);
-				for (int y = 0;y<height;y++){
-					MemoryUtil.memCopy(src + ((long) y * width), texData.getPointer()+(tblImgX + (long) (tblImgY + y) * tWidth), width);
+				for (int y = 0; y < height; y++) {
+					MemoryUtil.memCopy(src + ((long) y * width), texData.getPointer() + (tblImgX + (long) (tblImgY + y) * tWidth), width);
 				}
 			}
 
@@ -734,7 +739,6 @@ public class Font implements AutoCloseable {
 		graphics.pose().translate(x, y + 7);
 		graphics.pose().translate(-startOffset[0], -startOffset[1]);
 		var scale = Minecraft.getInstance().getWindow().getGuiScale();
-		graphics.fill(0, 0, (int) textBox[2], -(int) textBox[3], 0x77FF5555);
 		graphics.pose().scale(1f / scale);
 
 		renderTextCommon(graphics, builtText);
