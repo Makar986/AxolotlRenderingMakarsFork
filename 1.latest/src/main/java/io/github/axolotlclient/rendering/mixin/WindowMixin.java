@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Window.class)
-public class WindowMixin {
+public abstract class WindowMixin {
 
 	@Inject(method = "setGuiScale", at = @At("TAIL"))
 	private void onRescale(int guiScale, CallbackInfo ci) {

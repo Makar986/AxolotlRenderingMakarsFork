@@ -83,7 +83,7 @@ public class ShaderManager {
 		}
 
 		public void setUniform(String name, FloatBuffer value) {
-			glUniformMatrix4(glGetUniformLocation(programId, name), false, value);
+			glUniformMatrix4fv(glGetUniformLocation(programId, name), false, value);
 		}
 	}
 }

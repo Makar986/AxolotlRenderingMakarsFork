@@ -30,5 +30,12 @@
 		"fabricloader": ">=0.15.11",
 		"minecraft": "1.8.9",
 		"osl-keybinds": "*"
+	},
+	"custom": {
+		"loom:injected_interfaces": {
+			"net/minecraft/unmapped/C_6237110": [
+				"io/github/axolotlclient/rendering/StyleExtension"
+			]
+		}
 	}
 }

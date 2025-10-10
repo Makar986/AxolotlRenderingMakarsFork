@@ -21,10 +21,10 @@ public abstract class GameRendererMixin {
 
 	@Inject(method = "reloadShaders", at = @At(value = "INVOKE", target = "Ljava/util/List;add(Ljava/lang/Object;)Z", ordinal = 0))
 	private void loadCustomShaders(ResourceProvider resourceProvider, CallbackInfo ci, @Local(ordinal = 1) List<Pair<ShaderInstance, Consumer<ShaderInstance>>> list) throws IOException {
-		list.add(Pair.of(new ShaderInstance(resourceProvider, "rounded_rect", ExRenderPipelines.ROUNDED_RECT_FORMAT), s -> ExRenderPipelines.ROUNDED_RECT_SHADER = s));
-		list.add(Pair.of(new ShaderInstance(resourceProvider, "rounded_rect_tex", ExRenderPipelines.ROUNDED_RECT_TEX_FORMAT), s -> ExRenderPipelines.ROUNDED_RECT_TEX_SHADER = s));
-		list.add(Pair.of(new ShaderInstance(resourceProvider, "rounded_rect_outline", ExRenderPipelines.ROUNDED_RECT_OUTLINE_FORMAT), s -> ExRenderPipelines.ROUNDED_RECT_OUTLINE_SHADER = s));
-		list.add(Pair.of(new ShaderInstance(resourceProvider, "rounded_rect_tex_outline", ExRenderPipelines.ROUNDED_RECT_TEX_OUTLINE_FORMAT), s -> ExRenderPipelines.ROUNDED_RECT_TEX_OUTLINE_SHADER = s));
-		list.add(Pair.of(new ShaderInstance(resourceProvider, "font", DefaultVertexFormat.POSITION_TEX_COLOR), s -> ExRenderPipelines.FONT_SHADER = s));
+		list.add(Pair.of(new ShaderInstance(resourceProvider, "axolotlclient-rendering_rounded_rect", ExRenderPipelines.ROUNDED_RECT_FORMAT), s -> ExRenderPipelines.ROUNDED_RECT_SHADER = s));
+		list.add(Pair.of(new ShaderInstance(resourceProvider, "axolotlclient-rendering_rounded_rect_tex", ExRenderPipelines.ROUNDED_RECT_TEX_FORMAT), s -> ExRenderPipelines.ROUNDED_RECT_TEX_SHADER = s));
+		list.add(Pair.of(new ShaderInstance(resourceProvider, "axolotlclient-rendering_rounded_rect_outline", ExRenderPipelines.ROUNDED_RECT_OUTLINE_FORMAT), s -> ExRenderPipelines.ROUNDED_RECT_OUTLINE_SHADER = s));
+		list.add(Pair.of(new ShaderInstance(resourceProvider, "axolotlclient-rendering_rounded_rect_tex_outline", ExRenderPipelines.ROUNDED_RECT_TEX_OUTLINE_FORMAT), s -> ExRenderPipelines.ROUNDED_RECT_TEX_OUTLINE_SHADER = s));
+		list.add(Pair.of(new ShaderInstance(resourceProvider, "axolotlclient-rendering_font", DefaultVertexFormat.POSITION_TEX_COLOR), s -> ExRenderPipelines.FONT_SHADER = s));
 	}
 }

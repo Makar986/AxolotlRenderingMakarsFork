@@ -84,6 +84,7 @@ public class DrawUtil implements GuiGraphicsExtension {
 		int width = Math.abs(x1 - x0);
 		int height = Math.abs(y1 - y0);
 		var shader = ExRenderPipelines.ROUNDED_RECT_TEX_PROGRAM;
+		GlStateManager.enableBlend();
 		Minecraft.getInstance().getTextureManager().bind(atlas);
 		shader.bind();
 		shader.setUniform("Rounding",
@@ -129,6 +130,7 @@ public class DrawUtil implements GuiGraphicsExtension {
 		int width = Math.abs(x1 - x0);
 		int height = Math.abs(y1 - y0);
 		var shader = ExRenderPipelines.ROUNDED_RECT_TEX_OUTLINE_PROGRAM;
+		GlStateManager.enableBlend();
 		Minecraft.getInstance().getTextureManager().bind(atlas);
 		shader.bind();
 		shader.setUniform("Rounding",

@@ -1,6 +1,5 @@
 package io.github.axolotlclient.rendering.font;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
@@ -76,7 +75,7 @@ public class Font implements AutoCloseable {
 		Font.fonts.removeIf(w -> w.refersTo(null));
 		Font.fonts.forEach(w -> {
 			Font font = w.get();
-			font.resize(font.mcSize);
+			font.resizeInternal(font.mcSize);
 		});
 	}
 
@@ -243,10 +242,8 @@ public class Font implements AutoCloseable {
 
 	public Font addSubFont(Long2FloatMap variants, Font font) {
 		for (var s : subFonts) {
-			for (var v : s.variant().long2FloatEntrySet()) {
-				if (variants.containsKey(v.getLongKey()) && variants.containsValue(v.getFloatValue())) {
-					throw new IllegalArgumentException("subfont with variant already registered!");
-				}
+			if (s.variant().equals(variants)) {
+				throw new IllegalArgumentException("subfont with variant already registered!");
 			}
 		}
 		subFonts.add(new SubFont(variants, font));
@@ -254,11 +251,13 @@ public class Font implements AutoCloseable {
 	}
 
 	private Font getSubFont(long tag, float value) {
+		return getSubFont(Long2FloatMaps.singleton(tag, value));
+	}
+
+	private Font getSubFont(Long2FloatMap variant) {
 		for (var s : subFonts) {
-			for (var v : s.variant().long2FloatEntrySet()) {
-				if (v.getLongKey() == tag && v.getFloatValue() == value) {
-					return s.font();
-				}
+			if (s.variant().equals(variant)) {
+				return s.font();
 			}
 		}
 		return this;
@@ -322,7 +321,11 @@ public class Font implements AutoCloseable {
 	}
 
 	public void resize(int mcSize) {
-		subFonts.forEach(f -> f.resize(mcSize));
+		subFonts.forEach(f -> f.font.resize(mcSize));
+		resizeInternal(mcSize);
+	}
+
+	private void resizeInternal(int mcSize) {
 		this.mcSize = mcSize;
 		var size = mcSize * Minecraft.getInstance().getWindow().getGuiScale();
 		if (FT_Set_Pixel_Sizes(face, 0, size) != FT_Err_Ok) {
@@ -353,7 +356,7 @@ public class Font implements AutoCloseable {
 
 	@Override
 	public void close() {
-		subFonts.forEach(SubFont::close);
+		subFonts.forEach(s -> s.font.close());
 		subFonts.clear();
 		clearPageMap();
 
@@ -809,29 +812,9 @@ public class Font implements AutoCloseable {
 	public record EffectData(float x, float y, float width, float height, int color) {
 	}
 
-	private record SubFont(Long2FloatMap variant, Font font) implements Closeable {
-		@Override
-		public void close() {
-			font.close();
-		}
-
-		public void resize(int mcSize) {
-			font.resize(mcSize);
-		}
+	private record SubFont(Long2FloatMap variant, Font font) {
 	}
 
 	private record VariationAxis(boolean supported, float min, float def, float max, float tag, int strid) {
-	}
-	private static class Variations {
-		int numAxis;
-		int numNamedStyles;
-		List<VariationAxis> axis;
-
-		List<NamedStyle> namedStyle;
-
-		private static class NamedStyle {
-			long[] coords;
-			int strid;
-		}
 	}
 }

@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(value = VertexFormatElement.class, remap = false)
-public class VertexFormatElementMixin {
+public abstract class VertexFormatElementMixin {
 
 	@Shadow
 	@Final

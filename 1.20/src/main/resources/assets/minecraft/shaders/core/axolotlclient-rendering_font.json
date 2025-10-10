@@ -1,6 +1,6 @@
 {
-	"vertex": "font",
-	"fragment": "font",
+	"vertex": "axolotlclient-rendering_font",
+	"fragment": "axolotlclient-rendering_font",
 	"samplers": [
 		{
 			"name": "Sampler0"

@@ -1,6 +1,6 @@
 {
-	"vertex": "rounded_rect_tex_outline",
-	"fragment": "rounded_rect_tex_outline",
+	"vertex": "axolotlclient-rendering_rounded_rect_tex_outline",
+	"fragment": "axolotlclient-rendering_rounded_rect_tex_outline",
 	"samplers": [
 		{
 			"name": "Sampler0"

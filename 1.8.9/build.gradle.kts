@@ -7,9 +7,11 @@ plugins {
 val minecraftVersion = "1.8.9"
 val feather = "1.8.9+build.27"
 val osl = "0.16.3"
+val lwjglVersion = "3.3.6"
 
 group = project.property("maven_group")!!
 version = "${project.property("version")}+$minecraftVersion"
+
 base.archivesName = project.property("archives_base_name").toString()
 
 loom {
@@ -29,7 +31,6 @@ repositories {
 	mavenCentral()
 	maven { url = uri("https://jitpack.io") }
 }
-
 dependencies {
 	minecraft("com.mojang:minecraft:$minecraftVersion")
 	mappings("net.ornithemc:feather:$feather")
@@ -42,15 +43,17 @@ dependencies {
 
 	implementation(include(project(path = ":common", configuration = "shadow"))!!)
 
-	modRuntimeOnly("io.github.moehreag:legacy-lwjgl3:${project.property("legacy_lwgjl3")}")
-}
+	modImplementation("io.github.moehreag:legacy-lwjgl3:${project.property("legacy_lwgjl3")}")
 
-configurations.runtimeClasspath.configure {
-	exclude("org.lwjgl.lwjgl")
+	include(implementation("org.lwjgl:lwjgl-freetype:$lwjglVersion")!!)
+
+	listOf("linux", "windows", "macos", "windows-arm64", "macos-arm64", "linux-arm64").forEach { platform ->
+		include(runtimeOnly("org.lwjgl:lwjgl-freetype:$lwjglVersion:natives-$platform")!!)
+	}
 }
 
 configurations.configureEach {
-	//exclude("org.lwjgl.lwjgl")
+	exclude("org.lwjgl.lwjgl")
 	resolutionStrategy {
 		dependencySubstitution {
 			substitute(module("io.netty:netty-all:4.0.23.Final")).using(module("io.netty:netty-all:4.1.9.Final"))
