@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import com.llamalad7.mixinextras.sugar.Local;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.datafixers.util.Pair;
 import io.github.axolotlclient.rendering.ExRenderPipelines;
 import net.minecraft.client.renderer.GameRenderer;
@@ -24,5 +25,6 @@ public abstract class GameRendererMixin {
 		list.add(Pair.of(new ShaderInstance(resourceProvider, "rounded_rect_tex", ExRenderPipelines.ROUNDED_RECT_TEX_FORMAT), s -> ExRenderPipelines.ROUNDED_RECT_TEX_SHADER = s));
 		list.add(Pair.of(new ShaderInstance(resourceProvider, "rounded_rect_outline", ExRenderPipelines.ROUNDED_RECT_OUTLINE_FORMAT), s -> ExRenderPipelines.ROUNDED_RECT_OUTLINE_SHADER = s));
 		list.add(Pair.of(new ShaderInstance(resourceProvider, "rounded_rect_tex_outline", ExRenderPipelines.ROUNDED_RECT_TEX_OUTLINE_FORMAT), s -> ExRenderPipelines.ROUNDED_RECT_TEX_OUTLINE_SHADER = s));
+		list.add(Pair.of(new ShaderInstance(resourceProvider, "font", DefaultVertexFormat.POSITION_TEX_COLOR), s -> ExRenderPipelines.FONT_SHADER = s));
 	}
 }

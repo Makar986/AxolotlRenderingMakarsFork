@@ -80,6 +80,11 @@ public class Font implements AutoCloseable {
 		});
 	}
 
+	public static void closeAll() {
+		Font.fonts.removeIf(w -> w.refersTo(null));
+		Font.fonts.forEach(w -> w.get().close());
+	}
+
 	private static long ftLib;
 	private static int ftRefCount;
 	private static final Object LIBRARY_LOCK = new Object();
@@ -147,12 +152,12 @@ public class Font implements AutoCloseable {
 		return new Font(font, true, size, 0);
 	}
 
-	final ByteBuffer fontMem;
-	final FT_Face face;
+	ByteBuffer fontMem;
+	FT_Face face;
 	private boolean hasKerningInfo;
 	private int mcSize;
 	private int lineHeight;
-	private final Long2ObjectMap<ObjectFloatPair<Variations.Axis>> variations = new Long2ObjectLinkedOpenHashMap<>();
+	private final Long2ObjectMap<ObjectFloatPair<VariationAxis>> variations = new Long2ObjectLinkedOpenHashMap<>();
 	private final StringSplitter splitter = new StringSplitter(this::getWidth);
 	private final ObjectList<SubFont> subFonts = new ObjectArrayList<>();
 	private final Float2ObjectMap<IntList> glyphsByWidth = new Float2ObjectOpenHashMap<>();
@@ -184,7 +189,7 @@ public class Font implements AutoCloseable {
 				var variants = FT_MM_Var.create(mmVarBuf.get());
 
 				for (var a : variants.axis()) {
-					variations.put(a.tag(), new ObjectFloatMutablePair<>(new Variations.Axis(true, f16Dot16ToFP32(a.minimum()), f16Dot16ToFP32(a.def()), f16Dot16ToFP32(a.maximum()), a.tag(), a.strid()), a.def()));
+					variations.put(a.tag(), new ObjectFloatMutablePair<>(new VariationAxis(true, f16Dot16ToFP32(a.minimum()), f16Dot16ToFP32(a.def()), f16Dot16ToFP32(a.maximum()), a.tag(), a.strid()), a.def()));
 				}
 				synchronized (LIBRARY_LOCK) {
 					FT_Done_MM_Var(getLibrary(), variants);
@@ -349,10 +354,14 @@ public class Font implements AutoCloseable {
 	@Override
 	public void close() {
 		subFonts.forEach(SubFont::close);
+		subFonts.clear();
 		clearPageMap();
 
 		synchronized (LIBRARY_LOCK) {
-			FT_Done_Face(face);
+			if (face != null) {
+				FT_Done_Face(face);
+				face = null;
+			}
 			if (--ftRefCount == 0) {
 				FT_Done_FreeType(ftLib);
 				ftLib = 0;
@@ -360,6 +369,7 @@ public class Font implements AutoCloseable {
 		}
 		if (fontMem != null) {
 			MemoryUtil.memFree(fontMem);
+			fontMem = null;
 		}
 	}
 
@@ -810,14 +820,14 @@ public class Font implements AutoCloseable {
 		}
 	}
 
+	private record VariationAxis(boolean supported, float min, float def, float max, float tag, int strid) {
+	}
 	private static class Variations {
 		int numAxis;
 		int numNamedStyles;
-		List<Axis> axis;
-		List<NamedStyle> namedStyle;
+		List<VariationAxis> axis;
 
-		private record Axis(boolean supported, float min, float def, float max, float tag, int strid) {
-		}
+		List<NamedStyle> namedStyle;
 
 		private static class NamedStyle {
 			long[] coords;

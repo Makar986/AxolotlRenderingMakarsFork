@@ -43,6 +43,23 @@ dependencies {
 	}
 
 	implementation(include(project(path = ":common", configuration = "shadow"))!!)
+
+	// Loom upgrades lwjgl in dev, but prod uses 3.3.1.
+	implementation("org.lwjgl:lwjgl-freetype:3.3.2")
+	runtimeOnly("org.lwjgl:lwjgl-freetype:3.3.2:natives-linux")
+	runtimeOnly("org.lwjgl:lwjgl-freetype:3.3.2:natives-linux-arm64")
+	runtimeOnly("org.lwjgl:lwjgl-freetype:3.3.2:natives-windows")
+	runtimeOnly("org.lwjgl:lwjgl-freetype:3.3.2:natives-windows-arm64")
+	runtimeOnly("org.lwjgl:lwjgl-freetype:3.3.2:natives-macos")
+	runtimeOnly("org.lwjgl:lwjgl-freetype:3.3.2:natives-macos-arm64")
+
+	include("org.lwjgl:lwjgl-freetype:3.3.1")
+	include("org.lwjgl:lwjgl-freetype:3.3.1:natives-linux")
+	include("org.lwjgl:lwjgl-freetype:3.3.1:natives-linux-arm64")
+	include("org.lwjgl:lwjgl-freetype:3.3.1:natives-windows")
+	include("org.lwjgl:lwjgl-freetype:3.3.1:natives-windows-arm64")
+	include("org.lwjgl:lwjgl-freetype:3.3.1:natives-macos")
+	include("org.lwjgl:lwjgl-freetype:3.3.1:natives-macos-arm64")
 }
 
 tasks.processResources {

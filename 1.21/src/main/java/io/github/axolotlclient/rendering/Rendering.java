@@ -2,6 +2,7 @@ package io.github.axolotlclient.rendering;
 
 import io.github.axolotlclient.rendering.font.Font;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
 import net.minecraft.resources.ResourceLocation;
@@ -24,5 +25,6 @@ public class Rendering implements ClientModInitializer {
 					Font.reload();
 				}
 			});
+		ClientLifecycleEvents.CLIENT_STOPPING.register(mc -> Font.closeAll());
 	}
 }

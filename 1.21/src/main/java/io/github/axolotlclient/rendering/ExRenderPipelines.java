@@ -1,9 +1,6 @@
 package io.github.axolotlclient.rendering;
 
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormatElement;
+import com.mojang.blaze3d.vertex.*;
 import io.github.axolotlclient.rendering.mixin.BufferBuilderAccessor;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
@@ -61,6 +58,16 @@ public class ExRenderPipelines {
 		RenderType.SMALL_BUFFER_SIZE,
 		RenderType.CompositeState.builder()
 			.setShaderState(new RenderStateShard.ShaderStateShard(() -> ExRenderPipelines.ROUNDED_RECT_OUTLINE_SHADER))
+			.setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
+			.setDepthTestState(RenderStateShard.LEQUAL_DEPTH_TEST)
+			.createCompositeState(false));
+
+	public static RenderType FONT = RenderType.create(RenderingCommon.MODID + ":font",
+		DefaultVertexFormat.POSITION_TEX_COLOR,
+		VertexFormat.Mode.QUADS,
+		RenderType.SMALL_BUFFER_SIZE,
+		RenderType.CompositeState.builder()
+			.setShaderState(new RenderStateShard.ShaderStateShard(() -> ExRenderPipelines.FONT_SHADER))
 			.setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
 			.setDepthTestState(RenderStateShard.LEQUAL_DEPTH_TEST)
 			.createCompositeState(false));

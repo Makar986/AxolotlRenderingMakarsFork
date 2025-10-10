@@ -104,6 +104,7 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 	@Unique
 	private void innerBlit(ResourceLocation atlas, int x0, int x1, int y0, int y1, float u0, float u1, float v0, float v1, int color, int roundingPx) {
 		RenderSystem.setShaderTexture(0, atlas);
+		RenderSystem.enableBlend();
 		RenderSystem.setShader(() -> ExRenderPipelines.ROUNDED_RECT_TEX_SHADER);
 		Matrix4f matrix = this.pose.last().pose();
 		int z = 0;
@@ -149,6 +150,7 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 	@Unique
 	private void innerBlit(ResourceLocation atlas, int x0, int x1, int y0, int y1, float u0, float u1, float v0, float v1, int color, int roundingPx, float outlineWidth) {
 		RenderSystem.setShaderTexture(0, atlas);
+		RenderSystem.enableBlend();
 		RenderSystem.setShader(() -> ExRenderPipelines.ROUNDED_RECT_TEX_OUTLINE_SHADER);
 		Matrix4f matrix = this.pose.last().pose();
 		int z = 0;
