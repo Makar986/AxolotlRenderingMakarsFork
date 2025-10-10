@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import io.github.axolotlclient.rendering.font.Font;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
@@ -19,10 +18,9 @@ public class RenderingTestMod implements ClientModInitializer {
 			(guiGraphics, deltaTracker) -> {
 				if (font == null) {
 					try {
-						font = Font.read(this.getClass().getResourceAsStream("/assets/axolotlclient_rendering/fonts/InterVariable.ttf"),
-							9);
-						font.addSubFont(Font.TAG_ITALIC, Font.ITALIC_ENABLED, Font.read(this.getClass().getResourceAsStream("/assets/axolotlclient_rendering/fonts/InterVariable-Italic.ttf"),
-							9));
+						font = Font.read(this.getClass().getResourceAsStream("/assets/axolotlclient_rendering/fonts/InterVariable.ttf"), 9)
+							.addSubFont(Font.TAG_ITALIC, Font.ITALIC_ENABLED,
+								Font.read(this.getClass().getResourceAsStream("/assets/axolotlclient_rendering/fonts/InterVariable-Italic.ttf"), 9));
 					} catch (IOException e) {
 						throw new RuntimeException(e);
 					}
@@ -39,10 +37,7 @@ public class RenderingTestMod implements ClientModInitializer {
 					300, 120, -1, 100, 5f);
 				var t = "Example §otext§r §nwith§r §kmultiple§r §mwords and §5some §a§lcolors§r.";
 				guiGraphics.drawString(Minecraft.getInstance().font, t, 20, 100, -1);
-				font.renderText(guiGraphics, t, 20, 110, -1);
+				guiGraphics.axolotlclient_rendering$drawString(font, t, 20, 110, -1);
 			});
-		ClientLifecycleEvents.CLIENT_STOPPING.register(mc -> {
-			if (font != null) font.close();
-		});
 	}
 }

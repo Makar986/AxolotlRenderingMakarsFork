@@ -5,9 +5,9 @@ plugins {
 	id("io.github.p03w.machete")
 }
 
-val minecraftVersion = "1.21.9"
-val minecraftFriendly = "1.21.9"
-val fapiVersion = "0.133.11"
+val minecraftVersion = "1.21.10"
+val minecraftFriendly = "1.21.10"
+val fapiVersion = "0.135.0"
 
 group = project.property("maven_group") as String
 version = "${project.property("version")}+$minecraftVersion"
@@ -35,7 +35,7 @@ dependencies {
 		officialMojangMappings {
 			nameSyntheticMembers = true
 		}
-		parchment("org.parchmentmc.data:parchment-1.21.8:2025.07.18@zip")
+		parchment("org.parchmentmc.data:parchment-1.21.9:2025.10.05@zip")
 	})
 
 	modImplementation("net.fabricmc:fabric-loader:${project.property("fabric_loader")}")
@@ -46,7 +46,6 @@ dependencies {
 
 	implementation(include(project(path = ":common", configuration = "shadow"))!!)
 
-	//include(implementation("org.lwjgl:lwjgl-freetype:3.3.3")!!)
 	//include(implementation("org.lwjgl:lwjgl-harfbuzz:3.3.3")!!)
 }
 

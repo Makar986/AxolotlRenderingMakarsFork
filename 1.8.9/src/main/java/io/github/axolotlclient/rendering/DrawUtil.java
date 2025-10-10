@@ -5,9 +5,11 @@ import com.mojang.blaze3d.platform.MemoryTracker;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tessellator;
+import io.github.axolotlclient.rendering.font.Font;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiElement;
 import net.minecraft.resource.Identifier;
+import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Unique;
 
 public class DrawUtil implements GuiGraphicsExtension {
@@ -158,5 +160,15 @@ public class DrawUtil implements GuiGraphicsExtension {
 		bufferBuilder.vertex(x0, y0, 0.0).texture(u0, v0).nextVertex();
 		tessellator.end();
 		shader.unbind();
+	}
+
+	@Override
+	public void axolotlclient_rendering$drawString(Font font, String text, float x, float y, int color, boolean shadow) {
+		font.renderText(text, x, y, color, shadow);
+	}
+
+	@Override
+	public void axolotlclient_rendering$drawString(Font font, Text text, float x, float y, int color, boolean shadow) {
+		font.renderText(text, x, y, color, shadow);
 	}
 }

@@ -1,6 +1,8 @@
 package io.github.axolotlclient.rendering;
 
+import io.github.axolotlclient.rendering.font.Font;
 import net.minecraft.resource.Identifier;
+import net.minecraft.text.Text;
 
 @SuppressWarnings("unused")
 public interface GuiGraphicsExtension {
@@ -122,5 +124,34 @@ public interface GuiGraphicsExtension {
 
 	default void axolotlclient_rendering$circleBlit(Identifier atlas, int cX, int cY, int radius) {
 		this.axolotlclient_rendering$roundedBlit(atlas, cX - radius, cY - radius, cX + radius, cY + radius, 0, 1f, 0, 1, radius);
+	}
+
+	/*drawString*/
+	default void axolotlclient_rendering$drawString(Font font, String text, float x, float y, int color, boolean shadow) {
+
+	}
+
+	default void axolotlclient_rendering$drawString(Font font, Text text, float x, float y, int color, boolean shadow) {
+
+	}
+
+	default void axolotlclient_rendering$drawString(Font font, String text, float x, float y, int color) {
+		axolotlclient_rendering$drawString(font, text, x, y, color, true);
+	}
+
+	default void axolotlclient_rendering$drawString(Font font, Text text, float x, float y, int color) {
+		axolotlclient_rendering$drawString(font, text, x, y, color, true);
+	}
+
+	/*drawWordWrap*/
+	default void axolotlclient_rendering$drawWordWrap(Font font, Text text, int x, int y, int lineWidth, int color) {
+		axolotlclient_rendering$drawWordWrap(font, text, x, y, lineWidth, color, true);
+	}
+
+	default void axolotlclient_rendering$drawWordWrap(Font font, Text text, int x, int y, int lineWidth, int color, boolean dropShadow) {
+		for (var formattedCharSequence : font.split(text, lineWidth)) {
+			axolotlclient_rendering$drawString(font, formattedCharSequence, x, y, color, dropShadow);
+			y += font.lineHeight();
+		}
 	}
 }

@@ -1,6 +1,5 @@
 package io.github.axolotlclient.rendering.font;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
@@ -403,6 +402,89 @@ public class Font implements AutoCloseable {
 		renderText(text, x, y, color, true);
 	}
 
+	private void renderTextCommon(float x, float y, int alignFlags, BuiltText builtText) {
+		float[] startOffset = getOffset(alignFlags, builtText);
+
+		GlStateManager.pushMatrix();
+		GlStateManager.translatef(x, y + 7, 0);
+		GlStateManager.translatef(-startOffset[0], -startOffset[1], 0);
+		var scale = (float) window.getScale();
+		GlStateManager.scalef(1f / scale, 1f / scale, 1);
+
+		renderTextCommon(builtText);
+		GlStateManager.popMatrix();
+	}
+
+	private static float @NotNull [] getOffset(int alignFlags, BuiltText builtText) {
+		float[] startOffset = new float[2];
+		var textBox = builtText.textBox();
+
+		int horizAlign = alignFlags & 0x3;
+		startOffset[0] = switch (horizAlign) {
+			case ORIGIN_HORIZ_LEFT -> textBox[0];
+			case ORIGIN_HORIZ_RIGHT -> textBox[2];
+			case ORIGIN_HORIZ_CENTER -> textBox[0] + (textBox[2] - textBox[0]) / 2f;
+			//case ORIGIN_HORIZ_BASELINE -> {}
+			default -> 0;
+		};
+		var vertAlign = alignFlags & 0xC;
+		startOffset[1] = switch (vertAlign) {
+			case ORIGIN_VERT_TOP -> textBox[1];
+			case ORIGIN_VERT_BOTTOM -> textBox[3];
+			case ORIGIN_VERT_CENTER -> textBox[1] + (textBox[3] - textBox[1]) / 2f;
+			//case ORIGIN_VERT_BASELINE
+			default -> 0;
+		};
+		return startOffset;
+	}
+
+	private void renderTextCommon(BuiltText builtText) {
+		Tessellator tess = Tessellator.getInstance();
+		GlStateManager.enableBlend();
+		ExRenderPipelines.FONT_PROGRAM.bind();
+		var vertexConsumer = tess.getBuilder();
+		for (var pageGlyphs : builtText.coordData().object2ObjectEntrySet().stream().skip(0).toList()) {
+			Minecraft.getInstance().getTextureManager().bind(pageGlyphs.getKey());
+			vertexConsumer.begin(GL11.GL_QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+			for (var g : pageGlyphs.getValue()) {
+				var color = g.color();
+				vertexConsumer.vertex(g.x(), g.y(), 0).texture(g.u(), g.v())
+					.color((color >> 16 & 0xFF) / 255f, (color >> 8 & 0xFF) / 255f,
+						(color & 0xFF) / 255f, (color >> 24 & 0xFF) / 255f).nextVertex();
+				vertexConsumer.vertex(g.x(), g.y() + g.height(), 0).texture(g.u(), g.v1())
+					.color((color >> 16 & 0xFF) / 255f, (color >> 8 & 0xFF) / 255f,
+						(color & 0xFF) / 255f, (color >> 24 & 0xFF) / 255f).nextVertex();
+				vertexConsumer.vertex(g.x() + g.width(), g.y() + g.height(), 0).texture(g.u1(), g.v1())
+					.color((color >> 16 & 0xFF) / 255f, (color >> 8 & 0xFF) / 255f,
+						(color & 0xFF) / 255f, (color >> 24 & 0xFF) / 255f).nextVertex();
+				vertexConsumer.vertex(g.x() + g.width(), g.y(), 0).texture(g.u1(), g.v())
+					.color((color >> 16 & 0xFF) / 255f, (color >> 8 & 0xFF) / 255f,
+						(color & 0xFF) / 255f, (color >> 24 & 0xFF) / 255f).nextVertex();
+			}
+			tess.end();
+		}
+		ExRenderPipelines.FONT_PROGRAM.unbind();
+		GlStateManager.color3f(1, 1, 1);
+		GlStateManager.disableTexture();
+		if (!builtText.effects().isEmpty()) {
+			vertexConsumer.begin(GL11.GL_QUADS, DefaultVertexFormat.POSITION_COLOR);
+			for (var e : builtText.effects()) {
+				var color = e.color();
+				vertexConsumer.vertex(e.x(), e.y(), 0).color((color >> 16 & 0xFF) / 255f,
+					(color >> 8 & 0xFF) / 255f, (color & 0xFF) / 255f, (color >> 24 & 0xFF) / 255f).nextVertex();
+				vertexConsumer.vertex(e.x(), e.y() + e.height(), 0).color((color >> 16 & 0xFF) / 255f,
+					(color >> 8 & 0xFF) / 255f, (color & 0xFF) / 255f, (color >> 24 & 0xFF) / 255f).nextVertex();
+				vertexConsumer.vertex(e.x() + e.width(), e.y() + e.height(), 0)
+					.color((color >> 16 & 0xFF) / 255f, (color >> 8 & 0xFF) / 255f,
+						(color & 0xFF) / 255f, (color >> 24 & 0xFF) / 255f).nextVertex();
+				vertexConsumer.vertex(e.x() + e.width(), e.y(), 0).color((color >> 16 & 0xFF) / 255f,
+					(color >> 8 & 0xFF) / 255f, (color & 0xFF) / 255f, (color >> 24 & 0xFF) / 255f).nextVertex();
+			}
+			tess.end();
+		}
+		GlStateManager.disableBlend();
+	}
+
 	public float width(String text) {
 		return activeSubFont.splitter.stringWidth(text);
 	}
@@ -420,6 +502,10 @@ public class Font implements AutoCloseable {
 		var page = getPage(codePt, false);
 		var c = page.charInfo[codePt & 0xFF];
 		return c.advanceX;
+	}
+
+	public List<Text> split(Text text, int maxWidth) {
+		return this.splitter.splitLines(text, maxWidth, new Style());
 	}
 
 	private BuiltText buildText(int color, boolean shadow, Consumer<FormattedCharSink> sink) {
@@ -601,6 +687,7 @@ public class Font implements AutoCloseable {
 
 	record BuiltText(Object2ObjectOpenHashMap<Identifier, List<CoordData>> coordData,
 					 List<EffectData> effects, float[] textBox) {
+
 	}
 
 	private Page loadPageGlyphDimensions(long pageIndex) {
@@ -727,84 +814,6 @@ public class Font implements AutoCloseable {
 
 		MemoryUtil.memFree(texData);
 		Minecraft.getInstance().getTextureManager().register(page.tex, tex);
-	}
-
-	private void renderTextCommon(float x, float y, int alignFlags, BuiltText builtText) {
-		float[] startOffset = new float[2];
-		var textBox = builtText.textBox();
-
-		int horizAlign = alignFlags & 0x3;
-		startOffset[0] = switch (horizAlign) {
-			case ORIGIN_HORIZ_LEFT -> textBox[0];
-			case ORIGIN_HORIZ_RIGHT -> textBox[2];
-			case ORIGIN_HORIZ_CENTER -> textBox[0] + (textBox[2] - textBox[0]) / 2f;
-			//case ORIGIN_HORIZ_BASELINE -> {}
-			default -> 0;
-		};
-		var vertAlign = alignFlags & 0xC;
-		startOffset[1] = switch (vertAlign) {
-			case ORIGIN_VERT_TOP -> textBox[1];
-			case ORIGIN_VERT_BOTTOM -> textBox[3];
-			case ORIGIN_VERT_CENTER -> textBox[1] + (textBox[3] - textBox[1]) / 2f;
-			//case ORIGIN_VERT_BASELINE
-			default -> 0;
-		};
-
-		GlStateManager.pushMatrix();
-		GlStateManager.translatef(x, y + 7, 0);
-		GlStateManager.translatef(-startOffset[0], -startOffset[1], 0);
-		var scale = (float) window.getScale();
-		GlStateManager.scalef(1f / scale, 1f / scale, 1);
-
-		renderTextCommon(builtText);
-		GlStateManager.popMatrix();
-	}
-
-	private void renderTextCommon(BuiltText builtText) {
-		Tessellator tess = Tessellator.getInstance();
-		GlStateManager.enableBlend();
-		ExRenderPipelines.FONT_PROGRAM.bind();
-		var vertexConsumer = tess.getBuilder();
-		for (var pageGlyphs : builtText.coordData().object2ObjectEntrySet().stream().skip(0).toList()) {
-			Minecraft.getInstance().getTextureManager().bind(pageGlyphs.getKey());
-			vertexConsumer.begin(GL11.GL_QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
-			for (var g : pageGlyphs.getValue()) {
-				var color = g.color();
-				vertexConsumer.vertex(g.x(), g.y(), 0).texture(g.u(), g.v())
-					.color((color >> 16 & 0xFF) / 255f, (color >> 8 & 0xFF) / 255f,
-						(color & 0xFF) / 255f, (color >> 24 & 0xFF) / 255f).nextVertex();
-				vertexConsumer.vertex(g.x(), g.y() + g.height(), 0).texture(g.u(), g.v1())
-					.color((color >> 16 & 0xFF) / 255f, (color >> 8 & 0xFF) / 255f,
-						(color & 0xFF) / 255f, (color >> 24 & 0xFF) / 255f).nextVertex();
-				vertexConsumer.vertex(g.x() + g.width(), g.y() + g.height(), 0).texture(g.u1(), g.v1())
-					.color((color >> 16 & 0xFF) / 255f, (color >> 8 & 0xFF) / 255f,
-						(color & 0xFF) / 255f, (color >> 24 & 0xFF) / 255f).nextVertex();
-				vertexConsumer.vertex(g.x() + g.width(), g.y(), 0).texture(g.u1(), g.v())
-					.color((color >> 16 & 0xFF) / 255f, (color >> 8 & 0xFF) / 255f,
-						(color & 0xFF) / 255f, (color >> 24 & 0xFF) / 255f).nextVertex();
-			}
-			tess.end();
-		}
-		ExRenderPipelines.FONT_PROGRAM.unbind();
-		GlStateManager.color3f(1, 1, 1);
-		GlStateManager.disableTexture();
-		if (!builtText.effects().isEmpty()) {
-			vertexConsumer.begin(GL11.GL_QUADS, DefaultVertexFormat.POSITION_COLOR);
-			for (var e : builtText.effects()) {
-				var color = e.color();
-				vertexConsumer.vertex(e.x(), e.y(), 0).color((color >> 16 & 0xFF) / 255f,
-					(color >> 8 & 0xFF) / 255f, (color & 0xFF) / 255f, (color >> 24 & 0xFF) / 255f).nextVertex();
-				vertexConsumer.vertex(e.x(), e.y() + e.height(), 0).color((color >> 16 & 0xFF) / 255f,
-					(color >> 8 & 0xFF) / 255f, (color & 0xFF) / 255f, (color >> 24 & 0xFF) / 255f).nextVertex();
-				vertexConsumer.vertex(e.x() + e.width(), e.y() + e.height(), 0)
-					.color((color >> 16 & 0xFF) / 255f, (color >> 8 & 0xFF) / 255f,
-						(color & 0xFF) / 255f, (color >> 24 & 0xFF) / 255f).nextVertex();
-				vertexConsumer.vertex(e.x() + e.width(), e.y(), 0).color((color >> 16 & 0xFF) / 255f,
-					(color >> 8 & 0xFF) / 255f, (color & 0xFF) / 255f, (color >> 24 & 0xFF) / 255f).nextVertex();
-			}
-			tess.end();
-		}
-		GlStateManager.disableBlend();
 	}
 
 	public static final int ORIGIN_HORIZ_BASELINE = 0x00;

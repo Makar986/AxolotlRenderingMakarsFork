@@ -3,11 +3,14 @@ package io.github.axolotlclient.rendering.mixin;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import io.github.axolotlclient.rendering.*;
+import io.github.axolotlclient.rendering.font.Font;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.gui.render.state.GuiRenderState;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FormattedCharSequence;
 import org.joml.Matrix3x2f;
 import org.joml.Matrix3x2fStack;
 import org.spongepowered.asm.mixin.Final;
@@ -108,5 +111,20 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 				outlineWidth, this.scissorStack.peek()
 			)
 		);
+	}
+
+	@Override
+	public void axolotlclient_rendering$drawString(Font font, String text, float x, float y, int color, boolean shadow) {
+		font.renderText((GuiGraphics)(Object) this, text, x, y, color, shadow);
+	}
+
+	@Override
+	public void axolotlclient_rendering$drawString(Font font, FormattedCharSequence text, float x, float y, int color, boolean shadow) {
+		font.renderText((GuiGraphics)(Object) this, text, x, y, color, shadow);
+	}
+
+	@Override
+	public void axolotlclient_rendering$drawString(Font font, Component text, float x, float y, int color, boolean shadow) {
+		font.renderText((GuiGraphics)(Object) this, text, x, y, color, shadow);
 	}
 }

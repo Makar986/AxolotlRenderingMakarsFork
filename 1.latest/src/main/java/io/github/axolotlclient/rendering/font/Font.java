@@ -31,7 +31,9 @@ import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.*;
@@ -415,6 +417,55 @@ public class Font implements AutoCloseable {
 		renderText(graphics, text, x, y, color, true);
 	}
 
+	private void renderTextCommon(GuiGraphics graphics, float x, float y, int alignFlags, BuiltText builtText) {
+		float[] startOffset = getOffset(alignFlags, builtText);
+
+		graphics.pose().pushMatrix();
+		graphics.pose().translate(x, y + 7);
+		graphics.pose().translate(-startOffset[0], -startOffset[1]);
+		var scale = Minecraft.getInstance().getWindow().getGuiScale();
+		graphics.pose().scale(1f / scale);
+
+		renderTextCommon(graphics, builtText);
+		graphics.pose().popMatrix();
+	}
+
+	private static float @NotNull [] getOffset(int alignFlags, BuiltText builtText) {
+		float[] startOffset = new float[2];
+		var textBox = builtText.textBox();
+
+		int horizAlign = alignFlags & 0x3;
+		startOffset[0] = switch (horizAlign) {
+			case ORIGIN_HORIZ_LEFT -> textBox[0];
+			case ORIGIN_HORIZ_RIGHT -> textBox[2];
+			case ORIGIN_HORIZ_CENTER -> textBox[0] + (textBox[2] - textBox[0]) / 2f;
+			//case ORIGIN_HORIZ_BASELINE -> {}
+			default -> 0;
+		};
+		var vertAlign = alignFlags & 0xC;
+		startOffset[1] = switch (vertAlign) {
+			case ORIGIN_VERT_TOP -> textBox[1];
+			case ORIGIN_VERT_BOTTOM -> textBox[3];
+			case ORIGIN_VERT_CENTER -> textBox[1] + (textBox[3] - textBox[1]) / 2f;
+			//case ORIGIN_VERT_BASELINE
+			default -> 0;
+		};
+		return startOffset;
+	}
+
+	private void renderTextCommon(GuiGraphics graphics, BuiltText builtText) {
+		var box = builtText.textBox();
+		var scissor = graphics.scissorStack.peek();
+		var rect = new ScreenRectangle(Mth.ceil(box[0]), Mth.ceil(box[1]), Mth.ceil(box[2]), Mth.ceil(box[3])).transformMaxBounds(graphics.pose());
+		rect = scissor != null ? scissor.intersection(rect) : rect;
+		for (var pageGlyphs : builtText.coordData().object2ObjectEntrySet()) {
+			graphics.guiRenderState.submitGuiElement(new FontRenderStates.PageGlyphs(pageGlyphs.getKey(), new Matrix3x2f(graphics.pose()), pageGlyphs.getValue(), rect, scissor));
+		}
+		if (!builtText.effects().isEmpty()) {
+			graphics.guiRenderState.submitGuiElement(new FontRenderStates.Effects(new Matrix3x2f(graphics.pose()), builtText.effects(), rect, scissor));
+		}
+	}
+
 	public float width(String text) {
 		return activeSubFont.splitter.stringWidth(text);
 	}
@@ -436,6 +487,10 @@ public class Font implements AutoCloseable {
 		var page = getPage(codePt, false);
 		var c = page.charInfo[codePt & 0xFF];
 		return c.advanceX;
+	}
+
+	public List<FormattedCharSequence> split(FormattedText text, int maxWidth) {
+		return Language.getInstance().getVisualOrder(this.splitter.splitLines(text, maxWidth, Style.EMPTY));
 	}
 
 	private BuiltText buildText(int color, boolean shadow, Consumer<FormattedCharSink> sink) {
@@ -621,6 +676,7 @@ public class Font implements AutoCloseable {
 
 	record BuiltText(Object2ObjectOpenHashMap<ResourceLocation, List<CoordData>> coordData,
 					 List<EffectData> effects, float[] textBox) {
+
 	}
 
 	private Page loadPageGlyphDimensions(long pageIndex) {
@@ -725,50 +781,6 @@ public class Font implements AutoCloseable {
 		var tex = new DynamicTexture(page.tex::toString, texData);
 		tex.getTexture().setTextureFilter(FilterMode.LINEAR, FilterMode.LINEAR, true);
 		Minecraft.getInstance().getTextureManager().register(page.tex, tex);
-	}
-
-	private void renderTextCommon(GuiGraphics graphics, float x, float y, int alignFlags, BuiltText builtText) {
-		float[] startOffset = new float[2];
-		var textBox = builtText.textBox();
-
-		int horizAlign = alignFlags & 0x3;
-		startOffset[0] = switch (horizAlign) {
-			case ORIGIN_HORIZ_LEFT -> textBox[0];
-			case ORIGIN_HORIZ_RIGHT -> textBox[2];
-			case ORIGIN_HORIZ_CENTER -> textBox[0] + (textBox[2] - textBox[0]) / 2f;
-			//case ORIGIN_HORIZ_BASELINE -> {}
-			default -> 0;
-		};
-		var vertAlign = alignFlags & 0xC;
-		startOffset[1] = switch (vertAlign) {
-			case ORIGIN_VERT_TOP -> textBox[1];
-			case ORIGIN_VERT_BOTTOM -> textBox[3];
-			case ORIGIN_VERT_CENTER -> textBox[1] + (textBox[3] - textBox[1]) / 2f;
-			//case ORIGIN_VERT_BASELINE
-			default -> 0;
-		};
-
-		graphics.pose().pushMatrix();
-		graphics.pose().translate(x, y + 7);
-		graphics.pose().translate(-startOffset[0], -startOffset[1]);
-		var scale = Minecraft.getInstance().getWindow().getGuiScale();
-		graphics.pose().scale(1f / scale);
-
-		renderTextCommon(graphics, builtText);
-		graphics.pose().popMatrix();
-	}
-
-	private void renderTextCommon(GuiGraphics graphics, BuiltText builtText) {
-		var box = builtText.textBox();
-		var scissor = graphics.scissorStack.peek();
-		var rect = new ScreenRectangle(Mth.ceil(box[0]), Mth.ceil(box[1]), Mth.ceil(box[2]), Mth.ceil(box[3])).transformMaxBounds(graphics.pose());
-		rect = scissor != null ? scissor.intersection(rect) : rect;
-		for (var pageGlyphs : builtText.coordData().object2ObjectEntrySet()) {
-			graphics.guiRenderState.submitGuiElement(new FontRenderStates.PageGlyphs(pageGlyphs.getKey(), new Matrix3x2f(graphics.pose()), pageGlyphs.getValue(), rect, scissor));
-		}
-		if (!builtText.effects().isEmpty()) {
-			graphics.guiRenderState.submitGuiElement(new FontRenderStates.Effects(new Matrix3x2f(graphics.pose()), builtText.effects(), rect, scissor));
-		}
 	}
 
 	public static final int ORIGIN_HORIZ_BASELINE = 0x00;

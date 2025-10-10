@@ -4,9 +4,12 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import io.github.axolotlclient.rendering.ExRenderPipelines;
 import io.github.axolotlclient.rendering.GuiGraphicsExtension;
+import io.github.axolotlclient.rendering.font.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FormattedCharSequence;
 import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -170,5 +173,20 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 		ExRenderPipelines.addDimensions(consumer, width, 0, width, height);
 		ExRenderPipelines.addOutlineWidth(consumer, outlineWidth);
 		BufferUploader.drawWithShader(consumer.buildOrThrow());
+	}
+
+	@Override
+	public void axolotlclient_rendering$drawString(Font font, String text, float x, float y, int color, boolean shadow) {
+		font.renderText((GuiGraphics)(Object) this, text, x, y, color, shadow);
+	}
+
+	@Override
+	public void axolotlclient_rendering$drawString(Font font, FormattedCharSequence text, float x, float y, int color, boolean shadow) {
+		font.renderText((GuiGraphics)(Object) this, text, x, y, color, shadow);
+	}
+
+	@Override
+	public void axolotlclient_rendering$drawString(Font font, Component text, float x, float y, int color, boolean shadow) {
+		font.renderText((GuiGraphics)(Object) this, text, x, y, color, shadow);
 	}
 }
