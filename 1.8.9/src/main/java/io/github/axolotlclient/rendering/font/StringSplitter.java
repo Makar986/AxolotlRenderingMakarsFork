@@ -1,18 +1,37 @@
+/*
+ * Copyright © 2025 moehreag <moehreag@gmail.com> & Contributors
+ *
+ * This file is part of AxolotlClient (Rendering Mod).
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *
+ * For more information, see the LICENSE file.
+ */
+
 package io.github.axolotlclient.rendering.font;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 
-import lombok.Getter;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import org.apache.commons.lang3.mutable.MutableFloat;
-import org.apache.commons.lang3.mutable.MutableInt;
 import org.jetbrains.annotations.Nullable;
 
 public class StringSplitter {
@@ -42,130 +61,6 @@ public class StringSplitter {
 			return true;
 		});
 		return mutableFloat.floatValue();
-	}
-
-	public int plainIndexAtWidth(String content, int maxWidth, Style style) {
-		StringSplitter.WidthLimitedCharSink widthLimitedCharSink = new StringSplitter.WidthLimitedCharSink(maxWidth);
-		StringDecomposer.iterate(content, style, widthLimitedCharSink);
-		return widthLimitedCharSink.getPosition();
-	}
-
-	public String plainHeadByWidth(String content, int maxWidth, Style style) {
-		return content.substring(0, this.plainIndexAtWidth(content, maxWidth, style));
-	}
-
-	public String plainTailByWidth(String content, int maxWidth, Style style) {
-		MutableFloat mutableFloat = new MutableFloat();
-		MutableInt mutableInt = new MutableInt(content.length());
-		StringDecomposer.iterateBackwards(content, style, (maxWidthx, stylex, codePoint) -> {
-			mutableFloat.add(this.widthProvider.getWidth(codePoint, stylex));
-			float f = mutableFloat.getValue();
-			if (f > maxWidth) {
-				return false;
-			} else {
-				mutableInt.setValue(maxWidthx);
-				return true;
-			}
-		});
-		return content.substring(mutableInt.intValue());
-	}
-
-	public int formattedIndexByWidth(String content, int maxWidth, Style style) {
-		StringSplitter.WidthLimitedCharSink widthLimitedCharSink = new StringSplitter.WidthLimitedCharSink(maxWidth);
-		StringDecomposer.iterateFormatted(content, style, widthLimitedCharSink);
-		return widthLimitedCharSink.getPosition();
-	}
-
-	@Nullable
-	public Style componentStyleAtWidth(Text content, int maxWidth) {
-		StringSplitter.WidthLimitedCharSink widthLimitedCharSink = new StringSplitter.WidthLimitedCharSink(maxWidth);
-		var opt = Optional.<Style>empty();
-		for (var t : content) {
-			if (!StringDecomposer.iterateFormatted(t.getContent(), t.getStyle(), widthLimitedCharSink)) {
-				opt = Optional.of(t.getStyle());
-			}
-			if (opt.isPresent()) {
-				break;
-			}
-		}
-		return opt.orElse(null);
-	}
-
-	public String formattedHeadByWidth(String content, int maxWidth, Style style) {
-		return content.substring(0, this.formattedIndexByWidth(content, maxWidth, style));
-	}
-
-	/*public Text headByWidth(Text content, int maxWidth, Style style) {
-		final StringSplitter.WidthLimitedCharSink widthLimitedCharSink = new StringSplitter.WidthLimitedCharSink(maxWidth);
-		return (Text)content.visit(new Text.StyledContentConsumer<Text>() {
-			private final ComponentCollector collector = new ComponentCollector();
-
-			@Override
-			public Optional<Text> accept(Style style, String string) {
-				widthLimitedCharSink.resetPosition();
-				if (!StringDecomposer.iterateFormatted(string, style, widthLimitedCharSink)) {
-					String string2 = string.substring(0, widthLimitedCharSink.getPosition());
-					if (!string2.isEmpty()) {
-						this.collector.append(Text.of(string2, style));
-					}
-
-					return Optional.of(this.collector.getResultOrEmpty());
-				} else {
-					if (!string.isEmpty()) {
-						this.collector.append(Text.of(string, style));
-					}
-
-					return Optional.empty();
-				}
-			}
-		}, style).orElse(content);
-	}*/
-
-	public int findLineBreak(String content, int maxWidth, Style style) {
-		StringSplitter.LineBreakFinder lineBreakFinder = new StringSplitter.LineBreakFinder(maxWidth);
-		StringDecomposer.iterateFormatted(content, style, lineBreakFinder);
-		return lineBreakFinder.getSplitPosition();
-	}
-
-	public static int getWordPosition(String content, int skipCount, int cursorPoint, boolean includeWhitespace) {
-		int i = cursorPoint;
-		boolean bl = skipCount < 0;
-		int j = Math.abs(skipCount);
-
-		for (int k = 0; k < j; k++) {
-			if (bl) {
-				while (includeWhitespace && i > 0 && (content.charAt(i - 1) == ' ' || content.charAt(i - 1) == '\n')) {
-					i--;
-				}
-
-				while (i > 0 && content.charAt(i - 1) != ' ' && content.charAt(i - 1) != '\n') {
-					i--;
-				}
-			} else {
-				int l = content.length();
-				int m = content.indexOf(32, i);
-				int n = content.indexOf(10, i);
-				if (m == -1 && n == -1) {
-					i = -1;
-				} else if (m != -1 && n != -1) {
-					i = Math.min(m, n);
-				} else if (m != -1) {
-					i = m;
-				} else {
-					i = n;
-				}
-
-				if (i == -1) {
-					i = l;
-				} else {
-					while (includeWhitespace && i < l && (content.charAt(i) == ' ' || content.charAt(i) == '\n')) {
-						i++;
-					}
-				}
-			}
-		}
-
-		return i;
 	}
 
 	public void splitLines(String content, int maxWidth, Style style, boolean withNewLines, StringSplitter.LinePosConsumer linePos) {
@@ -205,12 +100,6 @@ public class StringSplitter {
 		this.splitLines(content, maxWidth, style, (text, value) -> list.add(text));
 		return list;
 	}
-
-	/*public List<Text> splitLines(Text content, int maxWidth, Style style, Text prefix) {
-		List<Text> list = new ArrayList<>();
-		this.splitLines(content, maxWidth, style, (message, prefixx) -> list.add(prefixx ? Text.composite(prefix, message) : message));
-		return list;
-	}*/
 
 	public void splitLines(Text content, int maxWidth, Style style, BiConsumer<Text, Boolean> splitifier) {
 		List<StringSplitter.LineComponent> list = new ArrayList<>();
@@ -262,7 +151,7 @@ public class StringSplitter {
 
 		public FlatComponents(List<StringSplitter.LineComponent> parts) {
 			this.parts = parts;
-			this.flatParts = (String) parts.stream().map(part -> part.contents).collect(Collectors.joining());
+			this.flatParts = parts.stream().map(part -> part.contents).collect(Collectors.joining());
 		}
 
 		public char charAt(int codePoint) {
@@ -401,31 +290,6 @@ public class StringSplitter {
 	@FunctionalInterface
 	public interface LinePosConsumer {
 		void accept(Style style, int i, int j);
-	}
-
-	class WidthLimitedCharSink implements FormattedCharSink {
-		private float maxWidth;
-		@Getter
-		private int position;
-
-		public WidthLimitedCharSink(float maxWidth) {
-			this.maxWidth = maxWidth;
-		}
-
-		@Override
-		public boolean accept(int i, Style style, int j) {
-			this.maxWidth = this.maxWidth - StringSplitter.this.widthProvider.getWidth(j, style);
-			if (this.maxWidth >= 0.0F) {
-				this.position = i + Character.charCount(j);
-				return true;
-			} else {
-				return false;
-			}
-		}
-
-		public void resetPosition() {
-			this.position = 0;
-		}
 	}
 
 	@FunctionalInterface

@@ -1,10 +1,28 @@
+/*
+ * Copyright © 2025 moehreag <moehreag@gmail.com> & Contributors
+ *
+ * This file is part of AxolotlClient (Rendering Mod).
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *
+ * For more information, see the LICENSE file.
+ */
+
 package io.github.axolotlclient.rendering.font;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import io.github.axolotlclient.rendering.StyleExtension;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
@@ -12,9 +30,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import lombok.extern.slf4j.Slf4j;
 import net.minecraft.text.Formatting;
-import net.minecraft.text.LiteralText;
 import net.minecraft.text.Style;
-import net.minecraft.text.Text;
 
 @Slf4j
 public final class TextRenderUtils {
@@ -68,106 +84,6 @@ public final class TextRenderUtils {
 
 	public static Formatting getByCode(char c) {
 		return formattingCodes.get(c);
-	}
-
-	private static Formatting byCodeOfFirstChar(String code) {
-		char c = code.toLowerCase(Locale.ROOT).charAt(0);
-
-		return formattingCodes.get(c);
-	}
-
-	private static final Pattern CODE_PATTERN = Pattern.compile("§");
-
-	public static Text format(Text text) {
-		Text n = null;
-		for (var t : text) {
-			if (!t.getContent().contains("§")) {
-				var r = new LiteralText(t.getContent());
-				r.setStyle(t.getStyle());
-				if (n == null) {
-					n = r;
-				} else {
-					n.append(r);
-					t.getStyle().setParent(n.getStyle());
-				}
-			} else {
-				var formatted = formatFromCodes(t.getContent());
-				formatted.setStyle(t.getStyle());
-				if (n == null) {
-					n = formatted;
-				} else {
-					n.append(formatted);
-					formatted.getStyle().setParent(n.getStyle());
-				}
-			}
-		}
-		return n;
-	}
-
-	private static Text formatFromCodes(String formattedString) {
-		Text text = new LiteralText("");
-		String[] arr = CODE_PATTERN.split(formattedString);
-
-		List<Formatting> modifiers = new ArrayList<>();
-		Formatting color = null;
-		TextColor br$color = null;
-		for (int i = 0, length = arr.length; i < length; i++) {
-			String s = arr[i];
-			if (s.isEmpty()) {
-				continue;
-			} else if (i == 0) {
-				text.append(s);
-				continue;
-			}
-			Formatting formatting = byCodeOfFirstChar(s);
-			Text part;
-			int pL = s.length();
-			int formatLength = 1;
-			if (formatting == null) {
-				if (s.toLowerCase(Locale.ROOT).charAt(0) == '#') {
-					br$color = TextColor.parseColor(s.substring(0, 7));
-					formatLength = 7;
-				} else {
-					text.append(s);
-					continue;
-				}
-			} else {
-				if (formatting.equals(Formatting.RESET)) {
-					modifiers.clear();
-					color = null;
-				} else if (formatting.isModifier()) {
-					modifiers.add(formatting);
-				} else {
-					color = formatting;
-				}
-			}
-			if (pL == 1) {
-				continue;
-			}
-			part = new LiteralText(s.substring(formatLength));
-
-			if (color != null) {
-				part.setStyle(part.getStyle().setColor(color));
-			}
-			if (br$color != null) {
-				((StyleExtension) part.getStyle()).axolotlclient_rendering$setColor(br$color);
-			}
-
-			if (!modifiers.isEmpty()) {
-				for (Formatting mod : modifiers) {
-					switch (mod) {
-						case OBFUSCATED -> part.getStyle().setObfuscated(true);
-						case BOLD -> part.getStyle().setBold(true);
-						case ITALIC -> part.getStyle().setItalic(true);
-						case UNDERLINE -> part.getStyle().setUnderlined(true);
-						case STRIKETHROUGH -> part.getStyle().setStrikethrough(true);
-						default -> log.warn("Unexpected modifier: {}", mod);
-					}
-				}
-			}
-			text.append(part);
-		}
-		return text;
 	}
 
 	public static int getColor(Formatting formatting) {
