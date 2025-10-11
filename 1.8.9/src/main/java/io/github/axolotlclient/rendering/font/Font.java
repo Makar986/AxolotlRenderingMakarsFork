@@ -636,7 +636,7 @@ public class Font implements AutoCloseable {
 			fontBox[0] = Math.min(fontBox[0], penX[0] + charX0);
 			fontBox[1] = Math.min(fontBox[1], penY[0] - charY0);
 			fontBox[2] = Math.max(fontBox[2], penX[0] + charX1);
-			fontBox[3] = Math.max(fontBox[3], penY[0] - charY1);
+			fontBox[3] = Math.max(fontBox[3], penY[0] + charY1 - (charY0 / 2f));
 
 			penX[0] += charAdvanceX;
 			penY[0] += charAdvanceY;
