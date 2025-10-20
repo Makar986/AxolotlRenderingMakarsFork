@@ -27,6 +27,8 @@ import com.mojang.blaze3d.vertex.*;
 import io.github.axolotlclient.rendering.ExRenderPipelines;
 import io.github.axolotlclient.rendering.GuiGraphicsExtension;
 import io.github.axolotlclient.rendering.font.Font;
+import io.github.axolotlclient.rendering.svg.SVGCache;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
@@ -53,6 +55,9 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 	@Shadow
 	@Deprecated
 	protected abstract void flushIfUnmanaged();
+
+	@Shadow
+	abstract void innerBlit(ResourceLocation atlasLocation, int x1, int x2, int y1, int y2, int blitOffset, float minU, float maxU, float minV, float maxV);
 
 	@Override
 	public void axolotlclient_rendering$roundedRect(int x0, int y0, int x1, int y1, int color, int roundingPx) {
@@ -225,5 +230,12 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 	@Override
 	public void axolotlclient_rendering$drawString(Font font, Component text, float x, float y, int color, boolean shadow) {
 		font.renderText((GuiGraphics)(Object) this, text, x, y, color, shadow);
+	}
+
+	@Override
+	public void axolotlclient_rendering$blitSVG(ResourceLocation location, int x, int y, int width, int height, int color) {
+		var scale = Minecraft.getInstance().getWindow().getGuiScale();
+		var key = SVGCache.getInstance().load(location, (float) (width * scale), (float) (height * scale));
+		innerBlit(key, x, x + width, y, y + height, 0, 0, 1f, 0f, 1);
 	}
 }

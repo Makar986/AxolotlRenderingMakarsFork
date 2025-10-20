@@ -504,6 +504,7 @@ public class Font implements AutoCloseable {
 			}
 			tess.end();
 		}
+		GlStateManager.enableTexture();
 		GlStateManager.disableBlend();
 	}
 

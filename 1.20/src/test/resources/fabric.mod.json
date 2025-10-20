@@ -16,7 +16,7 @@
 	"environment": "client",
 	"entrypoints": {
 		"client": [
-			"io.github.axolotlclient.rendering.RenderingTestMod"
+			"io.github.axolotlclient.rendering.test.RenderingTestMod"
 		]
 	},
 	"depends": {

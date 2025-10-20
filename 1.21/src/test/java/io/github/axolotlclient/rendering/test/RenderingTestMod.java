@@ -20,7 +20,7 @@
  * For more information, see the LICENSE file.
  */
 
-package io.github.axolotlclient.rendering;
+package io.github.axolotlclient.rendering.test;
 
 import java.io.IOException;
 
@@ -58,6 +58,8 @@ public class RenderingTestMod implements ClientModInitializer {
 			var t = "Example §otext§r §nwith§r §kmultiple§r §mwords and §5some §a§lcolors§r.";
 			guiGraphics.drawString(Minecraft.getInstance().font, t, 20, 100, -1);
 			guiGraphics.axolotlclient_rendering$drawString(font, t, 20, 110, -1);
+			guiGraphics.axolotlclient_rendering$blitSVG(ResourceLocation.fromNamespaceAndPath("axolotlclient_rendering", "textures/svg/23.svg"),
+				0, 0, guiGraphics.guiWidth(), guiGraphics.guiHeight(), -1);
 		});
 	}
 }

@@ -28,10 +28,13 @@ import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tessellator;
 import io.github.axolotlclient.rendering.font.Font;
+import io.github.axolotlclient.rendering.svg.SVGCache;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiElement;
+import net.minecraft.client.render.Window;
 import net.minecraft.resource.Identifier;
 import net.minecraft.text.Text;
+import org.jetbrains.annotations.ApiStatus;
 import org.spongepowered.asm.mixin.Unique;
 
 public class DrawUtil implements GuiGraphicsExtension {
@@ -40,6 +43,30 @@ public class DrawUtil implements GuiGraphicsExtension {
 
 	public static GuiGraphicsExtension get() {
 		return INSTANCE;
+	}
+
+	private Window window;
+
+	@ApiStatus.Internal
+	void resetWindow() {
+		window = null;
+	}
+
+	public Window getWindow() {
+		if (window == null) {
+			window = new Window(Minecraft.getInstance());
+		}
+		return window;
+	}
+
+	@Override
+	public int guiWidth() {
+		return getWindow().getWidth();
+	}
+
+	@Override
+	public int guiHeight() {
+		return getWindow().getHeight();
 	}
 
 	@Override
@@ -192,5 +219,22 @@ public class DrawUtil implements GuiGraphicsExtension {
 	@Override
 	public void axolotlclient_rendering$drawString(Font font, Text text, float x, float y, int color, boolean shadow) {
 		font.renderText(text, x, y, color, shadow);
+	}
+
+	@Override
+	public void axolotlclient_rendering$blitSVG(Identifier location, int x, int y, int width, int height, int color) {
+		var scale = new Window(Minecraft.getInstance()).getScale();
+		var key = SVGCache.getInstance().load(location, (float) (width * scale), (float) (height * scale));
+		GlStateManager.enableBlend();
+		Minecraft.getInstance().getTextureManager().bind(key);
+		GlStateManager.color4f((color >> 16 & 0xFF) / 255f, (color >> 8 & 0xFF) / 255f, (color & 0xFF) / 255f, (color >> 24 & 0xFF) / 255f);
+		Tessellator tessellator = Tessellator.getInstance();
+		BufferBuilder bufferBuilder = tessellator.getBuilder();
+		bufferBuilder.begin(7, DefaultVertexFormat.POSITION_TEX);
+		bufferBuilder.vertex(x, y+height, 0.0).texture(0, 1f).nextVertex();
+		bufferBuilder.vertex(x+width, y+height, 0.0).texture(1f, 1f).nextVertex();
+		bufferBuilder.vertex(x+width, y, 0.0).texture(1f, 0).nextVertex();
+		bufferBuilder.vertex(x, y, 0.0).texture(0, 0).nextVertex();
+		tessellator.end();
 	}
 }

@@ -43,7 +43,32 @@ dependencies {
 	}
 
 	implementation(include(project(path = ":common", configuration = "shadow"))!!)
+	include(implementation("org.apache.xmlgraphics:batik-transcoder:1.19")!!)
+	include("org.apache.xmlgraphics:batik-anim:1.19")
+	include("org.apache.xmlgraphics:batik-shared-resources:1.19")
+	include("org.apache.xmlgraphics:batik-util:1.19")
+	include("org.apache.xmlgraphics:batik-constants:1.19")
+	include("org.apache.xmlgraphics:batik-i18n:1.19")
+	include("org.apache.xmlgraphics:xmlgraphics-commons:2.11")
+	include("org.apache.xmlgraphics:batik-css:1.19")
+	include("org.apache.xmlgraphics:batik-dom:1.19")
+	include("org.apache.xmlgraphics:batik-ext:1.19")
+	include("org.apache.xmlgraphics:batik-xml:1.19")
+	include("org.apache.xmlgraphics:batik-parser:1.19")
+	include("org.apache.xmlgraphics:batik-svg-dom:1.19")
+	include("org.apache.xmlgraphics:batik-bridge:1.19")
+	include("org.apache.xmlgraphics:batik-gvt:1.19")
+	include("org.apache.xmlgraphics:batik-script:1.19")
+	include("org.apache.xmlgraphics:batik-awt-util:1.19")
+	include("org.apache.xmlgraphics:batik-codec:1.19")
+	include("xml-apis:xml-apis-ext:1.3.04")
 }
+
+configurations.configureEach {
+	exclude("org.apache.xmlgraphics:batik-svggen:1.19")
+	exclude("xml-apis", "xml-apis")
+}
+
 
 tasks.processResources {
 	inputs.property("version", version)

@@ -63,5 +63,7 @@ public class RenderingTestMod implements ClientModInitializer {
 		var t = "Example §otext§r §nwith§r §kmultiple§r §mwords and §5some §a§lcolors§r.";
 		Minecraft.getInstance().textRenderer.draw(t, 20, 100, -1, true);
 		guiGraphics.axolotlclient_rendering$drawString(font, t, 20, 110, -1);
+		guiGraphics.axolotlclient_rendering$blitSVG(new Identifier("axolotlclient_rendering", "textures/svg/23.svg"),
+			0, 0, guiGraphics.guiWidth(), guiGraphics.guiHeight(), -1);
 	}
 }

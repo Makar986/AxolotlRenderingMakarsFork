@@ -28,6 +28,10 @@ import net.minecraft.text.Text;
 
 @SuppressWarnings("unused")
 public interface GuiGraphicsExtension {
+	/*	General */
+	int guiWidth();
+	int guiHeight();
+
 	/* outlineRoundedRect */
 	default void axolotlclient_rendering$outlineCircle(int cX, int cY, int color, int radius, float outlineWidth) {
 		this.axolotlclient_rendering$outlineRoundedRect(cX - radius, cY - radius, cX + radius, cY + radius, color, radius, outlineWidth);
@@ -176,4 +180,10 @@ public interface GuiGraphicsExtension {
 			y += font.lineHeight();
 		}
 	}
+
+	/*blitSVG*/
+	default void axolotlclient_rendering$blitSVG(Identifier location, int x, int y, int width, int height, int color) {
+
+	}
+
 }

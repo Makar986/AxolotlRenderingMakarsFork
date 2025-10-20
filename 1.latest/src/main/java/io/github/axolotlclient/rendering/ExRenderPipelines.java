@@ -22,6 +22,9 @@
 
 package io.github.axolotlclient.rendering;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -33,22 +36,36 @@ import net.minecraft.resources.ResourceLocation;
 import org.lwjgl.system.MemoryUtil;
 
 public class ExRenderPipelines {
+	private static final MethodHandle HANDLE;
+
+	static {
+		try {
+			// We can get away with not remapping the name manually here because blaze3d isn't obfuscated anymore
+			HANDLE = MethodHandles.publicLookup().findStaticGetter(VertexFormatElement.class, "MAX_COUNT", int.class);
+		} catch (NoSuchFieldException | IllegalAccessException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	private static int nextUnusedVFEIndex() {
-		for (int i = 0; i < VertexFormatElement.MAX_COUNT; i++) {
-			if (VertexFormatElement.byId(i) == null) {
-				return i;
+		try {
+			for (int i = 0; i < (Integer) HANDLE.invoke(); i++) {
+				if (VertexFormatElement.byId(i) == null) {
+					return i;
+				}
 			}
+		} catch (Throwable ignored) {
 		}
 		throw new IllegalStateException("Not enough VertexFormatElement IDs available. " +
 			"This should not be possible unless other mods are broken.");
 	}
 
-	public static final int NUM_CUSTOM_VERTEX_FORMAT_ELEMENTS = 3;
+	public static final int NUM_CUSTOM_VERTEX_FORMAT_ELEMENTS = 4;
 	private static final VertexFormatElement ROUNDING = VertexFormatElement.register(nextUnusedVFEIndex(), 0, VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.GENERIC, 4);
 	private static final VertexFormatElement DIMENSIONS = VertexFormatElement.register(nextUnusedVFEIndex(), 0, VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.GENERIC, 4);
 	private static final VertexFormatElement OUTLINE_WIDTH = VertexFormatElement.register(nextUnusedVFEIndex(), 0, VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.GENERIC, 1);
 
-	public static RenderPipeline ROUNDED_RECT = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
+	public static final RenderPipeline ROUNDED_RECT = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
 		.withLocation(ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID, "rounded_rect"))
 		.withVertexShader(ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID, "core/rounded_rect"))
 		.withFragmentShader(ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID, "core/rounded_rect"))
@@ -59,7 +76,7 @@ public class ExRenderPipelines {
 			.add("Dimensions", DIMENSIONS)
 			.build(), VertexFormat.Mode.QUADS).build());
 
-	public static RenderPipeline ROUNDED_RECT_TEX = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
+	public static final RenderPipeline ROUNDED_RECT_TEX = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
 		.withLocation(ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID, "rounded_rect_tex"))
 		.withVertexShader(ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID, "core/rounded_rect_tex"))
 		.withFragmentShader(ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID, "core/rounded_rect_tex"))
@@ -71,7 +88,7 @@ public class ExRenderPipelines {
 			.add("Dimensions", DIMENSIONS)
 			.build(), VertexFormat.Mode.QUADS).build());
 
-	public static RenderPipeline ROUNDED_RECT_OUTLINE = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
+	public static final RenderPipeline ROUNDED_RECT_OUTLINE = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
 		.withLocation(ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID, "rounded_rect_outline"))
 		.withVertexShader(ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID, "core/rounded_rect_outline"))
 		.withFragmentShader(ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID, "core/rounded_rect_outline"))
@@ -83,7 +100,7 @@ public class ExRenderPipelines {
 			.add("OutlineWidth", OUTLINE_WIDTH)
 			.build(), VertexFormat.Mode.QUADS).build());
 
-	public static RenderPipeline ROUNDED_RECT_TEX_OUTLINE = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
+	public static final RenderPipeline ROUNDED_RECT_TEX_OUTLINE = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
 		.withLocation(ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID, "rounded_rect_tex_outline"))
 		.withVertexShader(ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID, "core/rounded_rect_tex_outline"))
 		.withFragmentShader(ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID, "core/rounded_rect_tex_outline"))
@@ -96,7 +113,7 @@ public class ExRenderPipelines {
 			.add("OutlineWidth", OUTLINE_WIDTH)
 			.build(), VertexFormat.Mode.QUADS).build());
 
-	public static RenderPipeline FONT = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
+	public static final RenderPipeline FONT = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
 		.withLocation(ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID, "font"))
 		.withVertexShader(ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID, "core/font"))
 		.withFragmentShader(ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID, "core/font"))

@@ -28,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.fabricmc.api.ClientModInitializer;
 import net.ornithemc.osl.lifecycle.api.client.MinecraftClientEvents;
 import net.ornithemc.osl.resource.loader.api.ResourceLoaderEvents;
+import org.jetbrains.annotations.ApiStatus;
 
 @Slf4j
 public class Rendering implements ClientModInitializer {
@@ -37,5 +38,10 @@ public class Rendering implements ClientModInitializer {
 		ExRenderPipelines.init();
 		ResourceLoaderEvents.END_RESOURCE_RELOAD.register(Font::reload);
 		MinecraftClientEvents.STOP.register(mc -> Font.closeAll());
+	}
+
+	@ApiStatus.Internal
+	public static void resetWindow() {
+		((DrawUtil)DrawUtil.get()).resetWindow();
 	}
 }

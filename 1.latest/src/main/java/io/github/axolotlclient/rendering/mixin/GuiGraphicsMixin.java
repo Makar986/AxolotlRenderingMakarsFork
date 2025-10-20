@@ -26,6 +26,7 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import io.github.axolotlclient.rendering.*;
 import io.github.axolotlclient.rendering.font.Font;
+import io.github.axolotlclient.rendering.svg.SVGCache;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.render.TextureSetup;
@@ -57,6 +58,9 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 	@Shadow
 	@Final
 	private Minecraft minecraft;
+
+	@Shadow
+	public abstract void blit(ResourceLocation par1, int par2, int par3, int par4, int par5, float par6, float par7, float par8, float par9);
 
 	@Override
 	public void axolotlclient_rendering$roundedRect(int x0, int y0, int x1, int y1, int color, int roundingPx) {
@@ -137,16 +141,24 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 
 	@Override
 	public void axolotlclient_rendering$drawString(Font font, String text, float x, float y, int color, boolean shadow) {
-		font.renderText((GuiGraphics)(Object) this, text, x, y, color, shadow);
+		font.renderText((GuiGraphics) (Object) this, text, x, y, color, shadow);
 	}
 
 	@Override
 	public void axolotlclient_rendering$drawString(Font font, FormattedCharSequence text, float x, float y, int color, boolean shadow) {
-		font.renderText((GuiGraphics)(Object) this, text, x, y, color, shadow);
+		font.renderText((GuiGraphics) (Object) this, text, x, y, color, shadow);
 	}
 
 	@Override
 	public void axolotlclient_rendering$drawString(Font font, Component text, float x, float y, int color, boolean shadow) {
-		font.renderText((GuiGraphics)(Object) this, text, x, y, color, shadow);
+		font.renderText((GuiGraphics) (Object) this, text, x, y, color, shadow);
 	}
+
+	@Override
+	public void axolotlclient_rendering$blitSVG(ResourceLocation location, int x, int y, int width, int height, int color) {
+		var scale = Minecraft.getInstance().getWindow().getGuiScale();
+		var key = SVGCache.getInstance().load(location, width * scale, height * scale);
+		blit(key, x, y, x + width, y + height, 0, 1f, 0f, 1);
+	}
+
 }

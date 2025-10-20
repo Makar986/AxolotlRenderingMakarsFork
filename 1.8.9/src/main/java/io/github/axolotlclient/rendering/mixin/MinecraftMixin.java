@@ -22,6 +22,8 @@
 
 package io.github.axolotlclient.rendering.mixin;
 
+import io.github.axolotlclient.rendering.DrawUtil;
+import io.github.axolotlclient.rendering.Rendering;
 import io.github.axolotlclient.rendering.font.Font;
 import net.minecraft.client.Minecraft;
 import org.spongepowered.asm.mixin.Mixin;
@@ -35,5 +37,10 @@ public abstract class MinecraftMixin {
 	@Inject(method = "onResolutionChanged()V", at = @At("TAIL"))
 	private void onResolutionChanged(CallbackInfo ci) {
 		Font.onScaleChange();
+	}
+
+	@Inject(method = "updateWindow", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;onResolutionChanged(II)V"))
+	public void axolotlclient$onResize(CallbackInfo ci) {
+		Rendering.resetWindow();
 	}
 }

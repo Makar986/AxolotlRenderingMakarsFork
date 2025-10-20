@@ -10,9 +10,12 @@ dependencies {
 	compileOnly("net.fabricmc:fabric-loader:${project.property("fabric_loader")}")
 	compileOnly("org.jetbrains:annotations:24.0.0")
 
-	testImplementation(compileOnly("com.google.code.gson:gson:2.10")!!)
+	compileOnly("com.google.code.gson:gson:2.10")
 
 	compileOnly("org.slf4j:slf4j-api:1.7.36")
+	compileOnly("it.unimi.dsi:fastutil:8.5.9")
+
+	compileOnly("org.apache.xmlgraphics:batik-transcoder:1.19")
 }
 
 tasks.jar {

@@ -186,4 +186,9 @@ public interface GuiGraphicsExtension {
 			y += font.lineHeight();
 		}
 	}
+
+	/*blitSVG*/
+	default void axolotlclient_rendering$blitSVG(ResourceLocation location, int x, int y, int width, int height, int color) {
+
+	}
 }
