@@ -64,7 +64,7 @@ public class SVGCache {
 	}
 
 	public ResourceLocation load(ResourceLocation loc, float w, float h) {
-		var key = loc.withSuffix("/" + w + "x" + h);
+		var key = loc.withSuffix("/" + Float.floatToIntBits(w) + "x" + Float.floatToIntBits(h));
 		if (!cache.contains(key)) {
 			cache.add(key);
 			var res = minecraft.getResourceManager().getResource(loc);
@@ -76,6 +76,7 @@ public class SVGCache {
 				var n = new NativeImage(NativeImage.Format.RGBA, (int) (w + 0.5), (int) (h + 0.5), false);
 				var buf = MemoryUtil.memAlloc(img.length);
 				buf.put(img).flip();
+				//noinspection DataFlowIssue
 				MemoryUtil.memCopy(MemoryUtil.memAddress(buf), ((NativeImageAccessor) (Object) n).getPointer(), img.length);
 				MemoryUtil.memFree(buf);
 				minecraft.getTextureManager().register(key, new DynamicTexture(n));

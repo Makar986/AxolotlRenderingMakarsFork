@@ -60,71 +60,71 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 	abstract void innerBlit(ResourceLocation atlasLocation, int x1, int x2, int y1, int y2, int blitOffset, float minU, float maxU, float minV, float maxV);
 
 	@Override
-	public void axolotlclient_rendering$roundedRect(int x0, int y0, int x1, int y1, int color, int roundingPx) {
+	public void axolotlclient_rendering$roundedRectVarying(int x0, int y0, int x1, int y1, int color, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight) {
 		var matrix = pose.last().pose();
 		var consumer = bufferSource.getBuffer(ExRenderPipelines.ROUNDED_RECT);
 		int width = x1 - x0;
 		int height = y1 - y0;
 		int z = 0;
 		consumer.addVertex(matrix, x0, y0, z).setColor(color);
-		ExRenderPipelines.addRounding(consumer, roundingPx, roundingPx, roundingPx, roundingPx);
+		ExRenderPipelines.addRounding(consumer, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
 		ExRenderPipelines.addDimensions(consumer, 0, 0, width, height);
 
 		consumer.addVertex(matrix, x0, y1, z).setColor(color);
-		ExRenderPipelines.addRounding(consumer, roundingPx, roundingPx, roundingPx, roundingPx);
+		ExRenderPipelines.addRounding(consumer, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
 		ExRenderPipelines.addDimensions(consumer, 0, height, width, height);
 
 		consumer.addVertex(matrix, x1, y1, z).setColor(color);
-		ExRenderPipelines.addRounding(consumer, roundingPx, roundingPx, roundingPx, roundingPx);
+		ExRenderPipelines.addRounding(consumer, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
 		ExRenderPipelines.addDimensions(consumer, width, height, width, height);
 
 		consumer.addVertex(matrix, x1, y0, z).setColor(color);
-		ExRenderPipelines.addRounding(consumer, roundingPx, roundingPx, roundingPx, roundingPx);
+		ExRenderPipelines.addRounding(consumer, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
 		ExRenderPipelines.addDimensions(consumer, width, 0, width, height);
 		this.flushIfUnmanaged();
 	}
 
 	@Override
-	public void axolotlclient_rendering$outlineRoundedRect(int x0, int y0, int x1, int y1, int color, int roundingPx, float outlineWidth) {
+	public void axolotlclient_rendering$outlineRoundedRectVarying(int x0, int y0, int x1, int y1, int color, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight, float outlineWidth) {
 		var matrix = pose.last().pose();
 		var consumer = bufferSource.getBuffer(ExRenderPipelines.ROUNDED_RECT_OUTLINE);
 		int width = x1 - x0;
 		int height = y1 - y0;
 		int z = 0;
 		consumer.addVertex(matrix, x0, y0, z).setColor(color);
-		ExRenderPipelines.addRounding(consumer, roundingPx, roundingPx, roundingPx, roundingPx);
+		ExRenderPipelines.addRounding(consumer, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
 		ExRenderPipelines.addDimensions(consumer, 0, 0, width, height);
 		ExRenderPipelines.addOutlineWidth(consumer, outlineWidth);
 
 		consumer.addVertex(matrix, x0, y1, z).setColor(color);
-		ExRenderPipelines.addRounding(consumer, roundingPx, roundingPx, roundingPx, roundingPx);
+		ExRenderPipelines.addRounding(consumer, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
 		ExRenderPipelines.addDimensions(consumer, 0, height, width, height);
 		ExRenderPipelines.addOutlineWidth(consumer, outlineWidth);
 
 		consumer.addVertex(matrix, x1, y1, z).setColor(color);
-		ExRenderPipelines.addRounding(consumer, roundingPx, roundingPx, roundingPx, roundingPx);
+		ExRenderPipelines.addRounding(consumer, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
 		ExRenderPipelines.addDimensions(consumer, width, height, width, height);
 		ExRenderPipelines.addOutlineWidth(consumer, outlineWidth);
 
 		consumer.addVertex(matrix, x1, y0, z).setColor(color);
-		ExRenderPipelines.addRounding(consumer, roundingPx, roundingPx, roundingPx, roundingPx);
+		ExRenderPipelines.addRounding(consumer, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
 		ExRenderPipelines.addDimensions(consumer, width, 0, width, height);
 		ExRenderPipelines.addOutlineWidth(consumer, outlineWidth);
 		this.flushIfUnmanaged();
 	}
 
 	@Override
-	public void axolotlclient_rendering$roundedBlit(ResourceLocation location, int x, int y, float u, float v, int width, int height, int uWidth, int vHeight, int textureWidth, int textureHeight, int color, int roundingPx) {
-		this.innerBlit(location, x, x + width, y, y + height, (u + 0.0F) / textureWidth, (u + uWidth) / textureWidth, (v + 0.0F) / textureHeight, (v + vHeight) / textureHeight, color, roundingPx);
+	public void axolotlclient_rendering$roundedBlitVarying(ResourceLocation location, int x, int y, float u, float v, int width, int height, int uWidth, int vHeight, int textureWidth, int textureHeight, int color, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight) {
+		this.innerBlit(location, x, x + width, y, y + height, (u + 0.0F) / textureWidth, (u + uWidth) / textureWidth, (v + 0.0F) / textureHeight, (v + vHeight) / textureHeight, color, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
 	}
 
 	@Override
-	public void axolotlclient_rendering$roundedBlit(ResourceLocation atlas, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1, int color, int rounding) {
-		this.innerBlit(atlas, x0, x1, y0, y1, u0, u1, v0, v1, color, rounding);
+	public void axolotlclient_rendering$roundedBlitVarying(ResourceLocation atlas, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1, int color, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight) {
+		this.innerBlit(atlas, x0, x1, y0, y1, u0, u1, v0, v1, color, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
 	}
 
 	@Unique
-	private void innerBlit(ResourceLocation atlas, int x0, int x1, int y0, int y1, float u0, float u1, float v0, float v1, int color, int roundingPx) {
+	private void innerBlit(ResourceLocation atlas, int x0, int x1, int y0, int y1, float u0, float u1, float v0, float v1, int color, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight) {
 		RenderSystem.setShaderTexture(0, atlas);
 		RenderSystem.enableBlend();
 		RenderSystem.setShader(() -> ExRenderPipelines.ROUNDED_RECT_TEX_SHADER);
@@ -135,39 +135,39 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 		int height = y1 - y0;
 		consumer.addVertex(matrix, x0, y0, z)
 			.setUv(u0, v0).setColor(color);
-		ExRenderPipelines.addRounding(consumer, roundingPx, roundingPx, roundingPx, roundingPx);
+		ExRenderPipelines.addRounding(consumer, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
 		ExRenderPipelines.addDimensions(consumer, 0, 0, width, height);
 
 		consumer.addVertex(matrix, x0, y1, z);
 		consumer.setUv(u0, v1).setColor(color);
-		ExRenderPipelines.addRounding(consumer, roundingPx, roundingPx, roundingPx, roundingPx);
+		ExRenderPipelines.addRounding(consumer, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
 		ExRenderPipelines.addDimensions(consumer, 0, height, width, height);
 
 
 		consumer.addVertex(matrix, x1, y1, z);
 		consumer.setUv(u1, v1).setColor(color);
-		ExRenderPipelines.addRounding(consumer, roundingPx, roundingPx, roundingPx, roundingPx);
+		ExRenderPipelines.addRounding(consumer, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
 		ExRenderPipelines.addDimensions(consumer, width, height, width, height);
 
 		consumer.addVertex(matrix, x1, y0, z);
 		consumer.setUv(u1, v0).setColor(color);
-		ExRenderPipelines.addRounding(consumer, roundingPx, roundingPx, roundingPx, roundingPx);
+		ExRenderPipelines.addRounding(consumer, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
 		ExRenderPipelines.addDimensions(consumer, width, 0, width, height);
 		BufferUploader.drawWithShader(consumer.buildOrThrow());
 	}
 
 	@Override
-	public void axolotlclient_rendering$outlineRoundedBlit(ResourceLocation location, int x, int y, float u, float v, int width, int height, int uWidth, int vHeight, int textureWidth, int textureHeight, int color, int roundingPx, float outlineWidth) {
-		this.innerBlit(location, x, x + width, y, y + height, u / textureWidth, (u + uWidth) / textureWidth, v / textureHeight, (v + vHeight) / textureHeight, color, roundingPx, outlineWidth);
+	public void axolotlclient_rendering$outlineRoundedBlitVarying(ResourceLocation location, int x, int y, float u, float v, int width, int height, int uWidth, int vHeight, int textureWidth, int textureHeight, int color, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight, float outlineWidth) {
+		this.innerBlit(location, x, x + width, y, y + height, u / textureWidth, (u + uWidth) / textureWidth, v / textureHeight, (v + vHeight) / textureHeight, color, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight, outlineWidth);
 	}
 
 	@Override
-	public void axolotlclient_rendering$outlineRoundedBlit(ResourceLocation atlas, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1, int color, int rounding, float outlineWidth) {
-		this.innerBlit(atlas, x0, x1, y0, y1, u0, u1, v0, v1, color, rounding, outlineWidth);
+	public void axolotlclient_rendering$outlineRoundedBlitVarying(ResourceLocation atlas, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1, int color, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight, float outlineWidth) {
+		this.innerBlit(atlas, x0, x1, y0, y1, u0, u1, v0, v1, color, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight, outlineWidth);
 	}
 
 	@Unique
-	private void innerBlit(ResourceLocation atlas, int x0, int x1, int y0, int y1, float u0, float u1, float v0, float v1, int color, int roundingPx, float outlineWidth) {
+	private void innerBlit(ResourceLocation atlas, int x0, int x1, int y0, int y1, float u0, float u1, float v0, float v1, int color, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight, float outlineWidth) {
 		RenderSystem.setShaderTexture(0, atlas);
 		RenderSystem.enableBlend();
 		RenderSystem.setShader(() -> ExRenderPipelines.ROUNDED_RECT_TEX_OUTLINE_SHADER);
@@ -178,25 +178,25 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 		int height = y1 - y0;
 		consumer.addVertex(matrix, x0, y0, z)
 			.setUv(u0, v0).setColor(color);
-		ExRenderPipelines.addRounding(consumer, roundingPx, roundingPx, roundingPx, roundingPx);
+		ExRenderPipelines.addRounding(consumer, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
 		ExRenderPipelines.addDimensions(consumer, 0, 0, width, height);
 		ExRenderPipelines.addOutlineWidth(consumer, outlineWidth);
 
 		consumer.addVertex(matrix, x0, y1, z);
 		consumer.setUv(u0, v1).setColor(color);
-		ExRenderPipelines.addRounding(consumer, roundingPx, roundingPx, roundingPx, roundingPx);
+		ExRenderPipelines.addRounding(consumer, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
 		ExRenderPipelines.addDimensions(consumer, 0, height, width, height);
 		ExRenderPipelines.addOutlineWidth(consumer, outlineWidth);
 
 		consumer.addVertex(matrix, x1, y1, z);
 		consumer.setUv(u1, v1).setColor(color);
-		ExRenderPipelines.addRounding(consumer, roundingPx, roundingPx, roundingPx, roundingPx);
+		ExRenderPipelines.addRounding(consumer, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
 		ExRenderPipelines.addDimensions(consumer, width, height, width, height);
 		ExRenderPipelines.addOutlineWidth(consumer, outlineWidth);
 
 		consumer.addVertex(matrix, x1, y0, z);
 		consumer.setUv(u1, v0).setColor(color);
-		ExRenderPipelines.addRounding(consumer, roundingPx, roundingPx, roundingPx, roundingPx);
+		ExRenderPipelines.addRounding(consumer, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
 		ExRenderPipelines.addDimensions(consumer, width, 0, width, height);
 		ExRenderPipelines.addOutlineWidth(consumer, outlineWidth);
 		BufferUploader.drawWithShader(consumer.buildOrThrow());

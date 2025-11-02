@@ -36,6 +36,10 @@ public interface GuiGraphicsExtension {
 	}
 
 	default void axolotlclient_rendering$outlineRoundedRect(int x0, int y0, int x1, int y1, int color, int roundingPx, float outlineWidth) {
+		this.axolotlclient_rendering$outlineRoundedRectVarying(x0, y0, x1, y1, color, roundingPx, roundingPx, roundingPx, roundingPx, outlineWidth);
+	}
+
+	default void axolotlclient_rendering$outlineRoundedRectVarying(int x0, int y0, int x1, int y1, int color, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight, float outlineWidth) {
 
 	}
 
@@ -57,6 +61,26 @@ public interface GuiGraphicsExtension {
 	}
 
 	default void axolotlclient_rendering$outlineRoundedBlit(ResourceLocation location, int x, int y, float u, float v, int width, int height, int uWidth, int vHeight, int textureWidth, int textureHeight, int color, int roundingPx, float outlineWidth) {
+		this.axolotlclient_rendering$outlineRoundedBlitVarying(location, x, y, u, v, width, height, uWidth, vHeight, textureWidth, textureHeight, color, roundingPx, roundingPx, roundingPx, roundingPx, outlineWidth);
+	}
+
+	default void axolotlclient_rendering$outlineRoundedBlitVarying(ResourceLocation atlas, int x, int y, int width, int height, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight, float outlineWidth) {
+		this.axolotlclient_rendering$outlineRoundedBlitVarying(atlas, x, y, x + width, y + height, 0, 1f, 0, 1, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight, outlineWidth);
+	}
+
+	default void axolotlclient_rendering$outlineRoundedBlitVarying(ResourceLocation atlas, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight, int color, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight, float outlineWidth) {
+		this.axolotlclient_rendering$outlineRoundedBlitVarying(atlas, x, y, u, v, width, height, width, height, textureWidth, textureHeight, color, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight, outlineWidth);
+	}
+
+	default void axolotlclient_rendering$outlineRoundedBlitVarying(ResourceLocation atlas, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight, float outlineWidth) {
+		this.axolotlclient_rendering$outlineRoundedBlitVarying(atlas, x, y, u, v, width, height, width, height, textureWidth, textureHeight, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight, outlineWidth);
+	}
+
+	default void axolotlclient_rendering$outlineRoundedBlitVarying(ResourceLocation atlas, int x, int y, float u, float v, int width, int height, int uWidth, int vHeight, int textureWidth, int textureHeight, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight, float outlineWidth) {
+		this.axolotlclient_rendering$outlineRoundedBlitVarying(atlas, x, y, u, v, width, height, uWidth, vHeight, textureWidth, textureHeight, -1, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight, outlineWidth);
+	}
+
+	default void axolotlclient_rendering$outlineRoundedBlitVarying(ResourceLocation location, int x, int y, float u, float v, int width, int height, int uWidth, int vHeight, int textureWidth, int textureHeight, int color, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight, float outlineWidth) {
 	}
 
 	default void axolotlclient_rendering$outlineRoundedBlit(ResourceLocation atlas, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1, int rounding, float outlineWidth) {
@@ -64,6 +88,14 @@ public interface GuiGraphicsExtension {
 	}
 
 	default void axolotlclient_rendering$outlineRoundedBlit(ResourceLocation atlas, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1, int color, int rounding, float outlineWidth) {
+		this.axolotlclient_rendering$outlineRoundedBlitVarying(atlas, x0, y0, x1, y1, u0, u1, v0, v1, color, rounding, rounding, rounding, rounding, outlineWidth);
+	}
+
+	default void axolotlclient_rendering$outlineRoundedBlitVarying(ResourceLocation atlas, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight, float outlineWidth) {
+		this.axolotlclient_rendering$outlineRoundedBlitVarying(atlas, x0, y0, x1, y1, u0, u1, v0, v1, -1, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight, outlineWidth);
+	}
+
+	default void axolotlclient_rendering$outlineRoundedBlitVarying(ResourceLocation atlas, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1, int color, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight, float outlineWidth) {
 	}
 
 	default void axolotlclient_rendering$outlineCircleBlit(ResourceLocation atlas, int cX, int cY, float u, float v, int radius, int textureWidth, int textureHeight, int color, int rounding, float outlineWidth) {
@@ -96,6 +128,10 @@ public interface GuiGraphicsExtension {
 	}
 
 	default void axolotlclient_rendering$roundedRect(int x0, int y0, int x1, int y1, int color, int roundingPx) {
+		this.axolotlclient_rendering$roundedRectVarying(x0, y0, x1, y1, color, roundingPx, roundingPx, roundingPx, roundingPx);
+	}
+
+	default void axolotlclient_rendering$roundedRectVarying(int x0, int y0, int x1, int y1, int color, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight) {
 
 	}
 
@@ -117,13 +153,41 @@ public interface GuiGraphicsExtension {
 	}
 
 	default void axolotlclient_rendering$roundedBlit(ResourceLocation location, int x, int y, float u, float v, int width, int height, int uWidth, int vHeight, int textureWidth, int textureHeight, int color, int roundingPx) {
+		this.axolotlclient_rendering$roundedBlitVarying(location, x, y, u, v, width, height, uWidth, vHeight, textureWidth, textureHeight, color, roundingPx, roundingPx, roundingPx, roundingPx);
+	}
+
+	default void axolotlclient_rendering$roundedBlitVarying(ResourceLocation atlas, int x, int y, int width, int height, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight) {
+		this.axolotlclient_rendering$roundedBlitVarying(atlas, x, y, x + width, y + height, 0, 1f, 0, 1, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
+	}
+
+	default void axolotlclient_rendering$roundedBlitVarying(ResourceLocation atlas, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight, int color, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight) {
+		this.axolotlclient_rendering$roundedBlitVarying(atlas, x, y, u, v, width, height, width, height, textureWidth, textureHeight, color, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
+	}
+
+	default void axolotlclient_rendering$roundedBlitVarying(ResourceLocation atlas, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight) {
+		this.axolotlclient_rendering$roundedBlitVarying(atlas, x, y, u, v, width, height, width, height, textureWidth, textureHeight, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
+	}
+
+	default void axolotlclient_rendering$roundedBlitVarying(ResourceLocation atlas, int x, int y, float u, float v, int width, int height, int uWidth, int vHeight, int textureWidth, int textureHeight, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight) {
+		this.axolotlclient_rendering$roundedBlitVarying(atlas, x, y, u, v, width, height, uWidth, vHeight, textureWidth, textureHeight, -1, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
+	}
+
+	default void axolotlclient_rendering$roundedBlitVarying(ResourceLocation location, int x, int y, float u, float v, int width, int height, int uWidth, int vHeight, int textureWidth, int textureHeight, int color, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight) {
 	}
 
 	default void axolotlclient_rendering$roundedBlit(ResourceLocation atlas, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1, int rounding) {
-		axolotlclient_rendering$roundedBlit(atlas, x0, y0, x1, y1, u0, u1, v0, v1, -1, rounding);
+		this.axolotlclient_rendering$roundedBlit(atlas, x0, y0, x1, y1, u0, u1, v0, v1, -1, rounding);
 	}
 
 	default void axolotlclient_rendering$roundedBlit(ResourceLocation atlas, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1, int color, int rounding) {
+		this.axolotlclient_rendering$roundedBlitVarying(atlas, x0, y0, x1, y1, u0, u1, v0, v1, color, rounding, rounding, rounding, rounding);
+	}
+
+	default void axolotlclient_rendering$roundedBlitVarying(ResourceLocation atlas, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight) {
+		this.axolotlclient_rendering$roundedBlitVarying(atlas, x0, y0, x1, y1, u0, u1, v0, v1, -1, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
+	}
+
+	default void axolotlclient_rendering$roundedBlitVarying(ResourceLocation atlas, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1, int color, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight) {
 	}
 
 	default void axolotlclient_rendering$circleBlit(ResourceLocation atlas, int cX, int cY, float u, float v, int radius, int textureWidth, int textureHeight, int color, int rounding) {
@@ -164,25 +228,25 @@ public interface GuiGraphicsExtension {
 	}
 
 	default void axolotlclient_rendering$drawString(Font font, String text, float x, float y, int color) {
-		axolotlclient_rendering$drawString(font, text, x, y, color, true);
+		this.axolotlclient_rendering$drawString(font, text, x, y, color, true);
 	}
 
 	default void axolotlclient_rendering$drawString(Font font, FormattedCharSequence text, float x, float y, int color) {
-		axolotlclient_rendering$drawString(font, text, x, y, color, true);
+		this.axolotlclient_rendering$drawString(font, text, x, y, color, true);
 	}
 
 	default void axolotlclient_rendering$drawString(Font font, Component text, float x, float y, int color) {
-		axolotlclient_rendering$drawString(font, text, x, y, color, true);
+		this.axolotlclient_rendering$drawString(font, text, x, y, color, true);
 	}
 
 	/*drawWordWrap*/
 	default void axolotlclient_rendering$drawWordWrap(Font font, FormattedText text, int x, int y, int lineWidth, int color) {
-		axolotlclient_rendering$drawWordWrap(font, text, x, y, lineWidth, color, true);
+		this.axolotlclient_rendering$drawWordWrap(font, text, x, y, lineWidth, color, true);
 	}
 
 	default void axolotlclient_rendering$drawWordWrap(Font font, FormattedText text, int x, int y, int lineWidth, int color, boolean dropShadow) {
 		for (FormattedCharSequence formattedCharSequence : font.split(text, lineWidth)) {
-			axolotlclient_rendering$drawString(font, formattedCharSequence, x, y, color, dropShadow);
+			this.axolotlclient_rendering$drawString(font, formattedCharSequence, x, y, color, dropShadow);
 			y += font.lineHeight();
 		}
 	}

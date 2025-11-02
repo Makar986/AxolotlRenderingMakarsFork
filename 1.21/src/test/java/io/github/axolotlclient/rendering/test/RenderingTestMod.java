@@ -45,8 +45,9 @@ public class RenderingTestMod implements ClientModInitializer {
 					throw new RuntimeException(e);
 				}
 			}
-			guiGraphics.axolotlclient_rendering$roundedRect(10, 10, 60, 60, 0xFF777777, 5);
-			guiGraphics.axolotlclient_rendering$outlineRoundedRect(10, 10, 60, 60, 0xFF77AAAA, 5, 3);
+			guiGraphics.axolotlclient_rendering$roundedRectVarying(10, 10, 60, 60, 0xFF777777, 5, 0, 0, 5);
+			guiGraphics.axolotlclient_rendering$roundedRectVarying(10, 60, 60, 80, 0xFF77CC77, 0, 5, 5, 0);
+			guiGraphics.axolotlclient_rendering$outlineRoundedRect(10, 10, 60, 50, 0xFF77AAAA, 5, 3);
 			guiGraphics.axolotlclient_rendering$roundedRect(80, 100, 180, 160, 0xFF777777, 9);
 			guiGraphics.axolotlclient_rendering$roundedRect(80, 10, 180, 30, 0x77777777, 9);
 			guiGraphics.axolotlclient_rendering$outlineRoundedRect(80, 10, 180, 30, 0x99FF3333, 9, 3);
@@ -59,7 +60,7 @@ public class RenderingTestMod implements ClientModInitializer {
 			guiGraphics.drawString(Minecraft.getInstance().font, t, 20, 100, -1);
 			guiGraphics.axolotlclient_rendering$drawString(font, t, 20, 110, -1);
 			guiGraphics.axolotlclient_rendering$blitSVG(ResourceLocation.fromNamespaceAndPath("axolotlclient_rendering", "textures/svg/23.svg"),
-				0, 0, guiGraphics.guiWidth(), guiGraphics.guiHeight(), -1);
+				guiGraphics.guiWidth()-50, 0, 50, 50, -1);
 		});
 	}
 }

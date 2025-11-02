@@ -49,7 +49,7 @@ public class SVGCache {
 	}
 
 	public Identifier load(Identifier loc, float w, float h) {
-		var key = new Identifier(loc.getNamespace(), loc.getPath() + "/" + w + "x" + h);
+		var key = new Identifier(loc.getNamespace(), loc.getPath() + "/" + Float.floatToIntBits(w) + "x" + Float.floatToIntBits(h));
 		if (!cache.contains(key)) {
 			cache.add(key);
 			try {

@@ -53,7 +53,7 @@ public class SVGCache {
 	}
 
 	public ResourceLocation load(ResourceLocation loc, float w, float h) {
-		var key = loc.withSuffix("/" + w + "x" + h);
+		var key = loc.withSuffix("/" + Float.floatToIntBits(w) + "x" + Float.floatToIntBits(h));
 		if (!cache.contains(key)) {
 			cache.add(key);
 			var res = minecraft.getResourceManager().getResource(loc);
@@ -62,7 +62,7 @@ public class SVGCache {
 			}
 			try (var in = res.get().open()) {
 				var img = BatikAdapter.rasterizeSvg(in, w, h);
-				var n = new NativeImage(NativeImage.Format.RGBA, (int) (w+0.5), (int) (h+0.5), false);
+				var n = new NativeImage(NativeImage.Format.RGBA, (int) (w + 0.5), (int) (h + 0.5), false);
 				var buf = MemoryUtil.memAlloc(img.length);
 				buf.put(img).flip();
 				MemoryUtil.memCopy(MemoryUtil.memAddress(buf), n.getPointer(), img.length);
