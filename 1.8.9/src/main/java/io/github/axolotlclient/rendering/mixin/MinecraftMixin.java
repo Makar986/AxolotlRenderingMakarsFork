@@ -22,7 +22,6 @@
 
 package io.github.axolotlclient.rendering.mixin;
 
-import io.github.axolotlclient.rendering.DrawUtil;
 import io.github.axolotlclient.rendering.Rendering;
 import io.github.axolotlclient.rendering.font.Font;
 import net.minecraft.client.Minecraft;

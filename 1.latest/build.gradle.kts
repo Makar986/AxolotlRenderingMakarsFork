@@ -63,7 +63,6 @@ dependencies {
 	include("org.apache.xmlgraphics:batik-bridge:1.19")
 	include("org.apache.xmlgraphics:batik-gvt:1.19")
 	include("org.apache.xmlgraphics:batik-script:1.19")
-	include("org.apache.xmlgraphics:batik-svggen:1.19")
 	include("org.apache.xmlgraphics:batik-awt-util:1.19")
 	include("xml-apis:xml-apis-ext:1.3.04")
 }

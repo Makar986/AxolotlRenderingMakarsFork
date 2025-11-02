@@ -344,6 +344,13 @@ public class Font implements AutoCloseable {
 		return (long) variation << 32 | no;
 	}
 
+	/**
+	 * Set the font size
+	 * @implNote this is an expensive operation as it clears the currently cached font pages,
+	 * they have to be regenerated after. As such it is advised to cache font instances globally
+	 * and only set the size using the constructor.
+	 * @param mcSize the new size, in minecraft scale
+	 */
 	public void resize(int mcSize) {
 		subFonts.forEach(f -> f.font.resize(mcSize));
 		resizeInternal(mcSize);

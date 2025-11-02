@@ -43,6 +43,10 @@ allprojects {
 		mavenLocal()
 		mavenCentral()
 	}
+
+	tasks.withType<AbstractTestTask>().configureEach {
+		failOnNoDiscoveredTests = false
+	}
 }
 
 subprojects {
