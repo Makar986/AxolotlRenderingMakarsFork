@@ -38,12 +38,12 @@ public class AxolotlClientRenderingMixinPlugin implements IMixinConfigPlugin {
 
 	@Override
 	public String getRefMapperConfig() {
-		return "";
+		return null;
 	}
 
 	@Override
 	public boolean shouldApplyMixin(String targetClassName, String mixinClassName) {
-		return false;
+		return true;
 	}
 
 	@Override
@@ -53,7 +53,7 @@ public class AxolotlClientRenderingMixinPlugin implements IMixinConfigPlugin {
 
 	@Override
 	public List<String> getMixins() {
-		return List.of();
+		return null;
 	}
 
 	@Override

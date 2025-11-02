@@ -517,6 +517,7 @@ public class Font implements AutoCloseable {
 			}
 			BufferUploader.drawWithShader(vertexConsumer.buildOrThrow());
 		}
+		RenderSystem.enableBlend();
 	}
 
 	public float width(String text) {

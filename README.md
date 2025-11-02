@@ -5,8 +5,9 @@ Small(-ish) rendering library integrated into Minecraft's rendering
 Current features:
 
 - Shader-based rendering of rounded rectangles (/circles)
-	- Also textured
+	- Also textured & outlined
 - Convenient rendering of TrueType fonts using FreeType
+- Convenient rendering of SVG images using Apache Batik
 
 ### Examples
 
