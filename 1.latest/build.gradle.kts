@@ -7,7 +7,7 @@ plugins {
 
 val minecraftVersion = "1.21.10"
 val minecraftFriendly = "1.21.10"
-val fapiVersion = "0.135.0"
+val fapiVersion = "0.136.0"
 
 group = project.property("maven_group") as String
 version = "${project.property("version")}+$minecraftVersion"
@@ -35,14 +35,14 @@ dependencies {
 		officialMojangMappings {
 			nameSyntheticMembers = true
 		}
-		parchment("org.parchmentmc.data:parchment-1.21.9:2025.10.05@zip")
+		parchment("org.parchmentmc.data:parchment-1.21.10:2025.10.12@zip")
 	})
 
 	modImplementation("net.fabricmc:fabric-loader:${project.property("fabric_loader")}")
 
 	modImplementation("net.fabricmc.fabric-api:fabric-api:$fapiVersion+$minecraftFriendly")
 
-	modCompileOnly("com.terraformersmc:modmenu:13.0.0-beta.1")
+	modCompileOnly("com.terraformersmc:modmenu:16.0.0-rc.1")
 
 	implementation(include(project(path = ":common", configuration = "shadow"))!!)
 
@@ -143,7 +143,7 @@ modrinth {
 		"release"
 	}
 	uploadFile = tasks.remapJar.get()
-	gameVersions.set(listOf("1.21.7", "1.21.8"))
+	gameVersions.set(listOf(minecraftVersion))
 	loaders.set(listOf("quilt", "fabric"))
 	additionalFiles.set(listOf(tasks.remapSourcesJar))
 	dependencies {

@@ -77,7 +77,7 @@ import static org.lwjgl.util.freetype.FreeType.*;
 public class Font implements AutoCloseable {
 
 	public static final long TAG_WEIGHT = makeVariantTag('w', 'g', 'h', 't');
-	public static final long TAG_WIDTH = makeVariantTag('w', 'h', 't', 'h');
+	public static final long TAG_WIDTH = makeVariantTag('w', 'd', 't', 'h');
 	public static final long TAG_ITALIC = makeVariantTag('i', 't', 'a', 'l');
 	public static final float WEIGHT_REGULAR = 400;
 	public static final float WEIGHT_BOLD = 700;
