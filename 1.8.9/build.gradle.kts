@@ -6,11 +6,7 @@ import org.tukaani.xz.LZMA2Options
 import org.tukaani.xz.XZ
 import org.tukaani.xz.XZOutputStream
 import java.io.BufferedOutputStream
-import java.nio.file.FileSystems
-import java.nio.file.FileVisitResult
-import java.nio.file.Files
-import java.nio.file.SimpleFileVisitor
-import java.nio.file.StandardCopyOption
+import java.nio.file.*
 import java.nio.file.attribute.BasicFileAttributes
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentLinkedDeque
@@ -77,27 +73,27 @@ dependencies {
 		"embedCompressed"(runtimeOnly("org.lwjgl:lwjgl-freetype:$lwjglVersion:natives-$platform")!!)
 	}
 
-	implementation("org.apache.xmlgraphics:batik-transcoder:1.19")
-	"embedCompressed"("org.apache.xmlgraphics:batik-transcoder:1.19") {
+	//implementation("org.apache.xmlgraphics:batik-transcoder:1.19")
+	implementation("embedCompressed"("org.apache.xmlgraphics:batik-transcoder:1.19") {
 		isTransitive = false
-	}
-	"embedCompressed"("org.apache.xmlgraphics:batik-anim:1.19")
-	"embedCompressed"("org.apache.xmlgraphics:batik-shared-resources:1.19")
-	"embedCompressed"("org.apache.xmlgraphics:batik-util:1.19")
-	"embedCompressed"("org.apache.xmlgraphics:batik-constants:1.19")
-	"embedCompressed"("org.apache.xmlgraphics:batik-i18n:1.19")
-	"embedCompressed"("org.apache.xmlgraphics:xmlgraphics-commons:2.11")
-	"embedCompressed"("org.apache.xmlgraphics:batik-css:1.19")
-	"embedCompressed"("org.apache.xmlgraphics:batik-dom:1.19")
-	"embedCompressed"("org.apache.xmlgraphics:batik-ext:1.19")
-	"embedCompressed"("org.apache.xmlgraphics:batik-xml:1.19")
-	"embedCompressed"("org.apache.xmlgraphics:batik-parser:1.19")
-	"embedCompressed"("org.apache.xmlgraphics:batik-svg-dom:1.19")
-	"embedCompressed"("org.apache.xmlgraphics:batik-bridge:1.19")
-	"embedCompressed"("org.apache.xmlgraphics:batik-gvt:1.19")
-	"embedCompressed"("org.apache.xmlgraphics:batik-script:1.19")
-	"embedCompressed"("org.apache.xmlgraphics:batik-awt-util:1.19")
-	"embedCompressed"("xml-apis:xml-apis-ext:1.3.04")
+	})
+	implementation("embedCompressed"("org.apache.xmlgraphics:batik-anim:1.19")!!)
+	implementation("embedCompressed"("org.apache.xmlgraphics:batik-shared-resources:1.19")!!)
+	implementation("embedCompressed"("org.apache.xmlgraphics:batik-util:1.19")!!)
+	implementation("embedCompressed"("org.apache.xmlgraphics:batik-constants:1.19")!!)
+	implementation("embedCompressed"("org.apache.xmlgraphics:batik-i18n:1.19")!!)
+	implementation("embedCompressed"("org.apache.xmlgraphics:xmlgraphics-commons:2.11")!!)
+	implementation("embedCompressed"("org.apache.xmlgraphics:batik-css:1.19")!!)
+	implementation("embedCompressed"("org.apache.xmlgraphics:batik-dom:1.19")!!)
+	implementation("embedCompressed"("org.apache.xmlgraphics:batik-ext:1.19")!!)
+	implementation("embedCompressed"("org.apache.xmlgraphics:batik-xml:1.19")!!)
+	implementation("embedCompressed"("org.apache.xmlgraphics:batik-parser:1.19")!!)
+	implementation("embedCompressed"("org.apache.xmlgraphics:batik-svg-dom:1.19")!!)
+	implementation("embedCompressed"("org.apache.xmlgraphics:batik-bridge:1.19")!!)
+	implementation("embedCompressed"("org.apache.xmlgraphics:batik-gvt:1.19")!!)
+	implementation("embedCompressed"("org.apache.xmlgraphics:batik-script:1.19")!!)
+	implementation("embedCompressed"("org.apache.xmlgraphics:batik-awt-util:1.19")!!)
+	implementation("embedCompressed"("xml-apis:xml-apis-ext:1.3.04")!!)
 
 	include(implementation("org.kamranzafar:jtar:2.3")!!)
 	include(implementation("org.tukaani:xz:1.10")!!)

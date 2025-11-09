@@ -76,10 +76,10 @@ public class DrawUtil implements GuiGraphicsExtension {
 		var shader = ExRenderPipelines.ROUNDED_RECT_PROGRAM;
 		shader.bind();
 		shader.setUniform("Rounding",
-			/*radiusTopLeft*/ roundingPxTopLeft,
+			/*radiusBottomRight*/ roundingPxBottomRight,
 			/*radiusTopRight*/ roundingPxTopRight,
 			/*radiusBottomLeft*/ roundingPxBottomLeft,
-			/*radiusBottomRight*/ roundingPxBottomRight);
+			/*radiusTopLeft*/ roundingPxTopLeft);
 		var buf = MemoryTracker.createFloatBuffer(16);
 		buf.put(new float[]{
 			width, 0, width, height,
@@ -100,10 +100,10 @@ public class DrawUtil implements GuiGraphicsExtension {
 		var shader = ExRenderPipelines.ROUNDED_RECT_OUTLINE_PROGRAM;
 		shader.bind();
 		shader.setUniform("Rounding",
-			/*radiusTopLeft*/ roundingPxTopLeft,
+			/*radiusBottomRight*/ roundingPxBottomRight,
 			/*radiusTopRight*/ roundingPxTopRight,
 			/*radiusBottomLeft*/ roundingPxBottomLeft,
-			/*radiusBottomRight*/ roundingPxBottomRight);
+			/*radiusTopLeft*/ roundingPxTopLeft);
 		var buf = MemoryTracker.createFloatBuffer(16);
 		buf.put(new float[]{
 			width, 0, width, height,
@@ -139,10 +139,10 @@ public class DrawUtil implements GuiGraphicsExtension {
 		Minecraft.getInstance().getTextureManager().bind(atlas);
 		shader.bind();
 		shader.setUniform("Rounding",
-			/*radiusTopLeft*/ roundingPxTopLeft,
+			/*radiusBottomRight*/ roundingPxBottomRight,
 			/*radiusTopRight*/ roundingPxTopRight,
 			/*radiusBottomLeft*/ roundingPxBottomLeft,
-			/*radiusBottomRight*/ roundingPxBottomRight);
+			/*radiusTopLeft*/ roundingPxTopLeft);
 		var buf = MemoryTracker.createFloatBuffer(16);
 		buf.put(new float[]{
 			width, 0, width, height,
@@ -185,10 +185,10 @@ public class DrawUtil implements GuiGraphicsExtension {
 		Minecraft.getInstance().getTextureManager().bind(atlas);
 		shader.bind();
 		shader.setUniform("Rounding",
-			/*radiusTopLeft*/ roundingPxTopLeft,
+			/*radiusBottomRight*/ roundingPxBottomRight,
 			/*radiusTopRight*/ roundingPxTopRight,
 			/*radiusBottomLeft*/ roundingPxBottomLeft,
-			/*radiusBottomRight*/ roundingPxBottomRight);
+			/*radiusTopLeft*/ roundingPxTopLeft);
 		var buf = MemoryTracker.createFloatBuffer(16);
 		buf.put(new float[]{
 			width, 0, width, height,
