@@ -30,6 +30,15 @@ import net.minecraft.util.FormattedCharSequence;
 
 @SuppressWarnings("unused")
 public interface GuiGraphicsExtension {
+	/* roundedLine */
+	default void axolotlclient_rendering$roundedHLine(int minX, int maxX, int y, int color) {
+		this.axolotlclient_rendering$roundedRect(minX, y, maxX, y+1, color, 1);
+	}
+
+	default void axolotlclient_rendering$roundedVLine(int x, int minY, int maxY, int color) {
+		this.axolotlclient_rendering$roundedRect(x, minY, x+1, maxY, color, 1);
+	}
+
 	/* outlineRoundedRect */
 	default void axolotlclient_rendering$outlineCircle(int cX, int cY, int color, int radius, float outlineWidth) {
 		this.axolotlclient_rendering$outlineRoundedRect(cX - radius, cY - radius, cX + radius, cY + radius, color, radius, outlineWidth);
