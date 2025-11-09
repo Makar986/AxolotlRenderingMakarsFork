@@ -64,6 +64,7 @@ publishing {
 		create("shadow", MavenPublication::class) {
 			artifactId = base.archivesName.get()
 			from(components["shadow"])
+			artifact(tasks.sourcesJar)
 		}
 	}
 	repositories {
