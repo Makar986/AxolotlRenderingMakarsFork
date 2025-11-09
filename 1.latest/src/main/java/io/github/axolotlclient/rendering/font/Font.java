@@ -433,25 +433,9 @@ public class Font implements AutoCloseable {
 		renderTextCommon(graphics, x, y, alignFlags, built);
 	}
 
-	public void renderText(GuiGraphics graphics, FormattedCharSequence text, float x, float y, int color, boolean shadow) {
-		renderText(graphics, text, x, y, color, shadow, 0);
-	}
-
-	public void renderText(GuiGraphics graphics, FormattedCharSequence text, float x, float y, int color) {
-		renderText(graphics, text, x, y, color, true);
-	}
-
 	public void renderText(GuiGraphics graphics, String text, float x, float y, int color, boolean shadow, int alignFlags) {
 		var built = buildText(color, shadow, s -> StringDecomposer.iterateFormatted(text, Style.EMPTY, s));
 		renderTextCommon(graphics, x, y, alignFlags, built);
-	}
-
-	public void renderText(GuiGraphics graphics, String text, float x, float y, int color, boolean shadow) {
-		renderText(graphics, text, x, y, color, shadow, 0);
-	}
-
-	public void renderText(GuiGraphics graphics, String text, float x, float y, int color) {
-		renderText(graphics, text, x, y, color, true);
 	}
 
 	public void renderText(GuiGraphics graphics, Component text, float x, float y, int color, boolean shadow, int alignFlags) {
@@ -459,22 +443,14 @@ public class Font implements AutoCloseable {
 		renderTextCommon(graphics, x, y, alignFlags, built);
 	}
 
-	public void renderText(GuiGraphics graphics, Component text, float x, float y, int color, boolean shadow) {
-		renderText(graphics, text, x, y, color, shadow, 0);
-	}
-
-	public void renderText(GuiGraphics graphics, Component text, float x, float y, int color) {
-		renderText(graphics, text, x, y, color, true);
-	}
-
 	private void renderTextCommon(GuiGraphics graphics, float x, float y, int alignFlags, BuiltText builtText) {
 		float[] startOffset = getOffset(alignFlags, builtText);
+		var scale = Minecraft.getInstance().getWindow().getGuiScale();
 
 		graphics.pose().pushMatrix();
-		graphics.pose().translate(x, y + 7);
-		graphics.pose().translate(-startOffset[0], -startOffset[1]);
-		var scale = Minecraft.getInstance().getWindow().getGuiScale();
+		graphics.pose().translate(x, y);
 		graphics.pose().scale(1f / scale);
+		graphics.pose().translate(-startOffset[0], -startOffset[1]);
 
 		renderTextCommon(graphics, builtText);
 		graphics.pose().popMatrix();
@@ -529,7 +505,7 @@ public class Font implements AutoCloseable {
 	}
 
 	public int lineHeight() {
-		return activeSubFont.lineHeight;
+		return activeSubFont.lineHeight / Minecraft.getInstance().getWindow().getGuiScale();
 	}
 
 	private float getWidth(int codePt, Style style) {
@@ -537,6 +513,10 @@ public class Font implements AutoCloseable {
 		var page = getPage(codePt, false);
 		var c = page.charInfo[codePt & 0xFF];
 		return c.advanceX;
+	}
+
+	public List<FormattedCharSequence> split(String text, int maxWidth) {
+		return Language.getInstance().getVisualOrder(this.splitter.splitLines(text, maxWidth, Style.EMPTY));
 	}
 
 	public List<FormattedCharSequence> split(FormattedText text, int maxWidth) {
@@ -826,7 +806,7 @@ public class Font implements AutoCloseable {
 		}
 
 		page.tex = ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID,
-			"font_%s/%s/page_%d@%d".formatted(
+			"font_%s/%s/page_%d/%d".formatted(
 				face.family_nameString().replace(" ", "_").toLowerCase(Locale.ROOT),
 				face.style_nameString().replace(" ", "_").toLowerCase(Locale.ROOT),
 				pageIndex, mcSize

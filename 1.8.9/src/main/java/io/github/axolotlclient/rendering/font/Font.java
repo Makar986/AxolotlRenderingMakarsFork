@@ -431,35 +431,19 @@ public class Font implements AutoCloseable {
 		renderTextCommon(x, y, alignFlags, built);
 	}
 
-	public void renderText(String text, float x, float y, int color, boolean shadow) {
-		renderText(text, x, y, color, shadow, 0);
-	}
-
-	public void renderText(String text, float x, float y, int color) {
-		renderText(text, x, y, color, true);
-	}
-
 	public void renderText(Text text, float x, float y, int color, boolean shadow, int alignFlags) {
 		var built = buildText(color, shadow, s -> StringDecomposer.iterateFormatted(text, new Style(), s));
 		renderTextCommon(x, y, alignFlags, built);
 	}
 
-	public void renderText(Text text, float x, float y, int color, boolean shadow) {
-		renderText(text, x, y, color, shadow, 0);
-	}
-
-	public void renderText(Text text, float x, float y, int color) {
-		renderText(text, x, y, color, true);
-	}
-
 	private void renderTextCommon(float x, float y, int alignFlags, BuiltText builtText) {
 		float[] startOffset = getOffset(alignFlags, builtText);
+		var scale = (float) window.getScale();
 
 		GlStateManager.pushMatrix();
-		GlStateManager.translatef(x, y + 7, 0);
-		GlStateManager.translatef(-startOffset[0], -startOffset[1], 0);
-		var scale = (float) window.getScale();
+		GlStateManager.translatef(x, y, 0);
 		GlStateManager.scalef(1f / scale, 1f / scale, 1);
+		GlStateManager.translatef(-startOffset[0], -startOffset[1], 0);
 
 		renderTextCommon(builtText);
 		GlStateManager.popMatrix();
@@ -545,7 +529,7 @@ public class Font implements AutoCloseable {
 	}
 
 	public int lineHeight() {
-		return activeSubFont.lineHeight;
+		return activeSubFont.lineHeight / window.getScale();
 	}
 
 	private float getWidth(int codePt, Style style) {
@@ -553,6 +537,10 @@ public class Font implements AutoCloseable {
 		var page = getPage(codePt, false);
 		var c = page.charInfo[codePt & 0xFF];
 		return c.advanceX;
+	}
+
+	public List<Text> split(String text, int maxWidth) {
+		return this.splitter.splitLines(text, maxWidth, new Style());
 	}
 
 	public List<Text> split(Text text, int maxWidth) {
@@ -839,7 +827,7 @@ public class Font implements AutoCloseable {
 		}
 
 		page.tex = new Identifier(RenderingCommon.MODID,
-			"font_%s/%s/page_%d@%d".formatted(
+			"font_%s/%s/page_%d/%d".formatted(
 				face.family_nameString().replace(" ", "_").toLowerCase(Locale.ROOT),
 				face.style_nameString().replace(" ", "_").toLowerCase(Locale.ROOT),
 				pageIndex, mcSize

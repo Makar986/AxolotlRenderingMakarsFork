@@ -212,13 +212,13 @@ public class DrawUtil implements GuiGraphicsExtension {
 	}
 
 	@Override
-	public void axolotlclient_rendering$drawString(Font font, String text, float x, float y, int color, boolean shadow) {
-		font.renderText(text, x, y, color, shadow);
+	public void axolotlclient_rendering$drawString(Font font, String text, float x, float y, int color, boolean shadow, int origin) {
+		font.renderText(text, x, y, color, shadow, origin);
 	}
 
 	@Override
-	public void axolotlclient_rendering$drawString(Font font, Text text, float x, float y, int color, boolean shadow) {
-		font.renderText(text, x, y, color, shadow);
+	public void axolotlclient_rendering$drawString(Font font, Text text, float x, float y, int color, boolean shadow, int origin) {
+		font.renderText(text, x, y, color, shadow, origin);
 	}
 
 	@Override

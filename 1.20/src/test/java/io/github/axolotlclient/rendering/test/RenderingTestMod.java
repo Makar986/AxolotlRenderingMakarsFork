@@ -28,6 +28,7 @@ import io.github.axolotlclient.rendering.font.Font;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 public class RenderingTestMod implements ClientModInitializer {
@@ -60,6 +61,12 @@ public class RenderingTestMod implements ClientModInitializer {
 			var t = "Example §otext§r §nwith§r §kmultiple§r §mwords and §5some §a§lcolors§r.";
 			guiGraphics.drawString(Minecraft.getInstance().font, t, 20, 100, -1);
 			guiGraphics.axolotlclient_rendering$drawString(font, t, 20, 110, -1);
+			font.withSize(12, () -> guiGraphics.axolotlclient_rendering$drawString(font, t, 20, 125, -1));
+			var w = Component.literal("Lorem ipsum dolor sit amet, consetetur sadipscing elitr, " +
+				"sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, " +
+				"sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. " +
+				"Stet clita kasd gubergren, no sea takimata sanctus est");
+			guiGraphics.axolotlclient_rendering$drawWordWrap(font, w, 20, 150, 120, -1);
 			guiGraphics.axolotlclient_rendering$blitSVG(new ResourceLocation("axolotlclient_rendering", "textures/svg/23.svg"),
 				guiGraphics.guiWidth()-50, 0, 50, 50, -1);
 		});

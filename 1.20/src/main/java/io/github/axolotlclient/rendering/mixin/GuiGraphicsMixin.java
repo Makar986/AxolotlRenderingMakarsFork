@@ -218,18 +218,18 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 	}
 
 	@Override
-	public void axolotlclient_rendering$drawString(Font font, String text, float x, float y, int color, boolean shadow) {
-		font.renderText((GuiGraphics) (Object) this, text, x, y, color, shadow);
+	public void axolotlclient_rendering$drawString(Font font, String text, float x, float y, int color, boolean shadow, int origin) {
+		font.renderText((GuiGraphics) (Object) this, text, x, y, color, shadow, origin);
 	}
 
 	@Override
-	public void axolotlclient_rendering$drawString(Font font, FormattedCharSequence text, float x, float y, int color, boolean shadow) {
-		font.renderText((GuiGraphics) (Object) this, text, x, y, color, shadow);
+	public void axolotlclient_rendering$drawString(Font font, FormattedCharSequence text, float x, float y, int color, boolean shadow, int origin) {
+		font.renderText((GuiGraphics) (Object) this, text, x, y, color, shadow, origin);
 	}
 
 	@Override
-	public void axolotlclient_rendering$drawString(Font font, Component text, float x, float y, int color, boolean shadow) {
-		font.renderText((GuiGraphics) (Object) this, text, x, y, color, shadow);
+	public void axolotlclient_rendering$drawString(Font font, Component text, float x, float y, int color, boolean shadow, int origin) {
+		font.renderText((GuiGraphics) (Object) this, text, x, y, color, shadow, origin);
 	}
 
 	@Override
