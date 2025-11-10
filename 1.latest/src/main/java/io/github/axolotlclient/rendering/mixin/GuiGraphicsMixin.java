@@ -63,23 +63,23 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 	public abstract void blit(ResourceLocation par1, int par2, int par3, int par4, int par5, float par6, float par7, float par8, float par9);
 
 	@Override
-	public void axolotlclient_rendering$roundedRectVarying(int x0, int y0, int x1, int y1, int color, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight) {
+	public void axolotlclient_rendering$roundedRectGradientVarying(int x0, int y0, int x1, int y1, int colorTopLeft, int colorBottomLeft, int colorBottomRight, int colorTopRight, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight) {
 		guiRenderState.submitGuiElement(new ColoredRoundedRectangleRenderState(ExRenderPipelines.ROUNDED_RECT,
 			TextureSetup.noTexture(),
 			new Matrix3x2f(pose()),
 			x0, y0, x1, y1,
-			color, color, color, color,
+			colorTopLeft, colorBottomLeft, colorBottomRight, colorTopRight,
 			roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight,
 			scissorStack.peek()));
 	}
 
 	@Override
-	public void axolotlclient_rendering$outlineRoundedRectVarying(int x0, int y0, int x1, int y1, int color, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight, float outlineWidth) {
+	public void axolotlclient_rendering$outlineRoundedRectGradientVarying(int x0, int y0, int x1, int y1, int colorTopLeft, int colorBottomLeft, int colorBottomRight, int colorTopRight, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight, float outlineWidth) {
 		guiRenderState.submitGuiElement(new ColoredRoundedRectangleOutlineRenderState(ExRenderPipelines.ROUNDED_RECT_OUTLINE,
 			TextureSetup.noTexture(),
 			new Matrix3x2f(pose()),
 			x0, y0, x1, y1,
-			color, color, color, color,
+			colorTopLeft, colorBottomLeft, colorBottomRight, colorTopRight,
 			roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight,
 			outlineWidth, scissorStack.peek()));
 	}

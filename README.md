@@ -26,3 +26,5 @@ If a specific feature is provided by a separate font file (for example an *itali
 **bold** variant) they can be added using `Font#addSubFont`, specifying in which conditions it should be used
 (some tags and values can be found as static definitions in the `Font` class).
 
+This library includes the *[Inter](https://rsms.me/inter)* font by default.
+

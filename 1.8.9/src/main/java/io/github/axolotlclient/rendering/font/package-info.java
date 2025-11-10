@@ -21,7 +21,7 @@
  */
 
 ///
-/// This package contains a port of https://github.com/mattvchandler/textogl
+/// The {@link io.github.axolotlclient.rendering.font.Font} class in this package contains a port of https://github.com/mattvchandler/textogl
 /// to Java.
 ///
 /// Original License: MIT
@@ -33,7 +33,7 @@
 /// - support for variable fonts
 ///
 /// Version-specific note: This package also contains some utilities to improve font handling with
-/// this old game version, therefore the note above applies to the `Font` class.
+/// this old game version.
 ///
 package io.github.axolotlclient.rendering.font;
 

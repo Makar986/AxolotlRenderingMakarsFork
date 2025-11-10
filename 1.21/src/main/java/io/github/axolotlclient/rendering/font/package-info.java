@@ -21,7 +21,7 @@
  */
 
 ///
-/// This package contains a port of https://github.com/mattvchandler/textogl
+/// The {@link io.github.axolotlclient.rendering.font.Font} class in this package contains a port of https://github.com/mattvchandler/textogl
 /// to Java.
 ///
 /// Original License: MIT

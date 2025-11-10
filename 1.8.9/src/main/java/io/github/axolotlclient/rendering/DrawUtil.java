@@ -30,7 +30,6 @@ import com.mojang.blaze3d.vertex.Tessellator;
 import io.github.axolotlclient.rendering.font.Font;
 import io.github.axolotlclient.rendering.svg.SVGCache;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiElement;
 import net.minecraft.client.render.Window;
 import net.minecraft.resource.Identifier;
 import net.minecraft.text.Text;
@@ -69,8 +68,26 @@ public class DrawUtil implements GuiGraphicsExtension {
 		return getWindow().getHeight();
 	}
 
+	@Unique
+	private void fill(int x0, int y0, int x1, int y1, int colorTopLeft, int colorBottomLeft, int colorBottomRight, int colorTopRight) {
+		Tessellator tessellator = Tessellator.getInstance();
+		BufferBuilder bufferBuilder = tessellator.getBuilder();
+		GlStateManager.enableBlend();
+		GlStateManager.disableTexture();
+		GlStateManager.blendFuncSeparate(770, 771, 1, 0);
+		GlStateManager.color4f(1f, 1f, 1f, 1f);
+		bufferBuilder.begin(7, DefaultVertexFormat.POSITION_COLOR);
+		bufferBuilder.vertex(x1, y0, 0.0).color((colorTopRight >> 16 & 0xFF) / 255f, (colorTopRight >> 8 & 0xFF) / 255f, (colorTopRight & 0xFF) / 255f, (colorTopRight >> 24 & 0xFF) / 255f).nextVertex();
+		bufferBuilder.vertex(x0, y0, 0.0).color((colorTopLeft >> 16 & 0xFF) / 255f, (colorTopLeft >> 8 & 0xFF) / 255f, (colorTopLeft & 0xFF) / 255f, (colorTopLeft >> 24 & 0xFF) / 255f).nextVertex();
+		bufferBuilder.vertex(x0, y1, 0.0).color((colorBottomLeft >> 16 & 0xFF) / 255f, (colorBottomLeft >> 8 & 0xFF) / 255f, (colorBottomLeft & 0xFF) / 255f, (colorBottomLeft >> 24 & 0xFF) / 255f).nextVertex();
+		bufferBuilder.vertex(x1, y1, 0.0).color((colorBottomRight >> 16 & 0xFF) / 255f, (colorBottomRight >> 8 & 0xFF) / 255f, (colorBottomRight & 0xFF) / 255f, (colorBottomRight >> 24 & 0xFF) / 255f).nextVertex();
+		tessellator.end();
+		GlStateManager.enableTexture();
+		GlStateManager.disableBlend();
+	}
+
 	@Override
-	public void axolotlclient_rendering$roundedRectVarying(int x0, int y0, int x1, int y1, int color, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight) {
+	public void axolotlclient_rendering$roundedRectGradientVarying(int x0, int y0, int x1, int y1, int colorTopLeft, int colorBottomLeft, int colorBottomRight, int colorTopRight, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight) {
 		int width = Math.abs(x1 - x0);
 		int height = Math.abs(y1 - y0);
 		var shader = ExRenderPipelines.ROUNDED_RECT_PROGRAM;
@@ -89,12 +106,12 @@ public class DrawUtil implements GuiGraphicsExtension {
 		});
 		buf.flip();
 		shader.setUniform("Dimensions", buf);
-		GuiElement.fill(x0, y0, x1, y1, color);
+		fill(x0, y0, x1, y1, colorTopLeft, colorBottomLeft, colorBottomRight, colorTopRight);
 		shader.unbind();
 	}
 
 	@Override
-	public void axolotlclient_rendering$outlineRoundedRectVarying(int x0, int y0, int x1, int y1, int color, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight, float outlineWidth) {
+	public void axolotlclient_rendering$outlineRoundedRectGradientVarying(int x0, int y0, int x1, int y1, int colorTopLeft, int colorBottomLeft, int colorBottomRight, int colorTopRight, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight, float outlineWidth) {
 		int width = Math.abs(x1 - x0);
 		int height = Math.abs(y1 - y0);
 		var shader = ExRenderPipelines.ROUNDED_RECT_OUTLINE_PROGRAM;
@@ -114,7 +131,7 @@ public class DrawUtil implements GuiGraphicsExtension {
 		buf.flip();
 		shader.setUniform("Dimensions", buf);
 		shader.setUniform("OutlineWidth", outlineWidth);
-		GuiElement.fill(x0, y0, x1, y1, color);
+		fill(x0, y0, x1, y1, colorTopLeft, colorBottomLeft, colorBottomRight, colorTopRight);
 		shader.unbind();
 	}
 

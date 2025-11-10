@@ -51,6 +51,14 @@ public interface GuiGraphicsExtension {
 	}
 
 	default void axolotlclient_rendering$outlineRoundedRectVarying(int x0, int y0, int x1, int y1, int color, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight, float outlineWidth) {
+		this.axolotlclient_rendering$outlineRoundedRectGradientVarying(x0, y0, x1, y1, color, color, color, color, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight, outlineWidth);
+	}
+
+	default void axolotlclient_rendering$outlineRoundedRectGradient(int x0, int y0, int x1, int y1, int colorTopLeft, int colorBottomLeft, int colorBottomRight, int colorTopRight, int roundingPx, float outlineWidth) {
+		this.axolotlclient_rendering$outlineRoundedRectGradientVarying(x0, y0, x1, y1, colorTopLeft, colorBottomLeft, colorBottomRight, colorTopRight, roundingPx, roundingPx, roundingPx, roundingPx, outlineWidth);
+	}
+
+	default void axolotlclient_rendering$outlineRoundedRectGradientVarying(int x0, int y0, int x1, int y1, int colorTopLeft, int colorBottomLeft, int colorBottomRight, int colorTopRight, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight, float outlineWidth) {
 
 	}
 
@@ -143,6 +151,18 @@ public interface GuiGraphicsExtension {
 	}
 
 	default void axolotlclient_rendering$roundedRectVarying(int x0, int y0, int x1, int y1, int color, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight) {
+		this.axolotlclient_rendering$roundedRectGradientVarying(x0, y0, x1, y1, color, color, color, color, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
+	}
+
+	default void axolotlclient_rendering$circleGradient(int cX, int cY, int colorTopLeft, int colorBottomLeft, int colorBottomRight, int colorTopRight, int radius) {
+		this.axolotlclient_rendering$roundedRectGradient(cX - radius, cY - radius, cX + radius, cY + radius, colorTopLeft, colorBottomLeft, colorBottomRight, colorTopRight, radius);
+	}
+
+	default void axolotlclient_rendering$roundedRectGradient(int x0, int y0, int x1, int y1, int colorTopLeft, int colorBottomLeft, int colorBottomRight, int colorTopRight, int roundingPx) {
+		this.axolotlclient_rendering$roundedRectGradientVarying(x0, y0, x1, y1, colorTopLeft, colorBottomLeft, colorBottomRight, colorTopRight, roundingPx, roundingPx, roundingPx, roundingPx);
+	}
+
+	default void axolotlclient_rendering$roundedRectGradientVarying(int x0, int y0, int x1, int y1, int colorTopLeft, int colorBottomLeft, int colorBottomRight, int colorTopRight, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight) {
 
 	}
 
@@ -273,8 +293,8 @@ public interface GuiGraphicsExtension {
 
 	default void axolotlclient_rendering$drawWordWrap(Font font, Text text, int x, int y, int lineWidth, int color, boolean dropShadow) {
 		for (var formattedCharSequence : font.split(text, lineWidth)) {
-			this.axolotlclient_rendering$drawString(font, formattedCharSequence, x, y, color, dropShadow);
 			y += font.lineHeight();
+			this.axolotlclient_rendering$drawString(font, formattedCharSequence, x, y, color, dropShadow, Font.ORIGIN_VERT_BASELINE);
 		}
 	}
 
