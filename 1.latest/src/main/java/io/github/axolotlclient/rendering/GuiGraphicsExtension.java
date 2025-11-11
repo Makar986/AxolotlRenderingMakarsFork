@@ -329,6 +329,10 @@ public interface GuiGraphicsExtension {
 	}
 
 	/*blitSVG*/
+	default void axolotlclient_rendering$blitSVG(ResourceLocation location, int x, int y, int width, int height) {
+		axolotlclient_rendering$blitSVG(location, x, y, width, height, -1);
+	}
+
 	default void axolotlclient_rendering$blitSVG(ResourceLocation location, int x, int y, int width, int height, int color) {
 
 	}

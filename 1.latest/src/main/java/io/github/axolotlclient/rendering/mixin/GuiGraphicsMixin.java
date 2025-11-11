@@ -31,6 +31,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.gui.render.state.GuiRenderState;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
@@ -60,7 +61,7 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 	private Minecraft minecraft;
 
 	@Shadow
-	public abstract void blit(ResourceLocation par1, int par2, int par3, int par4, int par5, float par6, float par7, float par8, float par9);
+	protected abstract void innerBlit(RenderPipeline pipeline, ResourceLocation atlas, int x0, int x1, int y0, int y1, float u0, float u1, float v0, float v1, int color);
 
 	@Override
 	public void axolotlclient_rendering$roundedRectGradientVarying(int x0, int y0, int x1, int y1, int colorTopLeft, int colorBottomLeft, int colorBottomRight, int colorTopRight, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight) {
@@ -158,7 +159,7 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 	public void axolotlclient_rendering$blitSVG(ResourceLocation location, int x, int y, int width, int height, int color) {
 		var scale = Minecraft.getInstance().getWindow().getGuiScale();
 		var key = SVGCache.getInstance().load(location, width * scale, height * scale);
-		blit(key, x, y, x + width, y + height, 0, 1f, 0f, 1);
+		innerBlit(RenderPipelines.GUI_TEXTURED, key, x, x + width, y, y + height, 0, 1f, 0f, 1, color);
 	}
 
 }

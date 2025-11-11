@@ -30,6 +30,7 @@ import io.github.axolotlclient.rendering.font.Font;
 import io.github.axolotlclient.rendering.svg.SVGCache;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -55,9 +56,6 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 	@Shadow
 	@Deprecated
 	protected abstract void flushIfUnmanaged();
-
-	@Shadow
-	abstract void innerBlit(ResourceLocation atlasLocation, int x1, int x2, int y1, int y2, int blitOffset, float minU, float maxU, float minV, float maxV);
 
 	@Override
 	public void axolotlclient_rendering$roundedRectGradientVarying(int x0, int y0, int x1, int y1, int colorTopLeft, int colorBottomLeft, int colorBottomRight, int colorTopRight, int roundingPxTopLeft, int roundingPxBottomLeft, int roundingPxBottomRight, int roundingPxTopRight) {
@@ -221,6 +219,14 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 	public void axolotlclient_rendering$blitSVG(ResourceLocation location, int x, int y, int width, int height, int color) {
 		var scale = Minecraft.getInstance().getWindow().getGuiScale();
 		var key = SVGCache.getInstance().load(location, (float) (width * scale), (float) (height * scale));
-		innerBlit(key, x, x + width, y, y + height, 0, 0, 1f, 0f, 1);
+		RenderSystem.setShaderTexture(0, key);
+		RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
+		Matrix4f matrix4f = this.pose.last().pose();
+		BufferBuilder bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+		bufferBuilder.addVertex(matrix4f, x, y, 0).setUv((float) 0, 0f).setColor(color);
+		bufferBuilder.addVertex(matrix4f, x, y + height, 0).setUv((float) 0, (float) 1).setColor(color);
+		bufferBuilder.addVertex(matrix4f, x + width, y + height, 0).setUv(1f, (float) 1).setColor(color);
+		bufferBuilder.addVertex(matrix4f, x + width, y, 0).setUv(1f, 0f).setColor(color);
+		BufferUploader.drawWithShader(bufferBuilder.buildOrThrow());
 	}
 }
