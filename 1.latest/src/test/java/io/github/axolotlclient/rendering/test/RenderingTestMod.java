@@ -24,7 +24,6 @@ package io.github.axolotlclient.rendering.test;
 
 import io.github.axolotlclient.rendering.RenderingCommon;
 import io.github.axolotlclient.rendering.font.DefaultFont;
-import io.github.axolotlclient.rendering.font.Font;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.minecraft.client.Minecraft;
@@ -32,11 +31,13 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
 public class RenderingTestMod implements ClientModInitializer {
+
 	@Override
 	public void onInitializeClient() {
 		HudElementRegistry.addLast(ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID, "test_hud"),
 			(guiGraphics, deltaTracker) -> {
 				var font = DefaultFont.inter();
+				var adapter = DefaultFont.interAdapter();
 
 				guiGraphics.axolotlclient_rendering$roundedRectGradientVarying(10, 10, 60, 60, 0xFF777777, 0xFF777777, 0xFFFF7777, 0xFF777777, 5, 0, 0, 5);
 				guiGraphics.axolotlclient_rendering$roundedRectVarying(10, 60, 60, 80, 0xFF77CC77, 0, 5, 5, 0);
@@ -52,7 +53,7 @@ public class RenderingTestMod implements ClientModInitializer {
 				var t = "Example §otext§r §nwith§r §kmultiple§r §mwords and §5some §a§lcolors§r.";
 				guiGraphics.drawString(Minecraft.getInstance().font, t, 20, 100, -1);
 				guiGraphics.drawString(Minecraft.getInstance().font, "eeeeeeeeeeeee", 220, 100, -1);
-				guiGraphics.axolotlclient_rendering$drawString(font, t, 20, 110, -1, true, Font.ORIGIN_VERT_TOP);
+				guiGraphics.axolotlclient_rendering$drawString(font, t, 20, 110, -1);
 				font.withSize(12, () -> guiGraphics.axolotlclient_rendering$drawString(font, t, 20, 125, -1));
 				var w = Component.literal("Lorem ipsum dolor sit amet, consetetur sadipscing elitr, " +
 					"sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, " +
@@ -61,6 +62,8 @@ public class RenderingTestMod implements ClientModInitializer {
 				guiGraphics.axolotlclient_rendering$drawWordWrap(font, w, 20, 150, 120, -1);
 				guiGraphics.axolotlclient_rendering$blitSVG(ResourceLocation.fromNamespaceAndPath("axolotlclient_rendering", "textures/svg/23.svg"),
 					guiGraphics.guiWidth() - 50, 0, 50, 50, -1);
+				guiGraphics.drawString(adapter, Component.literal("AAAAaÄǍÄÅ"), 20, 140, -1);
+				guiGraphics.drawWordWrap(adapter, w, 100, 150, 120, -1);
 			});
 	}
 }

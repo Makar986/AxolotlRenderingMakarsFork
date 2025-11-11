@@ -183,7 +183,7 @@ public class Font implements AutoCloseable {
 	private int mcSize;
 	private int lineHeight;
 	private final Long2ObjectMap<ObjectFloatPair<VariationAxis>> variations = new Long2ObjectLinkedOpenHashMap<>();
-	private final StringSplitter splitter = new StringSplitter(this::getWidth);
+	final StringSplitter splitter = new StringSplitter(this::getWidth);
 	private final ObjectList<SubFont> subFonts = new ObjectArrayList<>();
 	private final Int2ObjectMap<Float2ObjectMap<IntList>> glyphsByWidth = new Int2ObjectOpenHashMap<>();
 	private Font activeSubFont = this;
@@ -456,7 +456,7 @@ public class Font implements AutoCloseable {
 		graphics.pose().popMatrix();
 	}
 
-	private static float @NotNull [] getOffset(int alignFlags, BuiltText builtText) {
+	static float @NotNull [] getOffset(int alignFlags, BuiltText builtText) {
 		float[] startOffset = new float[2];
 		var textBox = builtText.textBox();
 
@@ -523,7 +523,7 @@ public class Font implements AutoCloseable {
 		return Language.getInstance().getVisualOrder(this.splitter.splitLines(text, maxWidth, Style.EMPTY));
 	}
 
-	private BuiltText buildText(int color, boolean shadow, Consumer<FormattedCharSink> sink) {
+	BuiltText buildText(int color, boolean shadow, Consumer<FormattedCharSink> sink) {
 		final float[] penX = {0};
 		final float[] penY = {0};
 		var screenAndTexCoords = new Object2ObjectOpenHashMap<ResourceLocation, List<CoordData>>();

@@ -24,6 +24,7 @@ package io.github.axolotlclient.rendering.font;
 
 public final class DefaultFont {
 	private static final Font INTER;
+	private static final FontAdapter INTER_ADAPTER;
 
 	static {
 		try (var regular = DefaultFont.class.getResourceAsStream("/assets/axolotlclient_rendering/fonts/InterVariable.ttf");
@@ -36,6 +37,7 @@ public final class DefaultFont {
 		} catch (Exception e) {
 			throw new RuntimeException("The Inter font is packaged with this library!", e);
 		}
+		INTER_ADAPTER = new FontAdapter(INTER);
 	}
 
 	private DefaultFont() {
@@ -43,5 +45,9 @@ public final class DefaultFont {
 
 	public static Font inter() {
 		return INTER;
+	}
+
+	public static FontAdapter interAdapter() {
+		return INTER_ADAPTER;
 	}
 }

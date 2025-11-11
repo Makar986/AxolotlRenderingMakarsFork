@@ -35,6 +35,8 @@ public class RenderingTestMod implements ClientModInitializer {
 	public void onInitializeClient() {
 		HudRenderCallback.EVENT.register((guiGraphics, deltaTracker) -> {
 			var font = DefaultFont.inter();
+			var adapter = DefaultFont.interAdapter();
+
 			guiGraphics.axolotlclient_rendering$roundedRectGradientVarying(10, 10, 60, 60, 0xFF777777, 0xFF777777, 0xFFFF7777, 0xFF777777, 5, 0, 0, 5);
 			guiGraphics.axolotlclient_rendering$roundedRectVarying(10, 60, 60, 80, 0xFF77CC77, 0, 5, 5, 0);
 			guiGraphics.axolotlclient_rendering$outlineRoundedRect(10, 10, 60, 50, 0xFF77AAAA, 5, 3);
@@ -58,6 +60,8 @@ public class RenderingTestMod implements ClientModInitializer {
 			guiGraphics.axolotlclient_rendering$drawWordWrap(font, w, 20, 150, 120, -1);
 			guiGraphics.axolotlclient_rendering$blitSVG(new ResourceLocation("axolotlclient_rendering", "textures/svg/23.svg"),
 				guiGraphics.guiWidth() - 50, 0, 50, 50, -1);
+			guiGraphics.drawString(adapter, Component.literal("AAAAaÄǍÄÅ"), 20, 140, -1);
+			guiGraphics.drawWordWrap(adapter, w, 100, 150, 120, -1);
 		});
 	}
 }
