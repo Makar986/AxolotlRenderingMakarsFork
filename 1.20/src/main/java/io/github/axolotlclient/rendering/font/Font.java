@@ -65,10 +65,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.FormattedCharSequence;
-import net.minecraft.util.FormattedCharSink;
-import net.minecraft.util.RandomSource;
-import net.minecraft.util.StringDecomposer;
+import net.minecraft.util.*;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.PointerBuffer;
@@ -187,7 +184,7 @@ public class Font implements AutoCloseable {
 	ByteBuffer fontMem;
 	FT_Face face;
 	private boolean hasKerningInfo;
-	private int mcSize;
+	private int mcSize, size;
 	private int lineHeight;
 	private final Long2ObjectMap<ObjectFloatPair<VariationAxis>> variations = new Long2ObjectLinkedOpenHashMap<>();
 	final StringSplitter splitter = new StringSplitter(this::getWidth);
@@ -373,7 +370,7 @@ public class Font implements AutoCloseable {
 
 	private void resizeInternal(int mcSize) {
 		this.mcSize = mcSize;
-		var size = (int) (mcSize * Minecraft.getInstance().getWindow().getGuiScale());
+		size = (int) (mcSize * Minecraft.getInstance().getWindow().getGuiScale());
 		if (FT_Set_Pixel_Sizes(face, 0, size) != FT_Err_Ok) {
 			throw new RuntimeException("Can't set font size " + size);
 		}
@@ -392,14 +389,14 @@ public class Font implements AutoCloseable {
 	}
 
 	private void clearCurrentSizePages() {
-		if (pageMap.containsKey(mcSize)) {
-			for (var page : pageMap.get(mcSize).values()) {
+		if (pageMap.containsKey(size)) {
+			for (var page : pageMap.get(size).values()) {
 				Minecraft.getInstance().getTextureManager().release(page.tex);
 			}
 			pageMap.clear();
 		}
-		if (glyphsByWidth.containsKey(mcSize)) {
-			glyphsByWidth.get(mcSize).clear();
+		if (glyphsByWidth.containsKey(size)) {
+			glyphsByWidth.get(size).clear();
 		}
 	}
 
@@ -455,12 +452,17 @@ public class Font implements AutoCloseable {
 		var scale = (float) Minecraft.getInstance().getWindow().getGuiScale();
 
 		graphics.pose().pushPose();
-		graphics.pose().translate(x, y, 0);
+		graphics.pose().translate(x, y-1f, 0);
 		graphics.pose().scale(1f / scale, 1f / scale, 1);
+		graphics.pose().translate(0, ascender(), 0);
 		graphics.pose().translate(-startOffset[0], -startOffset[1], 0);
 
 		renderTextCommon(graphics, builtText);
 		graphics.pose().popPose();
+	}
+
+	float ascender() {
+		return Mth.floor(FT_MulFix(face.ascender(), face.size().metrics().y_scale())/64f);
 	}
 
 	static float @NotNull [] getOffset(int alignFlags, BuiltText builtText) {
@@ -538,7 +540,7 @@ public class Font implements AutoCloseable {
 		updateVariant(style);
 		var page = getPage(codePt, false);
 		var c = page.charInfo[codePt & 0xFF];
-		return c.advanceX;
+		return (float) (c.advanceX/Minecraft.getInstance().getWindow().getGuiScale());
 	}
 
 	public List<FormattedCharSequence> split(String text, int maxWidth) {
@@ -587,7 +589,7 @@ public class Font implements AutoCloseable {
 			int charX1 = c.x1;
 			int charY1 = c.y1;
 			if (style.isObfuscated() && codePt != ' ') {
-				var codePts = activeSubFont.glyphsByWidth.get(mcSize).get(charAdvanceX);
+				var codePts = activeSubFont.glyphsByWidth.get(size).get(charAdvanceX);
 				codePt = codePts.getInt(RANDOM.nextInt(codePts.size()));
 				page = getPage(codePt, true);
 
@@ -665,7 +667,7 @@ public class Font implements AutoCloseable {
 
 	private @NotNull Page getPage(int codePt, boolean forRender) {
 		long pgIndex = activeSubFont.getPageIndex(codePt >> 8);
-		var page = activeSubFont.pageMap.computeIfAbsent(mcSize, u -> new Long2ObjectOpenHashMap<>()).get(pgIndex);
+		var page = activeSubFont.pageMap.computeIfAbsent(size, u -> new Long2ObjectOpenHashMap<>()).get(pgIndex);
 		if (page == null) {
 			page = activeSubFont.loadPageGlyphDimensions(pgIndex);
 		}
@@ -727,7 +729,7 @@ public class Font implements AutoCloseable {
 
 	private Page loadPageGlyphDimensions(long pageIndex) {
 		var page = new Page();
-		pageMap.computeIfAbsent(mcSize, u -> new Long2ObjectOpenHashMap<>()).put(pageIndex, page);
+		pageMap.computeIfAbsent(size, u -> new Long2ObjectOpenHashMap<>()).put(pageIndex, page);
 		int tWidth, tHeight;
 		var pageNo = (int) pageIndex;
 		int rowWidth = 0, maxRowWidth = 0, rowHeight = 0, totalHeight = 0;
@@ -750,7 +752,7 @@ public class Font implements AutoCloseable {
 			c.advanceX = slot.advance().x() / 64f;
 			c.advanceY = slot.advance().y() / 64f;
 			c.glyphI = glyphI;
-			glyphsByWidth.computeIfAbsent(mcSize, u -> new Float2ObjectOpenHashMap<>()).computeIfAbsent(c.advanceX, unused -> new IntArrayList()).add(codePt);
+			glyphsByWidth.computeIfAbsent(size, u -> new Float2ObjectOpenHashMap<>()).computeIfAbsent(c.advanceX, unused -> new IntArrayList()).add(codePt);
 
 			rowWidth += bmp.width() + 2;
 			rowHeight = Math.max(bmp.rows(), rowHeight);
@@ -825,7 +827,7 @@ public class Font implements AutoCloseable {
 			"font_%s/%s/page_%d/%d".formatted(
 				face.family_nameString().replace(" ", "_").toLowerCase(Locale.ROOT),
 				face.style_nameString().replace(" ", "_").toLowerCase(Locale.ROOT),
-				pageIndex, mcSize
+				pageIndex, size
 			));
 		var tex = new DynamicTexture(texData);
 		Minecraft.getInstance().getTextureManager().register(page.tex, tex);

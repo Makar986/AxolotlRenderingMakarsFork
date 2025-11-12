@@ -78,7 +78,7 @@ public class FontAdapter extends TextRenderer {
 
 
 	static int adjustColor(int color) {
-		return (color & -67108864) == 0 ? color | 0xFF000000 : color;
+						return (color & 0xFC000000) == 0 ? color | 0xFF000000 : color;
 	}
 
 	@Override

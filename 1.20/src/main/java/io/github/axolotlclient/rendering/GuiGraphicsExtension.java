@@ -255,15 +255,15 @@ public interface GuiGraphicsExtension {
 
 	}
 	default void axolotlclient_rendering$drawString(Font font, String text, float x, float y, int color, boolean shadow) {
-		this.axolotlclient_rendering$drawString(font, text, x, y, color, shadow, Font.ORIGIN_VERT_TOP);
+		this.axolotlclient_rendering$drawString(font, text, x, y, color, shadow, 0);
 	}
 
 	default void axolotlclient_rendering$drawString(Font font, FormattedCharSequence text, float x, float y, int color, boolean shadow) {
-		this.axolotlclient_rendering$drawString(font, text, x, y, color, shadow, Font.ORIGIN_VERT_TOP);
+		this.axolotlclient_rendering$drawString(font, text, x, y, color, shadow, 0);
 	}
 
 	default void axolotlclient_rendering$drawString(Font font, Component text, float x, float y, int color, boolean shadow) {
-		this.axolotlclient_rendering$drawString(font, text, x, y, color, shadow, Font.ORIGIN_VERT_TOP);
+		this.axolotlclient_rendering$drawString(font, text, x, y, color, shadow, 0);
 	}
 
 	default void axolotlclient_rendering$drawString(Font font, String text, float x, float y, int color) {
@@ -280,27 +280,27 @@ public interface GuiGraphicsExtension {
 
 	/*drawCenteredString*/
 	default void axolotlclient_rendering$drawCenteredString(Font font, String text, float x, float y, int color, boolean shadow) {
-		this.axolotlclient_rendering$drawString(font, text, x, y, color, shadow, Font.ORIGIN_VERT_TOP | Font.ORIGIN_HORIZ_CENTER);
+		this.axolotlclient_rendering$drawString(font, text, x, y, color, shadow, Font.ORIGIN_HORIZ_CENTER);
 	}
 
 	default void axolotlclient_rendering$drawCenteredString(Font font, FormattedCharSequence text, float x, float y, int color, boolean shadow) {
-		this.axolotlclient_rendering$drawString(font, text, x, y, color, shadow, Font.ORIGIN_VERT_TOP | Font.ORIGIN_HORIZ_CENTER);
+		this.axolotlclient_rendering$drawString(font, text, x, y, color, shadow, Font.ORIGIN_HORIZ_CENTER);
 	}
 
 	default void axolotlclient_rendering$drawCenteredString(Font font, Component text, float x, float y, int color, boolean shadow) {
-		this.axolotlclient_rendering$drawString(font, text, x, y, color, shadow, Font.ORIGIN_VERT_TOP | Font.ORIGIN_HORIZ_CENTER);
+		this.axolotlclient_rendering$drawString(font, text, x, y, color, shadow, Font.ORIGIN_HORIZ_CENTER);
 	}
 
 	default void axolotlclient_rendering$drawCenteredString(Font font, String text, float x, float y, int color) {
-		this.axolotlclient_rendering$drawString(font, text, x, y, color, true);
+		this.axolotlclient_rendering$drawCenteredString(font, text, x, y, color, true);
 	}
 
 	default void axolotlclient_rendering$drawCenteredString(Font font, FormattedCharSequence text, float x, float y, int color) {
-		this.axolotlclient_rendering$drawString(font, text, x, y, color, true);
+		this.axolotlclient_rendering$drawCenteredString(font, text, x, y, color, true);
 	}
 
 	default void axolotlclient_rendering$drawCenteredString(Font font, Component text, float x, float y, int color) {
-		this.axolotlclient_rendering$drawString(font, text, x, y, color, true);
+		this.axolotlclient_rendering$drawCenteredString(font, text, x, y, color, true);
 	}
 
 	/*drawWordWrap*/

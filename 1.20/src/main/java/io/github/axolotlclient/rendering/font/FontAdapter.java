@@ -63,7 +63,7 @@ public class FontAdapter extends Font {
 	}
 
 	static int adjustColor(int color) {
-		return (color & -67108864) == 0 ? color | 0xFF000000 : color;
+		return (color & 0xFC000000) == 0 ? color | 0xFF000000 : color;
 	}
 
 	@Override
@@ -83,16 +83,17 @@ public class FontAdapter extends Font {
 
 	private int drawInternal(String text, float x, float y, int color, boolean dropShadow, Matrix4f matrix, MultiBufferSource buffer, DisplayMode displayMode, int backgroundColor, int packedLightCoords, boolean bidirectional) {
 		var t = isBidirectional() ? bidirectionalShaping(text) : text;
-		return renderText(x, y, matrix, buffer, font.buildText(adjustColor(color), dropShadow, s -> StringDecomposer.iterateFormatted(t, Style.EMPTY, s)), backgroundColor);
+		renderText(x, y, matrix, buffer, font.buildText(adjustColor(color), dropShadow, s -> StringDecomposer.iterateFormatted(t, Style.EMPTY, s)), backgroundColor);
+		return (int) (x+width(text));
 	}
 
-	private int renderText(float x, float y, Matrix4f matrix, MultiBufferSource buffer, io.github.axolotlclient.rendering.font.Font.BuiltText built, int backgroundColor) {
-		var pose = new Matrix4f(matrix);
-		pose.translate(x, y + font.lineHeight(), 0);
+	private void renderText(float x, float y, Matrix4f matrix, MultiBufferSource buffer, io.github.axolotlclient.rendering.font.Font.BuiltText built, int backgroundColor) {
 		var s = (float) (1f / mc.getWindow().getGuiScale());
-		pose.scale(s, s, 1);
 		float[] startOffset = io.github.axolotlclient.rendering.font.Font.getOffset(0, built);
-		pose.translate(-startOffset[0], -startOffset[1], 0);
+		var pose = new Matrix4f(matrix).translate(x, y-1f, 0)
+			.scale(s, s, 1)
+			.translate(0, font.ascender(), 0)
+			.translate(-startOffset[0], -startOffset[1], 0);
 
 		var tess = Tesselator.getInstance();
 		RenderSystem.enableBlend();
@@ -132,12 +133,12 @@ public class FontAdapter extends Font {
 			BufferUploader.drawWithShader(vertexConsumer.end());
 		}
 		RenderSystem.enableBlend();
-		return (int) built.textBox()[3];
 	}
 
 	private int drawInternal(FormattedCharSequence text, float x, float y, int color, boolean dropShadow, Matrix4f matrix, MultiBufferSource buffer, DisplayMode displayMode, int backgroundColor, int packedLightCoords) {
 		var built = font.buildText(adjustColor(color), dropShadow, text::accept);
-		return renderText(x, y, matrix, buffer, built, backgroundColor);
+		renderText(x, y, matrix, buffer, built, backgroundColor);
+		return (int) (x+width(text));
 	}
 
 	@Override

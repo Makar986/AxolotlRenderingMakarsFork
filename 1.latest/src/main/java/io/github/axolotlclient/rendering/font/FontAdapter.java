@@ -93,13 +93,20 @@ public class FontAdapter extends Font {
 	}
 
 	private @NotNull PreparedText getPreparedText(float x, float y, io.github.axolotlclient.rendering.font.Font.BuiltText built, int backgroundColor) {
+		var s = 1f / mc.getWindow().getGuiScale();
+		float[] startOffset = io.github.axolotlclient.rendering.font.Font.getOffset(0, built);
+		var transform = new Matrix4f().translate(x, y-1f, 0)
+			.scale(s, s, 1)
+			.translate(0, font.ascender(), 0)
+			.translate(-startOffset[0], -startOffset[1], 0);
 		return new PreparedText() {
 			@Override
 			public void visit(GlyphVisitor visitor) {
 				if (backgroundColor != 0) {
 					visitor.acceptEffect(new TextRenderable() {
 						@Override
-						public void render(Matrix4f pose, VertexConsumer consumer, int packedLight, boolean noDepth) {
+						public void render(Matrix4f matrix, VertexConsumer consumer, int packedLight, boolean noDepth) {
+							var pose = new Matrix4f(matrix).mul(transform);
 							consumer.addVertex(pose, x - 1f, y - 1f, 0.01f).setColor(backgroundColor);
 							consumer.addVertex(pose, x - 1f, y - 1f + built.textBox()[3] + 1f, 0.01f).setColor(backgroundColor);
 							consumer.addVertex(pose, x + built.textBox()[2] + 1f, y - 1f + built.textBox()[3] + 1f, 0.01f).setColor(backgroundColor);
@@ -146,12 +153,7 @@ public class FontAdapter extends Font {
 					visitor.acceptGlyph(new TextRenderable() {
 						@Override
 						public void render(Matrix4f matrix, VertexConsumer consumer, int packedLight, boolean noDepth) {
-							var pose = new Matrix4f(matrix);
-							pose.translate(x, y + font.lineHeight(), 0);
-							var s = 1f / mc.getWindow().getGuiScale();
-							pose.scale(s, s, 1);
-							float[] startOffset = io.github.axolotlclient.rendering.font.Font.getOffset(0, built);
-							pose.translate(-startOffset[0], -startOffset[1], 0);
+							var pose = new Matrix4f(matrix).mul(transform);
 							for (var g : entry.getValue()) {
 								consumer.addVertex(pose, g.x(), g.y(), 0).setUv(g.u(), g.v()).setColor(g.color());
 								consumer.addVertex(pose, g.x(), g.y() + g.height(), 0).setUv(g.u(), g.v1()).setColor(g.color());
@@ -196,14 +198,17 @@ public class FontAdapter extends Font {
 						}
 					});
 				}
-				for (var e : built.effects()) {
+				if (!built.effects().isEmpty()) {
 					visitor.acceptEffect(new TextRenderable() {
 						@Override
-						public void render(Matrix4f pose, VertexConsumer consumer, int packedLight, boolean noDepth) {
-							consumer.addVertex(pose, e.x(), e.y(), 0).setColor(e.color());
-							consumer.addVertex(pose, e.x(), e.y() + e.height(), 0).setColor(e.color());
-							consumer.addVertex(pose, e.x() + e.width(), e.y() + e.height(), 0).setColor(e.color());
-							consumer.addVertex(pose, e.x() + e.width(), e.y(), 0).setColor(e.color());
+						public void render(Matrix4f matrix, VertexConsumer consumer, int packedLight, boolean noDepth) {
+							var pose = new Matrix4f(matrix).mul(transform);
+							for (var e : built.effects()) {
+								consumer.addVertex(pose, e.x(), e.y(), 0).setColor(e.color());
+								consumer.addVertex(pose, e.x(), e.y() + e.height(), 0).setColor(e.color());
+								consumer.addVertex(pose, e.x() + e.width(), e.y() + e.height(), 0).setColor(e.color());
+								consumer.addVertex(pose, e.x() + e.width(), e.y(), 0).setColor(e.color());
+							}
 						}
 
 						@Override
