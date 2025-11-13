@@ -22,8 +22,7 @@ void main() {
 	vec4 color = vertexColor*texture2D(Sampler0, texCoord0);
 
 	vec2 hDim = dimensions.zw/2.;
-	vec4 round = min(rounding-outlineWidth, min(hDim.x, hDim.y));
-	float d = abs(sdRoundBox(dimensions.xy-hDim, hDim-outlineWidth, round)) - outlineWidth;
+	float d = abs(sdRoundBox(dimensions.xy-hDim, hDim-outlineWidth, rounding-outlineWidth)) - outlineWidth;
 	color.a *= 1.0-smoothstep(0.0, fwidth(d), d);
 
 	if (color.a == 0.0) {

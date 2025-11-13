@@ -47,7 +47,7 @@ public class RenderingTestMod implements ClientModInitializer {
 		guiGraphics.axolotlclient_rendering$roundedRect(80, 100, 180, 160, 0xFF777777, 9);
 		guiGraphics.axolotlclient_rendering$roundedRect(80, 10, 180, 30, 0x77777777, 9);
 		guiGraphics.axolotlclient_rendering$outlineRoundedRect(80, 10, 180, 30, 0x99FF3333, 9, 3);
-		guiGraphics.axolotlclient_rendering$roundedRect(80, 50, 180, 70, 0xAA777777, 15);
+		guiGraphics.axolotlclient_rendering$roundedRect(80, 50, 180, 70, 0xAA777777, 10);
 		guiGraphics.axolotlclient_rendering$circleBlit(new Identifier("minecraft", "textures/gui/title/background/panorama_0.png"),
 			300, 120, 100);
 		guiGraphics.axolotlclient_rendering$outlineCircleBlit(new Identifier("minecraft", "textures/gui/title/background/panorama_1.png"),
@@ -67,5 +67,9 @@ public class RenderingTestMod implements ClientModInitializer {
 		var el = new GuiElement();
 		el.drawString(adapter, "AAAAaÄǍÄÅ", 20, 140, -1);
 		Minecraft.getInstance().textRenderer.drawSplit(w, 180, 150, 80, -1);
+		guiGraphics.axolotlclient_rendering$roundedVLine(guiGraphics.guiWidth()-30, 150-1, 200, 0xFF8833FF);
+		guiGraphics.axolotlclient_rendering$roundedRect(guiGraphics.guiWidth()-15, 150, guiGraphics.guiWidth()-14, 200, 0xFF885533, 1.5f);
+		guiGraphics.axolotlclient_rendering$roundedRect(guiGraphics.guiWidth()-18, 150, guiGraphics.guiWidth()-16, 200, 0xFF777777, 1.5f);
+		guiGraphics.axolotlclient_rendering$roundedRect(guiGraphics.guiWidth()-25, 150, guiGraphics.guiWidth()-20, 200, 0xFF885533, 2.75f);
 	}
 }

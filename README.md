@@ -28,13 +28,7 @@ If a specific feature is provided by a separate font file (for example an *itali
 
 This library includes the *[Inter](https://rsms.me/inter)* font by default.
 
-### Notes
-
-- On small scales (for small objects) rounding may not be perfect. No idea how to fix this.
-
 ### TODO
 
-- fix the issue noted above
-- scissoring issues? might be unrelated to scissoring, but it seems like some parts just get cut off sometimes
 - async svg rasterization, with fade-in after so there aren't any jarring jumps
 

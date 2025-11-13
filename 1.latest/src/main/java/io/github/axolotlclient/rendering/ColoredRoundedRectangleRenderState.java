@@ -44,10 +44,10 @@ public record ColoredRoundedRectangleRenderState(
 	int col2,
 	int col3,
 	int col4,
-	int radiusTopLeft,
-	int radiusBottomLeft,
-	int radiusBottomRight,
-	int radiusTopRight,
+	float radiusTopLeft,
+	float radiusBottomLeft,
+	float radiusBottomRight,
+	float radiusTopRight,
 	@Nullable ScreenRectangle scissorArea,
 	@Nullable ScreenRectangle bounds
 ) implements GuiElementRenderState {
@@ -63,8 +63,8 @@ public record ColoredRoundedRectangleRenderState(
 		int col2,
 		int col3,
 		int col4,
-		int radiusTopLeft, int radiusBottomLeft,
-		int radiusBottomRight, int radiusTopRight,
+		float radiusTopLeft, float radiusBottomLeft,
+		float radiusBottomRight, float radiusTopRight,
 		@Nullable ScreenRectangle scissorArea
 	) {
 		this(pipeline, textureSetup, pose, x0, y0, x1, y1, col1, col2, col3, col4, radiusTopLeft, radiusBottomLeft, radiusBottomRight, radiusTopRight, scissorArea, DrawUtil.getBounds(x0, y0, x1, y1, pose, scissorArea));

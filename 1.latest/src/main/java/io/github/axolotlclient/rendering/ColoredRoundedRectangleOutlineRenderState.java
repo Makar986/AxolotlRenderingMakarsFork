@@ -44,10 +44,10 @@ public record ColoredRoundedRectangleOutlineRenderState(
 	int col2,
 	int col3,
 	int col4,
-	int radiusTopLeft,
-	int radiusBottomLeft,
-	int radiusBottomRight,
-	int radiusTopRight,
+	float radiusTopLeft,
+	float radiusBottomLeft,
+	float radiusBottomRight,
+	float radiusTopRight,
 	float outlineWidth,
 	@Nullable ScreenRectangle scissorArea,
 	@Nullable ScreenRectangle bounds
@@ -64,8 +64,8 @@ public record ColoredRoundedRectangleOutlineRenderState(
 		int col2,
 		int col3,
 		int col4,
-		int radiusTopLeft, int radiusBottomLeft,
-		int radiusBottomRight, int radiusTopRight,
+		float radiusTopLeft, float radiusBottomLeft,
+		float radiusBottomRight, float radiusTopRight,
 		float outlineWidth,
 		@Nullable ScreenRectangle scissorArea
 	) {

@@ -23,8 +23,7 @@ void main() {
 	vec4 color = vertexColor*texture(Sampler0, texCoord0);
 
 	vec2 hDim = dimensions.zw/2.;
-	vec4 round = min(rounding, min(hDim.x, hDim.y));
-	float d = sdRoundBox(dimensions.xy-hDim, hDim, round);
+	float d = sdRoundBox(dimensions.xy-hDim, hDim, rounding);
 	color.a *= 1.0-smoothstep(0.0, fwidth(d), d);
 
 	if (color.a == 0.0) {

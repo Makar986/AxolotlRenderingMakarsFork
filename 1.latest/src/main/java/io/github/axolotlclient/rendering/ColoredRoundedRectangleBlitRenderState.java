@@ -48,10 +48,10 @@ public record ColoredRoundedRectangleBlitRenderState(
 	int col2,
 	int col3,
 	int col4,
-	int radiusTopLeft,
-	int radiusBottomLeft,
-	int radiusBottomRight,
-	int radiusTopRight,
+	float radiusTopLeft,
+	float radiusBottomLeft,
+	float radiusBottomRight,
+	float radiusTopRight,
 	@Nullable ScreenRectangle scissorArea,
 	@Nullable ScreenRectangle bounds
 ) implements GuiElementRenderState {
@@ -71,10 +71,10 @@ public record ColoredRoundedRectangleBlitRenderState(
 		int col2,
 		int col3,
 		int col4,
-		int radiusTopLeft,
-		int radiusBottomLeft,
-		int radiusBottomRight,
-		int radiusTopRight,
+		float radiusTopLeft,
+		float radiusBottomLeft,
+		float radiusBottomRight,
+		float radiusTopRight,
 		@Nullable ScreenRectangle scissorArea
 	) {
 		this(pipeline, textureSetup, pose, x0, y0, x1, y1, u0, u1, v0, v1, col1, col2, col3, col4, radiusTopLeft, radiusBottomLeft, radiusBottomRight, radiusTopRight,
