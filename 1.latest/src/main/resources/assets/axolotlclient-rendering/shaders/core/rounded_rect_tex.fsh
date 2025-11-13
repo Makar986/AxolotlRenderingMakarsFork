@@ -24,7 +24,7 @@ void main() {
 
 	vec2 hDim = dimensions.zw/2.;
 	float d = sdRoundBox(dimensions.xy-hDim, hDim, rounding);
-	color.a *= 1.0-smoothstep(0.0, fwidth(d), d);
+	color.a *= 1.0-smoothstep(0.0, 0.5, d);
 
 	if (color.a == 0.0) {
 		discard;
