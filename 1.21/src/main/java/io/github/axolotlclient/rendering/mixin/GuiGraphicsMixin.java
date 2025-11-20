@@ -220,6 +220,7 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 		var scale = Minecraft.getInstance().getWindow().getGuiScale();
 		var key = SVGCache.getInstance().load(location, (float) (width * scale), (float) (height * scale));
 		RenderSystem.setShaderTexture(0, key);
+		RenderSystem.enableBlend();
 		RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
 		Matrix4f matrix4f = this.pose.last().pose();
 		BufferBuilder bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);

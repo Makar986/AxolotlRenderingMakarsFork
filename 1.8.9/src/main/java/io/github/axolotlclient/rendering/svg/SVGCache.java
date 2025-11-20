@@ -23,6 +23,7 @@
 package io.github.axolotlclient.rendering.svg;
 
 import java.nio.ByteBuffer;
+import java.util.concurrent.CompletableFuture;
 
 import com.mojang.blaze3d.platform.TextureUtil;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
@@ -52,23 +53,25 @@ public class SVGCache {
 		var key = new Identifier(loc.getNamespace(), loc.getPath() + "/" + Float.floatToIntBits(w) + "x" + Float.floatToIntBits(h));
 		if (!cache.contains(key)) {
 			cache.add(key);
-			try {
-				var res = minecraft.getResourceManager().getResource(loc);
-				try (var in = res.asStream()) {
-					var img = BatikAdapter.rasterizeSvg(in, w, h);
-					var tex = new DynamicTexture((int) (w + 0.5), (int) (h + 0.5));
-					var buf = ByteBuffer.wrap(img);
-					buf.asIntBuffer().get(tex.getPixels());
-					for (int x = 0; x < tex.getPixels().length; x++) {
-						tex.getPixels()[x] = Integer.rotateRight(tex.getPixels()[x], 8);
+			var tex = new DynamicTexture((int) (w + 0.5), (int) (h + 0.5));
+			minecraft.getTextureManager().register(key, tex);
+			CompletableFuture.runAsync(() -> {
+				try {
+					var res = minecraft.getResourceManager().getResource(loc);
+					try (var in = res.asStream()) {
+						var img = BatikAdapter.rasterizeSvg(in, w, h);
+						var buf = ByteBuffer.wrap(img);
+						buf.asIntBuffer().get(tex.getPixels());
+						for (int x = 0; x < tex.getPixels().length; x++) {
+							tex.getPixels()[x] = Integer.rotateRight(tex.getPixels()[x], 8);
+						}
+						minecraft.submit(tex::upload);
 					}
-					tex.upload();
-					minecraft.getTextureManager().register(key, tex);
+				} catch (Exception e) {
+					log.error("Failed to load SVG resource! ", e);
+					minecraft.getTextureManager().register(key, TextureUtil.MISSING_TEXTURE);
 				}
-			} catch (Exception e) {
-				log.error("Failed to load SVG resource! ", e);
-				minecraft.getTextureManager().register(key, TextureUtil.MISSING_TEXTURE);
-			}
+			});
 		}
 		return key;
 	}

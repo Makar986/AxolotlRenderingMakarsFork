@@ -22,6 +22,8 @@
 
 package io.github.axolotlclient.rendering.svg;
 
+import java.util.concurrent.CompletableFuture;
+
 import com.mojang.blaze3d.platform.NativeImage;
 import io.github.axolotlclient.rendering.RenderingCommon;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
@@ -60,18 +62,22 @@ public class SVGCache {
 			if (res.isEmpty()) {
 				return MissingTextureAtlasSprite.getLocation();
 			}
-			try (var in = res.get().open()) {
-				var img = BatikAdapter.rasterizeSvg(in, w, h);
-				var n = new NativeImage(NativeImage.Format.RGBA, (int) (w + 0.5), (int) (h + 0.5), false);
-				var buf = MemoryUtil.memAlloc(img.length);
-				buf.put(img).flip();
-				MemoryUtil.memCopy(MemoryUtil.memAddress(buf), n.getPointer(), img.length);
-				MemoryUtil.memFree(buf);
-				minecraft.getTextureManager().register(key, new DynamicTexture(key::toString, n));
-			} catch (Exception e) {
-				log.error("Failed to load SVG resource! ", e);
-				return MissingTextureAtlasSprite.getLocation();
-			}
+			var n = new NativeImage(NativeImage.Format.RGBA, (int) (w + 0.5), (int) (h + 0.5), false);
+			var tex = new DynamicTexture(key::toString, n);
+			minecraft.getTextureManager().register(key, tex);
+			CompletableFuture.runAsync(() -> {
+				try (var in = res.get().open()) {
+					var img = BatikAdapter.rasterizeSvg(in, w, h);
+					var buf = MemoryUtil.memAlloc(img.length);
+					buf.put(img).flip();
+					MemoryUtil.memCopy(MemoryUtil.memAddress(buf), n.getPointer(), img.length);
+					MemoryUtil.memFree(buf);
+					minecraft.execute(tex::upload);
+				} catch (Exception e) {
+					log.error("Failed to load SVG resource! ", e);
+					minecraft.getTextureManager().register(key, minecraft.getTextureManager().getTexture(MissingTextureAtlasSprite.getLocation()));
+				}
+			});
 		}
 		return key;
 	}
