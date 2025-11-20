@@ -73,7 +73,6 @@ dependencies {
 	// freetype bindings in 3.3.2
 	"embedCompressed"(implementation("org.lwjgl:lwjgl-freetype:3.3.2")!!)
 	"embedCompressed"(runtimeOnly("org.lwjgl:lwjgl-freetype:3.3.2:natives-linux")!!)
-	"embedCompressed"(runtimeOnly("org.lwjgl:lwjgl-freetype:3.3.2:natives-linux-arm64")!!)
 	"embedCompressed"(runtimeOnly("org.lwjgl:lwjgl-freetype:3.3.2:natives-windows")!!)
 	"embedCompressed"(runtimeOnly("org.lwjgl:lwjgl-freetype:3.3.2:natives-windows-arm64")!!)
 	"embedCompressed"(runtimeOnly("org.lwjgl:lwjgl-freetype:3.3.2:natives-macos")!!)

@@ -69,7 +69,7 @@ dependencies {
 
 	"embedCompressed"(implementation("org.lwjgl:lwjgl-freetype:$lwjglVersion")!!)
 
-	listOf("linux", "windows", "macos", "windows-arm64", "macos-arm64", "linux-arm64").forEach { platform ->
+	listOf("linux", "windows", "macos", "windows-arm64", "macos-arm64").forEach { platform ->
 		"embedCompressed"(runtimeOnly("org.lwjgl:lwjgl-freetype:$lwjglVersion:natives-$platform")!!)
 	}
 
