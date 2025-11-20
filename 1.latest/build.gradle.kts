@@ -10,7 +10,7 @@ val minecraftFriendly = "1.21.11"
 val fapiVersion = "0.139.1"
 
 group = project.property("maven_group") as String
-version = "${project.property("version")}+$minecraftVersion"
+version = "${project.property("version")}+$minecraftFriendly"
 base.archivesName = project.property("archives_base_name").toString()
 
 loom {

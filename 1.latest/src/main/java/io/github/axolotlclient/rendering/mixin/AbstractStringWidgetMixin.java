@@ -26,16 +26,11 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.components.AbstractStringWidget;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.network.chat.Component;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(AbstractStringWidget.class)
 public abstract class AbstractStringWidgetMixin extends AbstractWidget {
-
-	@Shadow
-	@Final
-	private Font font;
 
 	@Shadow
 	protected abstract Font getFont();
