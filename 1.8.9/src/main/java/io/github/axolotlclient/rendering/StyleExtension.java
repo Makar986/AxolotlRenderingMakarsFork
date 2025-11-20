@@ -25,9 +25,20 @@ package io.github.axolotlclient.rendering;
 import io.github.axolotlclient.rendering.font.TextColor;
 import net.minecraft.text.Style;
 
+@SuppressWarnings("unused")
 public interface StyleExtension {
-	TextColor axolotlclient_rendering$getColor();
-	void axolotlclient_rendering$setColor(TextColor value);
+	default TextColor axolotlclient_rendering$getColor(){
+		return null;
+	}
+	default Style axolotlclient_rendering$setColor(TextColor value) {
+		return null;
+	}
 
-	Style axolotlclient_rendering$applyTo(Style other);
+	default Style axolotlclient_rendering$applyTo(Style other) {
+		return null;
+	}
+
+	default Style axolotlclient_rendering$setColor(int color) {
+		return axolotlclient_rendering$setColor(TextColor.fromRgb(color));
+	}
 }

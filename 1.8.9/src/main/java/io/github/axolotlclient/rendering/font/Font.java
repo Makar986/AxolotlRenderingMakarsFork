@@ -22,6 +22,7 @@
 
 package io.github.axolotlclient.rendering.font;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
@@ -73,7 +74,7 @@ import static org.lwjgl.util.freetype.FreeType.*;
 
 @SuppressWarnings({"resource", "DataFlowIssue", "unused"})
 @Slf4j
-public class Font implements AutoCloseable {
+public class Font implements Closeable {
 
 	public static final long TAG_WEIGHT = makeVariantTag('w', 'g', 'h', 't');
 	public static final long TAG_WIDTH = makeVariantTag('w', 'd', 't', 'h');
@@ -442,7 +443,7 @@ public class Font implements AutoCloseable {
 		var scale = (float) window.getScale();
 
 		GlStateManager.pushMatrix();
-		GlStateManager.translatef(x, y-1f, 0);
+		GlStateManager.translatef(x, y - 1f, 0);
 		GlStateManager.scalef(1f / scale, 1f / scale, 1);
 		GlStateManager.translatef(0, ascender(), 0);
 		GlStateManager.translatef(-startOffset[0], -startOffset[1], 0);
@@ -452,7 +453,7 @@ public class Font implements AutoCloseable {
 	}
 
 	float ascender() {
-		return MathHelper.floor(FT_MulFix(face.ascender(), face.size().metrics().y_scale())/64f);
+		return MathHelper.floor(FT_MulFix(face.ascender(), face.size().metrics().y_scale()) / 64f);
 	}
 
 	private static float @NotNull [] getOffset(int alignFlags, BuiltText builtText) {
@@ -542,7 +543,7 @@ public class Font implements AutoCloseable {
 		updateVariant(style);
 		var page = getPage(codePt, false);
 		var c = page.charInfo[codePt & 0xFF];
-		return c.advanceX/window.getScale();
+		return c.advanceX / window.getScale();
 	}
 
 	public List<Text> split(String text, int maxWidth) {
@@ -575,7 +576,7 @@ public class Font implements AutoCloseable {
 			}
 
 			updateVariant(style);
-			var styleColor = ((StyleExtension) style).axolotlclient_rendering$getColor();
+			var styleColor = style.axolotlclient_rendering$getColor();
 			int textColor;
 			if (styleColor != null) {
 				textColor = ARGB.color(ARGB.alpha(color), styleColor.getValue());

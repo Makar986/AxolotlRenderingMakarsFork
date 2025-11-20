@@ -24,15 +24,16 @@ package io.github.axolotlclient.rendering.font;
 
 import java.util.Optional;
 
-import io.github.axolotlclient.rendering.StyleExtension;
 import net.minecraft.text.Formatting;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 
 public class StringDecomposer {
 	private static final char REPLACEMENT_CHAR = '�';
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	private static final Optional<Object> STOP_ITERATION = Optional.of(new Object());
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	private static boolean feedChar(Style style, FormattedCharSink sink, int position, char character) {
 		return Character.isSurrogate(character) ? sink.accept(position, style, REPLACEMENT_CHAR) : sink.accept(position, style, character);
 	}
@@ -120,6 +121,10 @@ public class StringDecomposer {
 				Formatting chatFormatting = TextRenderUtils.getByCode(code);
 				if (chatFormatting != null) {
 					style = chatFormatting == Formatting.RESET ? defaultStyle : TextRenderUtils.applyLegacyFormat(style, chatFormatting);
+				} else if (code == '#' && index + 8 < length) {
+					var color = text.substring(index+1, index+8);
+					style = style.axolotlclient_rendering$setColor(TextColor.parseColor(color));
+					index += 6;
 				}
 
 				index++;
@@ -152,7 +157,7 @@ public class StringDecomposer {
 	public static boolean iterateFormatted(Text text, Style style, FormattedCharSink sink) {
 		var opt = Optional.empty();
 		for (var t : text) {
-			if (!iterateFormatted(t.getContent(), 0, ((StyleExtension) t.getStyle()).axolotlclient_rendering$applyTo(style), sink)) {
+			if (!iterateFormatted(t.getContent(), 0, t.getStyle().axolotlclient_rendering$applyTo(style), sink)) {
 				opt = STOP_ITERATION;
 			}
 			if (opt.isPresent()) {

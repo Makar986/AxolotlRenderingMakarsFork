@@ -79,13 +79,14 @@ public abstract class StyleMixin implements StyleExtension {
 
 	@Override
 	public TextColor axolotlclient_rendering$getColor() {
-		if ((Object)this == ROOT) return null;
-		return textColor != null ? textColor : ((StyleExtension) getParent()).axolotlclient_rendering$getColor();
+		if ((Object) this == ROOT) return null;
+		return textColor != null ? textColor : getParent().axolotlclient_rendering$getColor();
 	}
 
 	@Override
-	public void axolotlclient_rendering$setColor(TextColor value) {
+	public Style axolotlclient_rendering$setColor(TextColor value) {
 		textColor = value;
+		return (Style) (Object) this;
 	}
 
 	@Override
@@ -94,10 +95,10 @@ public abstract class StyleMixin implements StyleExtension {
 			return style;
 		} else {
 			var stm = (StyleMixin) (Object) style;
-			if (style.isEmpty()) return (Style)(Object) this;
+			if (style.isEmpty()) return (Style) (Object) this;
 			var n = new Style();
 			n.setColor(this.color != null ? this.color : stm.color);
-			((StyleExtension) n).axolotlclient_rendering$setColor(this.textColor != null ? this.textColor : stm.textColor);
+			n.axolotlclient_rendering$setColor(this.textColor != null ? this.textColor : stm.textColor);
 			n.setBold(this.bold != null ? this.bold : stm.bold);
 			n.setItalic(this.italic != null ? this.italic : stm.italic);
 			n.setUnderlined(this.underlined != null ? this.underlined : stm.underlined);
@@ -126,13 +127,13 @@ public abstract class StyleMixin implements StyleExtension {
 
 	@ModifyReturnValue(method = "copy", at = @At("RETURN"))
 	private Style copy(Style original) {
-		((StyleExtension) original).axolotlclient_rendering$setColor(axolotlclient_rendering$getColor());
+		original.axolotlclient_rendering$setColor(axolotlclient_rendering$getColor());
 		return original;
 	}
 
 	@ModifyReturnValue(method = "deepCopy", at = @At("RETURN"))
 	private Style deepCopy(Style original) {
-		((StyleMixin)(Object) original).textColor = textColor;
+		((StyleMixin) (Object) original).textColor = textColor;
 		return original;
 	}
 }

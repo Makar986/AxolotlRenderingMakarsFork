@@ -24,7 +24,6 @@ package io.github.axolotlclient.rendering.font;
 
 import java.util.Map;
 
-import io.github.axolotlclient.rendering.StyleExtension;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -90,8 +89,9 @@ public final class TextRenderUtils {
 		return formattingColors.getInt(formatting);
 	}
 
+	@SuppressWarnings("WrapperTypeMayBePrimitive")
 	public static Style applyLegacyFormat(Style in, Formatting formatting) {
-		TextColor textColor = ((StyleExtension) in).axolotlclient_rendering$getColor();
+		TextColor textColor = in.axolotlclient_rendering$getColor();
 		Boolean bold = in.isBold();
 		Boolean italic = in.isItalic();
 		Boolean strikethrough = in.isStrikethrough();
@@ -126,7 +126,7 @@ public final class TextRenderUtils {
 
 		var n = new Style();
 		n.setColor(formatting);
-		((StyleExtension) n).axolotlclient_rendering$setColor(textColor);
+		n.axolotlclient_rendering$setColor(textColor);
 		n.setBold(bold);
 		n.setItalic(italic);
 		n.setUnderlined(underline);

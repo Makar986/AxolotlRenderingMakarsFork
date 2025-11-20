@@ -22,6 +22,7 @@
 
 package io.github.axolotlclient.rendering.util;
 
+@SuppressWarnings("unused")
 public class ARGB {
 	public static int alpha(int color) {
 		return color >>> 24;
@@ -101,7 +102,15 @@ public class ARGB {
 	}
 
 	public static int toABGR(int color) {
-		return color & -16711936 | (color & 0xFF0000) >> 16 | (color & 0xFF) << 16;
+		return color & 0xFF00FF00 | (color & 0xFF0000) >> 16 | (color & 0xFF) << 16;
+	}
+
+	public static int lerp(float delta, int color1, int color2) {
+		int i = lerpInt(delta, alpha(color1), alpha(color2));
+		int j = lerpInt(delta, red(color1), red(color2));
+		int k = lerpInt(delta, green(color1), green(color2));
+		int l = lerpInt(delta, blue(color1), blue(color2));
+		return color(i, j, k, l);
 	}
 
 	private static int lerpInt(float delta, int start, int end) {
