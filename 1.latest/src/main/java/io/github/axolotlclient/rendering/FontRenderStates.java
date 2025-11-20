@@ -32,17 +32,17 @@ import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
 import net.minecraft.client.gui.render.state.GuiElementRenderState;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix3x2f;
 
 public final class FontRenderStates {
 
-	public record PageGlyphs(ResourceLocation tex, Matrix3x2f pose, List<Font.CoordData> glyphs,
+	public record PageGlyphs(Identifier tex, Matrix3x2f pose, List<Font.CoordData> glyphs,
 							 ScreenRectangle rect, ScreenRectangle scissor) implements GuiElementRenderState {
 		@Override
-		public void buildVertices(VertexConsumer vertexConsumer) {
+		public void buildVertices(@NotNull VertexConsumer vertexConsumer) {
 			for (var g : glyphs) {
 				vertexConsumer.addVertexWith2DPose(this.pose(), g.x(), g.y()).setUv(g.u(), g.v()).setColor(g.color());
 				vertexConsumer.addVertexWith2DPose(this.pose(), g.x(), g.y() + g.height()).setUv(g.u(), g.v1()).setColor(g.color());
@@ -58,7 +58,8 @@ public final class FontRenderStates {
 
 		@Override
 		public @NotNull TextureSetup textureSetup() {
-			return TextureSetup.singleTexture(Minecraft.getInstance().getTextureManager().getTexture(tex).getTextureView());
+			var tex = Minecraft.getInstance().getTextureManager().getTexture(this.tex);
+			return TextureSetup.singleTexture(tex.getTextureView(), tex.getSampler());
 		}
 
 		@Override
@@ -72,9 +73,10 @@ public final class FontRenderStates {
 		}
 	}
 
-	public record Effects(Matrix3x2f pose, List<Font.EffectData> effects, ScreenRectangle rect, ScreenRectangle scissor) implements GuiElementRenderState {
+	public record Effects(Matrix3x2f pose, List<Font.EffectData> effects, ScreenRectangle rect,
+						  ScreenRectangle scissor) implements GuiElementRenderState {
 		@Override
-		public void buildVertices(VertexConsumer vertexConsumer) {
+		public void buildVertices(@NotNull VertexConsumer vertexConsumer) {
 			for (var e : effects) {
 				vertexConsumer.addVertexWith2DPose(this.pose(), e.x(), e.y()).setColor(e.color());
 				vertexConsumer.addVertexWith2DPose(this.pose(), e.x(), e.y() + e.height()).setColor(e.color());

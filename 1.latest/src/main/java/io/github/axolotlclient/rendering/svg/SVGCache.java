@@ -33,7 +33,7 @@ import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import org.lwjgl.system.MemoryUtil;
@@ -46,15 +46,15 @@ public class SVGCache {
 		return INSTANCE;
 	}
 
-	private final ObjectSet<ResourceLocation> cache = new ObjectOpenHashSet<>();
+	private final ObjectSet<Identifier> cache = new ObjectOpenHashSet<>();
 	private final Minecraft minecraft = Minecraft.getInstance();
 
 	private SVGCache() {
-		ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloader(ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID, "svgcache"),
+		ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloader(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "svgcache"),
 			(ResourceManagerReloadListener) (man -> cache.clear()));
 	}
 
-	public ResourceLocation load(ResourceLocation loc, float w, float h) {
+	public Identifier load(Identifier loc, float w, float h) {
 		var key = loc.withSuffix("/" + Float.floatToIntBits(w) + "x" + Float.floatToIntBits(h));
 		if (!cache.contains(key)) {
 			cache.add(key);

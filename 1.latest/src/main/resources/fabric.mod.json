@@ -34,6 +34,12 @@
 		"loom:injected_interfaces": {
 			"net/minecraft/class_332": [
 				"io/github/axolotlclient/rendering/GuiGraphicsExtension"
+			],
+			"net/minecraft/class_12225\u0024class_12227": [
+				"io/github/axolotlclient/rendering/ActiveTextCollectorParametersExtension"
+			],
+			"net/minecraft/class_339": [
+				"io/github/axolotlclient/rendering/AbstractWidgetExtension"
 			]
 		}
 	}

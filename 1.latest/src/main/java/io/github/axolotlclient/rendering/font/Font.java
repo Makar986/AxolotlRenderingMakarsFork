@@ -36,7 +36,6 @@ import java.util.Locale;
 import java.util.function.Consumer;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.textures.FilterMode;
 import io.github.axolotlclient.rendering.FontRenderStates;
 import io.github.axolotlclient.rendering.RenderingCommon;
 import io.github.axolotlclient.rendering.util.ARGB;
@@ -60,7 +59,7 @@ import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.*;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -98,6 +97,7 @@ public class Font implements Closeable {
 		});
 	}
 
+	@ApiStatus.Internal
 	public static void onScaleChange() {
 		Font.fonts.removeIf(w -> w.refersTo(null));
 		Font.fonts.forEach(w -> {
@@ -106,6 +106,7 @@ public class Font implements Closeable {
 		});
 	}
 
+	@ApiStatus.Internal
 	public static void closeAll() {
 		Font.fonts.removeIf(w -> w.refersTo(null));
 		Font.fonts.forEach(w -> w.get().close());
@@ -532,7 +533,7 @@ public class Font implements Closeable {
 	BuiltText buildText(int color, boolean shadow, Consumer<FormattedCharSink> sink) {
 		final float[] penX = {0};
 		final float[] penY = {0};
-		var screenAndTexCoords = new Object2ObjectOpenHashMap<ResourceLocation, List<CoordData>>();
+		var screenAndTexCoords = new Object2ObjectOpenHashMap<Identifier, List<CoordData>>();
 		var effects = new ObjectArrayList<EffectData>();
 		var fontBox = new float[]{Float.MAX_VALUE, Float.MAX_VALUE, Float.MIN_VALUE, Float.MIN_VALUE};
 
@@ -710,7 +711,7 @@ public class Font implements Closeable {
 		}
 	}
 
-	record BuiltText(Object2ObjectOpenHashMap<ResourceLocation, List<CoordData>> coordData,
+	record BuiltText(Object2ObjectOpenHashMap<Identifier, List<CoordData>> coordData,
 					 List<EffectData> effects, float[] textBox) {
 
 	}
@@ -811,14 +812,13 @@ public class Font implements Closeable {
 			}
 		}
 
-		page.tex = ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID,
+		page.tex = Identifier.fromNamespaceAndPath(RenderingCommon.MODID,
 			"font_%s/%s/page_%d/%d".formatted(
 				face.family_nameString().replace(" ", "_").toLowerCase(Locale.ROOT),
 				face.style_nameString().replace(" ", "_").toLowerCase(Locale.ROOT),
 				pageIndex, size
 			));
 		var tex = new DynamicTexture(page.tex::toString, texData);
-		tex.getTexture().setTextureFilter(FilterMode.LINEAR, FilterMode.LINEAR, true);
 		Minecraft.getInstance().getTextureManager().register(page.tex, tex);
 	}
 
@@ -850,7 +850,7 @@ public class Font implements Closeable {
 	}
 
 	static class Page {
-		ResourceLocation tex;
+		Identifier tex;
 		CharInfo[] charInfo = new CharInfo[256];
 		int texWidth, texHeight;
 		boolean rendered;

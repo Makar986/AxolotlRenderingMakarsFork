@@ -35,7 +35,7 @@ import net.minecraft.client.gui.font.TextRenderable;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -150,7 +150,12 @@ public class FontAdapter extends Font {
 					});
 				}
 				for (var entry : built.coordData().entrySet()) {
-					visitor.acceptGlyph(new TextRenderable() {
+					visitor.acceptGlyph(new TextRenderable.Styled() {
+						@Override
+						public Style style() {
+							return null;
+						}
+
 						@Override
 						public void render(Matrix4f matrix, VertexConsumer consumer, int packedLight, boolean noDepth) {
 							var pose = new Matrix4f(matrix).mul(transform);
@@ -257,7 +262,7 @@ public class FontAdapter extends Font {
 	}
 
 	@Override
-	public PreparedText prepareText(FormattedCharSequence text, float x, float y, int color, boolean dropShadow, int backgroundColor) {
+	public PreparedText prepareText(FormattedCharSequence text, float x, float y, int color, boolean dropShadow, boolean includeEmpty, int backgroundColor) {
 		var built = font.buildText(color, dropShadow, text::accept);
 		return getPreparedText(x, y, built, backgroundColor);
 	}
@@ -290,11 +295,6 @@ public class FontAdapter extends Font {
 	@Override
 	public FormattedText substrByWidth(FormattedText text, int maxWidth) {
 		return getSplitter().headByWidth(text, maxWidth, Style.EMPTY);
-	}
-
-	@Override
-	public int wordWrapHeight(String text, int maxWidth) {
-		return font.lineHeight() * getSplitter().splitLines(text, maxWidth, Style.EMPTY).size();
 	}
 
 	@Override

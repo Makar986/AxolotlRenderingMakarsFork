@@ -28,13 +28,13 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public class RenderingTestMod implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
-		HudElementRegistry.addLast(ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID, "test_hud"),
+		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "test_hud"),
 			(guiGraphics, deltaTracker) -> {
 				var font = DefaultFont.inter();
 				var adapter = DefaultFont.interAdapter();
@@ -46,9 +46,9 @@ public class RenderingTestMod implements ClientModInitializer {
 				guiGraphics.axolotlclient_rendering$roundedRect(80, 10, 180, 30, 0x77777777, 9);
 				guiGraphics.axolotlclient_rendering$outlineRoundedRect(80, 10, 180, 30, 0x99FF3333, 9, 3);
 				guiGraphics.axolotlclient_rendering$roundedRect(80, 50, 180, 70, 0xAA777777, 10);
-				guiGraphics.axolotlclient_rendering$circleBlit(ResourceLocation.fromNamespaceAndPath("minecraft", "textures/gui/title/background/panorama_0.png"),
+				guiGraphics.axolotlclient_rendering$circleBlit(Identifier.fromNamespaceAndPath("minecraft", "textures/gui/title/background/panorama_0.png"),
 					300, 120, 100);
-				guiGraphics.axolotlclient_rendering$outlineCircleBlit(ResourceLocation.fromNamespaceAndPath("minecraft", "textures/gui/title/background/panorama_1.png"),
+				guiGraphics.axolotlclient_rendering$outlineCircleBlit(Identifier.fromNamespaceAndPath("minecraft", "textures/gui/title/background/panorama_1.png"),
 					300, 120, -1, 100, 5f);
 				var t = "Example §otext§r §nwith§r §kmultiple§r §mwords and §5some §a§lcolors§r.";
 				guiGraphics.drawString(Minecraft.getInstance().font, t, 20, 100, -1);
@@ -62,7 +62,7 @@ public class RenderingTestMod implements ClientModInitializer {
 					"sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. " +
 					"Stet clita kasd gubergren, no sea takimata sanctus est");
 				guiGraphics.axolotlclient_rendering$drawWordWrap(font, w, 20, 150, 80, -1);
-				guiGraphics.axolotlclient_rendering$blitSVG(ResourceLocation.fromNamespaceAndPath("axolotlclient_rendering", "textures/svg/23.svg"),
+				guiGraphics.axolotlclient_rendering$blitSVG(Identifier.fromNamespaceAndPath("axolotlclient_rendering", "textures/svg/23.svg"),
 					guiGraphics.guiWidth() - 50, 0, 50, 50, -1);
 				guiGraphics.drawString(adapter, Component.literal("AAAAaÄǍÄÅ"), 20, 140, -1);
 				guiGraphics.drawWordWrap(adapter, w, 100, 150, 80, -1);
