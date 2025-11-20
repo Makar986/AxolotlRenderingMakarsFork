@@ -13,7 +13,6 @@ Current features:
 
 Examples on how to use the library can be found in the respective test source set for each version.
 
-
 #### General Usage:
 On 1.8.9, use `DrawUtil.get()` to obtain an instance.
 Otherwise, use `GuiGraphics` directly and the interface methods from
@@ -30,5 +29,6 @@ This library includes the *[Inter](https://rsms.me/inter)* font by default.
 
 ### TODO
 
-- async svg rasterization, with fade-in after so there aren't any jarring jumps
+- svg rasterization with fade-in after so there aren't any jarring jumps
+  (currently it pops in, which is mostly only noticeable on larger/more complicated svgs)
 

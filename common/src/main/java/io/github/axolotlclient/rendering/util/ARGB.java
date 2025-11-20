@@ -22,7 +22,7 @@
 
 package io.github.axolotlclient.rendering.util;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "SameParameterValue"})
 public class ARGB {
 	public static int alpha(int color) {
 		return color >>> 24;

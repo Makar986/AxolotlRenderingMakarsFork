@@ -63,6 +63,7 @@ public class SVGCache {
 				return MissingTextureAtlasSprite.getLocation();
 			}
 			var n = new NativeImage(NativeImage.Format.RGBA, (int) (w + 0.5), (int) (h + 0.5), false);
+			MemoryUtil.memSet(n.getPointer(), 0, (long) n.getHeight() * n.getWidth() * 4);
 			var tex = new DynamicTexture(key::toString, n);
 			minecraft.getTextureManager().register(key, tex);
 			CompletableFuture.runAsync(() -> {

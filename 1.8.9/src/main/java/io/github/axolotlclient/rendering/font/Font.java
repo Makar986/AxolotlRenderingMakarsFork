@@ -38,7 +38,6 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tessellator;
 import io.github.axolotlclient.rendering.ExRenderPipelines;
 import io.github.axolotlclient.rendering.RenderingCommon;
-import io.github.axolotlclient.rendering.StyleExtension;
 import io.github.axolotlclient.rendering.util.ARGB;
 import it.unimi.dsi.fastutil.floats.Float2ObjectMap;
 import it.unimi.dsi.fastutil.floats.Float2ObjectOpenHashMap;
