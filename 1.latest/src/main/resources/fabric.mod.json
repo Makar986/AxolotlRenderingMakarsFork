@@ -41,6 +41,14 @@
 			"net/minecraft/class_339": [
 				"io/github/axolotlclient/rendering/AbstractWidgetExtension"
 			]
+		},
+		"modmenu": {
+			"parent": {
+				"id": "axolotlclient",
+				"name": "AxolotlClient",
+				"icon": "assets/axolotlclient-rendering/icon.png"
+			},
+			"badges": ["library"]
 		}
 	}
 }

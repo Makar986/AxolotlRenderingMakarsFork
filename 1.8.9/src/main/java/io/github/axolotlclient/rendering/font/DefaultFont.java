@@ -27,8 +27,8 @@ public final class DefaultFont {
 	private static final FontAdapter INTER_ADAPTER;
 
 	static {
-		try (var regular = DefaultFont.class.getResourceAsStream("/assets/axolotlclient_rendering/fonts/InterVariable.ttf");
-			 var italic = DefaultFont.class.getResourceAsStream("/assets/axolotlclient_rendering/fonts/InterVariable-Italic.ttf")) {
+		try (var regular = DefaultFont.class.getResourceAsStream("/assets/axolotlclient-rendering/fonts/InterVariable.ttf");
+			 var italic = DefaultFont.class.getResourceAsStream("/assets/axolotlclient-rendering/fonts/InterVariable-Italic.ttf")) {
 			if (regular == null || italic == null) {
 				throw new IllegalStateException();
 			}

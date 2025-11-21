@@ -52,11 +52,11 @@ public class ExRenderPipelines {
 
 	private static void load() {
 		try {
-			ROUNDED_RECT_PROGRAM = ShaderManager.createProgram(new Identifier("axolotlclient_rendering", "core/rounded_rect"));
-			ROUNDED_RECT_TEX_PROGRAM = ShaderManager.createProgram(new Identifier("axolotlclient_rendering", "core/rounded_rect_tex"));
-			ROUNDED_RECT_OUTLINE_PROGRAM = ShaderManager.createProgram(new Identifier("axolotlclient_rendering", "core/rounded_rect_outline"));
-			ROUNDED_RECT_TEX_OUTLINE_PROGRAM = ShaderManager.createProgram(new Identifier("axolotlclient_rendering", "core/rounded_rect_tex_outline"));
-			FONT_PROGRAM = ShaderManager.createProgram(new Identifier("axolotlclient_rendering", "core/font"));
+			ROUNDED_RECT_PROGRAM = ShaderManager.createProgram(new Identifier(RenderingCommon.MODID, "core/rounded_rect"));
+			ROUNDED_RECT_TEX_PROGRAM = ShaderManager.createProgram(new Identifier(RenderingCommon.MODID, "core/rounded_rect_tex"));
+			ROUNDED_RECT_OUTLINE_PROGRAM = ShaderManager.createProgram(new Identifier(RenderingCommon.MODID, "core/rounded_rect_outline"));
+			ROUNDED_RECT_TEX_OUTLINE_PROGRAM = ShaderManager.createProgram(new Identifier(RenderingCommon.MODID, "core/rounded_rect_tex_outline"));
+			FONT_PROGRAM = ShaderManager.createProgram(new Identifier(RenderingCommon.MODID, "core/font"));
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}

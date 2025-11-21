@@ -14,7 +14,7 @@
 		"sources": "https://github.com/AxolotlClient/AxolotlClient-rendering/"
 	},
 	"license": "LGPL-3.0-or-later",
-	"icon": "assets/axolotlclient_rendering/icon.png",
+	"icon": "assets/axolotlclient-rendering/icon.png",
 	"accessWidener": "axolotlclient-rendering.accesswidener",
 	"environment": "*",
 	"entrypoints": {
@@ -35,6 +35,14 @@
 			"net/minecraft/class_332": [
 				"io/github/axolotlclient/rendering/GuiGraphicsExtension"
 			]
+		},
+		"modmenu": {
+			"parent": {
+				"id": "axolotlclient",
+				"name": "AxolotlClient",
+				"icon": "assets/axolotlclient-rendering/icon.png"
+			},
+			"badges": ["library"]
 		}
 	}
 }

@@ -57,7 +57,7 @@ public class RenderingTestMod implements ClientModInitializer {
 				"sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. " +
 				"Stet clita kasd gubergren, no sea takimata sanctus est");
 			guiGraphics.axolotlclient_rendering$drawWordWrap(font, w, 20, 150, 80, -1);
-			guiGraphics.axolotlclient_rendering$blitSVG(ResourceLocation.fromNamespaceAndPath("axolotlclient_rendering", "textures/svg/23.svg"),
+			guiGraphics.axolotlclient_rendering$blitSVG(ResourceLocation.fromNamespaceAndPath("axolotlclient-rendering", "textures/svg/23.svg"),
 				guiGraphics.guiWidth() - 50, 0, 50, 50, -1);
 			guiGraphics.drawString(adapter, Component.literal("AAAAaÄǍÄÅ"), 20, 140, -1);
 			guiGraphics.drawWordWrap(adapter, w, 100, 150, 80, -1);

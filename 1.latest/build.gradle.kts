@@ -42,7 +42,7 @@ dependencies {
 
 	modImplementation("net.fabricmc.fabric-api:fabric-api:$fapiVersion+$minecraftFriendly")
 
-	modCompileOnly("com.terraformersmc:modmenu:16.0.0-rc.1")
+	modCompileOnly("com.terraformersmc:modmenu:17.0.0-alpha.1")
 
 	implementation(include(project(path = ":common", configuration = "shadow"))!!)
 
