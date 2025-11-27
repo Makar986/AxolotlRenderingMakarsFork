@@ -483,6 +483,7 @@ public class Font implements Closeable {
 		Tessellator tess = Tessellator.getInstance();
 		GlStateManager.enableBlend();
 		ExRenderPipelines.FONT_PROGRAM.bind();
+		GlStateManager.color3f(1, 1, 1);
 		var vertexConsumer = tess.getBuilder();
 		for (var pageGlyphs : builtText.coordData().object2ObjectEntrySet().stream().skip(0).toList()) {
 			Minecraft.getInstance().getTextureManager().bind(pageGlyphs.getKey());
