@@ -24,6 +24,8 @@ package io.github.axolotlclient.rendering;
 
 
 import io.github.axolotlclient.rendering.font.Font;
+import io.github.axolotlclient.rendering.mixin.GlStateManagerAccessor;
+import io.github.axolotlclient.rendering.util.ARGB;
 import lombok.extern.slf4j.Slf4j;
 import net.fabricmc.api.ClientModInitializer;
 import net.ornithemc.osl.lifecycle.api.client.MinecraftClientEvents;
@@ -43,5 +45,14 @@ public class Rendering implements ClientModInitializer {
 	@ApiStatus.Internal
 	public static void resetWindow() {
 		((DrawUtil)DrawUtil.get()).resetWindow();
+	}
+
+	@ApiStatus.Internal
+	public static int scaleARGB(int color) {
+		return ARGB.color(
+			GlStateManagerAccessor.getColor().a == -1 ? ARGB.alpha(color) : ARGB.as8BitChannel(ARGB.alphaFloat(color)*GlStateManagerAccessor.getColor().a),
+			GlStateManagerAccessor.getColor().r == -1 ? ARGB.red(color) : ARGB.as8BitChannel(ARGB.redFloat(color) * GlStateManagerAccessor.getColor().r),
+			GlStateManagerAccessor.getColor().g == -1 ? ARGB.green(color) : ARGB.as8BitChannel(ARGB.greenFloat(color) * GlStateManagerAccessor.getColor().g),
+			GlStateManagerAccessor.getColor().b == -1 ? ARGB.blue(color) : ARGB.as8BitChannel(ARGB.blueFloat(color) * GlStateManagerAccessor.getColor().b));
 	}
 }

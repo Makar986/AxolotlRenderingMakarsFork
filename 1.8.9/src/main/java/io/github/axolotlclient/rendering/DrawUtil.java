@@ -75,7 +75,11 @@ public class DrawUtil implements GuiGraphicsExtension {
 		GlStateManager.enableBlend();
 		GlStateManager.disableTexture();
 		GlStateManager.blendFuncSeparate(770, 771, 1, 0);
-		GlStateManager.color4f(1f, 1f, 1f, 1f);
+		GlStateManager.color4f(1, 1, 1, 1);
+		colorTopLeft = Rendering.scaleARGB(colorTopLeft);
+		colorBottomLeft = Rendering.scaleARGB(colorBottomLeft);
+		colorBottomRight = Rendering.scaleARGB(colorBottomRight);
+		colorTopRight = Rendering.scaleARGB(colorTopRight);
 		bufferBuilder.begin(7, DefaultVertexFormat.POSITION_COLOR);
 		bufferBuilder.vertex(x1, y0, 0.0).color((colorTopRight >> 16 & 0xFF) / 255f, (colorTopRight >> 8 & 0xFF) / 255f, (colorTopRight & 0xFF) / 255f, (colorTopRight >> 24 & 0xFF) / 255f).nextVertex();
 		bufferBuilder.vertex(x0, y0, 0.0).color((colorTopLeft >> 16 & 0xFF) / 255f, (colorTopLeft >> 8 & 0xFF) / 255f, (colorTopLeft & 0xFF) / 255f, (colorTopLeft >> 24 & 0xFF) / 255f).nextVertex();
@@ -106,6 +110,11 @@ public class DrawUtil implements GuiGraphicsExtension {
 		});
 		buf.flip();
 		shader.setUniform("Dimensions", buf);
+		GlStateManager.color4f(1, 1, 1, 1);
+		colorTopLeft = Rendering.scaleARGB(colorTopLeft);
+		colorBottomLeft = Rendering.scaleARGB(colorBottomLeft);
+		colorBottomRight = Rendering.scaleARGB(colorBottomRight);
+		colorTopRight = Rendering.scaleARGB(colorTopRight);
 		fill(x0, y0, x1, y1, colorTopLeft, colorBottomLeft, colorBottomRight, colorTopRight);
 		shader.unbind();
 	}
@@ -131,6 +140,11 @@ public class DrawUtil implements GuiGraphicsExtension {
 		buf.flip();
 		shader.setUniform("Dimensions", buf);
 		shader.setUniform("OutlineWidth", outlineWidth);
+		GlStateManager.color4f(1, 1, 1, 1);
+		colorTopLeft = Rendering.scaleARGB(colorTopLeft);
+		colorBottomLeft = Rendering.scaleARGB(colorBottomLeft);
+		colorBottomRight = Rendering.scaleARGB(colorBottomRight);
+		colorTopRight = Rendering.scaleARGB(colorTopRight);
 		fill(x0, y0, x1, y1, colorTopLeft, colorBottomLeft, colorBottomRight, colorTopRight);
 		shader.unbind();
 	}

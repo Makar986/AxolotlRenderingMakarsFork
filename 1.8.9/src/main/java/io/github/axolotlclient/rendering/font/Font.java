@@ -37,6 +37,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.Tessellator;
 import io.github.axolotlclient.rendering.ExRenderPipelines;
+import io.github.axolotlclient.rendering.Rendering;
 import io.github.axolotlclient.rendering.RenderingCommon;
 import io.github.axolotlclient.rendering.util.ARGB;
 import it.unimi.dsi.fastutil.floats.Float2ObjectMap;
@@ -487,7 +488,7 @@ public class Font implements Closeable {
 			Minecraft.getInstance().getTextureManager().bind(pageGlyphs.getKey());
 			vertexConsumer.begin(GL11.GL_QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
 			for (var g : pageGlyphs.getValue()) {
-				var color = g.color();
+				var color = Rendering.scaleARGB(g.color());
 				vertexConsumer.vertex(g.x(), g.y(), 0).texture(g.u(), g.v())
 					.color((color >> 16 & 0xFF) / 255f, (color >> 8 & 0xFF) / 255f,
 						(color & 0xFF) / 255f, (color >> 24 & 0xFF) / 255f).nextVertex();
@@ -509,7 +510,7 @@ public class Font implements Closeable {
 		if (!builtText.effects().isEmpty()) {
 			vertexConsumer.begin(GL11.GL_QUADS, DefaultVertexFormat.POSITION_COLOR);
 			for (var e : builtText.effects()) {
-				var color = e.color();
+				var color = Rendering.scaleARGB(e.color());
 				vertexConsumer.vertex(e.x(), e.y(), 0).color((color >> 16 & 0xFF) / 255f,
 					(color >> 8 & 0xFF) / 255f, (color & 0xFF) / 255f, (color >> 24 & 0xFF) / 255f).nextVertex();
 				vertexConsumer.vertex(e.x(), e.y() + e.height(), 0).color((color >> 16 & 0xFF) / 255f,
