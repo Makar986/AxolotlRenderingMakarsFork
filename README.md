@@ -9,6 +9,9 @@ Current features:
 - Convenient rendering of TrueType fonts using FreeType
 - Convenient rendering of static SVG images using Apache Batik
 
+This library is published to our maven:
+https://moehreag.duckdns.org/maven/#/releases/io/github/axolotlclient/rendering/AxolotlClient-rendering
+
 ### Examples
 
 Examples on how to use the library can be found in the respective test source set for each version.

@@ -791,33 +791,27 @@ public class Font implements Closeable {
 			var c = page.charInfo[codePt & 0xFF];
 			if (FT_Load_Glyph(face, c.glyphI, FT_LOAD_RENDER) != FT_Err_Ok) {
 				log.error("Error loading glyph for render: {} ({})", Integer.toHexString(codePt), Character.toString(codePt));
-				continue;
-			}
-			var bmp = slot.bitmap();
-			final int width = bmp.width();
-			final int height = bmp.rows();
+				curX += 2;
+			} else {
+				var bmp = slot.bitmap();
+				final int width = bmp.width();
+				final int height = bmp.rows();
 
-			var tblImgY = curY;
-			var tblImgX = curX;
+				c.u0 = (float) (curX) / texData.getWidth();
+				c.v0 = (float) (curY) / texData.getHeight();
+				c.u1 = (float) (curX + bmp.width()) / texData.getWidth();
+				c.v1 = (float) (curY + bmp.rows()) / texData.getHeight();
 
-			c.u0 = (float) (tblImgX) / texData.getWidth();
-			c.v0 = (float) (tblImgY) / texData.getHeight();
-			c.u1 = (float) (tblImgX + bmp.width()) / texData.getWidth();
-			c.v1 = (float) (tblImgY + bmp.rows()) / texData.getHeight();
-
-			curX += width + 2;
-			rowHeight = Math.max(rowHeight, height);
-			{
 				var buffer = bmp.buffer(bmp.width() * bmp.rows());
-				if (buffer == null) {
-					continue;
+				if (buffer != null) {
+					long src = MemoryUtil.memAddress(buffer);
+					for (int y = 0; y < height; y++) {
+						MemoryUtil.memCopy(src + ((long) y * width), ((NativeImageAccessor) (Object) texData).getPointer() + (curX + (long) (curY + y) * tWidth), width);
+					}
 				}
-				long src = MemoryUtil.memAddress(buffer);
-				for (int y = 0; y < height; y++) {
-					MemoryUtil.memCopy(src + ((long) y * width), ((NativeImageAccessor) (Object) texData).getPointer() + (tblImgX + (long) (tblImgY + y) * tWidth), width);
-				}
+				curX += width + 2;
+				rowHeight = Math.max(rowHeight, height);
 			}
-
 			if (((codePt + 1 >> 4) & 0xF) != tblRow) {
 				curX = 2;
 				curY += rowHeight + 2;
