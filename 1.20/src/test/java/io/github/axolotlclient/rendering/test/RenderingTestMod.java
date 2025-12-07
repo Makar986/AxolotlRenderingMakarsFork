@@ -62,10 +62,11 @@ public class RenderingTestMod implements ClientModInitializer {
 				guiGraphics.guiWidth() - 50, 0, 50, 50, -1);
 			guiGraphics.drawString(adapter, Component.literal("AAAAaÄǍÄÅ"), 20, 140, -1);
 			guiGraphics.drawWordWrap(adapter, w, 100, 150, 80, -1);
-			guiGraphics.axolotlclient_rendering$roundedVLine(guiGraphics.guiWidth()-30, 150-1, 200, 0xFF8833FF);
-			guiGraphics.axolotlclient_rendering$roundedRect(guiGraphics.guiWidth()-15, 150, guiGraphics.guiWidth()-14, 200, 0xFF885533, 1.5f);
-			guiGraphics.axolotlclient_rendering$roundedRect(guiGraphics.guiWidth()-18, 150, guiGraphics.guiWidth()-16, 200, 0xFF777777, 1.5f);
-			guiGraphics.axolotlclient_rendering$roundedRect(guiGraphics.guiWidth()-25, 150, guiGraphics.guiWidth()-20, 200, 0xFF885533, 2.75f);
+			guiGraphics.drawWordWrap(Minecraft.getInstance().font, w, 180, 150, 80, -1);
+			guiGraphics.axolotlclient_rendering$roundedVLine(guiGraphics.guiWidth() - 30, 150 - 1, 200, 0xFF8833FF);
+			guiGraphics.axolotlclient_rendering$roundedRect(guiGraphics.guiWidth() - 15, 150, guiGraphics.guiWidth() - 14, 200, 0xFF885533, 1.5f);
+			guiGraphics.axolotlclient_rendering$roundedRect(guiGraphics.guiWidth() - 18, 150, guiGraphics.guiWidth() - 16, 200, 0xFF777777, 1.5f);
+			guiGraphics.axolotlclient_rendering$roundedRect(guiGraphics.guiWidth() - 25, 150, guiGraphics.guiWidth() - 20, 200, 0xFF885533, 2.75f);
 			guiGraphics.axolotlclient_rendering$roundedRect(guiGraphics.guiWidth() - 30, 220, guiGraphics.guiWidth() - 10, 230, 0xFFFFAA33, 5f);
 			guiGraphics.axolotlclient_rendering$outlineRoundedRect(guiGraphics.guiWidth() - 30, 220, guiGraphics.guiWidth() - 10, 230, 0xFF222222, 5f, 1f);
 		});

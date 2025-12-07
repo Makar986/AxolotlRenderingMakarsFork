@@ -312,8 +312,8 @@ public interface GuiGraphicsExtension {
 
 	default void axolotlclient_rendering$drawWordWrap(Font font, FormattedText text, int x, int y, int lineWidth, int color, boolean dropShadow) {
 		for (FormattedCharSequence formattedCharSequence : font.split(text, lineWidth)) {
-			y += font.lineHeight();
 			this.axolotlclient_rendering$drawString(font, formattedCharSequence, x, y, color, dropShadow, Font.ORIGIN_VERT_BASELINE);
+			y += font.lineHeight();
 		}
 	}
 
@@ -323,8 +323,8 @@ public interface GuiGraphicsExtension {
 
 	default void axolotlclient_rendering$drawWordWrap(Font font, String text, int x, int y, int lineWidth, int color, boolean dropShadow) {
 		for (FormattedCharSequence formattedCharSequence : font.split(text, lineWidth)) {
-			y += font.lineHeight();
 			this.axolotlclient_rendering$drawString(font, formattedCharSequence, x, y, color, dropShadow, Font.ORIGIN_VERT_BASELINE);
+			y += font.lineHeight();
 		}
 	}
 

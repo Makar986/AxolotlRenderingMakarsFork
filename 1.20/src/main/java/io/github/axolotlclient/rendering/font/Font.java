@@ -27,10 +27,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
@@ -52,7 +52,9 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import it.unimi.dsi.fastutil.longs.*;
-import it.unimi.dsi.fastutil.objects.*;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectList;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -69,17 +71,12 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.*;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
-import org.lwjgl.PointerBuffer;
+import org.lwjgl.stb.STBTTFontinfo;
+import org.lwjgl.stb.STBTruetype;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
-import org.lwjgl.util.freetype.FT_Face;
-import org.lwjgl.util.freetype.FT_MM_Var;
-import org.lwjgl.util.freetype.FT_Vector;
-import org.lwjgl.util.freetype.TT_OS2;
 
-import static org.lwjgl.util.freetype.FreeType.*;
-
-@SuppressWarnings({"resource", "DataFlowIssue", "unused"})
+@SuppressWarnings({"DataFlowIssue", "unused"})
 @Slf4j
 public class Font implements Closeable {
 
@@ -115,25 +112,7 @@ public class Font implements Closeable {
 		Font.fonts.forEach(w -> w.get().close());
 	}
 
-	private static long ftLib;
-	private static int ftRefCount;
-	private static final Object LIBRARY_LOCK = new Object();
 	private static final RandomSource RANDOM = RandomSource.create();
-
-	private static long getLibrary() {
-		synchronized (LIBRARY_LOCK) {
-			if (ftLib == 0L) {
-				try (MemoryStack memoryStack = MemoryStack.stackPush()) {
-					PointerBuffer buf = memoryStack.mallocPointer(1);
-					if (FT_Init_FreeType(buf) != FT_Err_Ok) {
-						throw new IllegalStateException("initializing FreeType lib");
-					}
-					ftLib = buf.get();
-				}
-			}
-			return ftLib;
-		}
-	}
 
 	/**
 	 * Create a font from this file.
@@ -183,11 +162,11 @@ public class Font implements Closeable {
 	}
 
 	ByteBuffer fontMem;
-	FT_Face face;
-	private boolean hasKerningInfo;
+	STBTTFontinfo face;
 	private int mcSize, size;
 	private int lineHeight;
-	private final Long2ObjectMap<ObjectFloatPair<VariationAxis>> variations = new Long2ObjectLinkedOpenHashMap<>();
+	private float stbScale, ascender;
+	private final String family, style;
 	final StringSplitter splitter = new StringSplitter(this::getWidth);
 	private final ObjectList<SubFont> subFonts = new ObjectArrayList<>();
 	private final Int2ObjectMap<Float2ObjectMap<IntList>> glyphsByWidth = new Int2ObjectOpenHashMap<>();
@@ -199,49 +178,40 @@ public class Font implements Closeable {
 		fonts.add(new WeakReference<>(this));
 		this.fontMem = ownsFontMem ? font : null;
 		try (var stack = MemoryStack.stackPush()) {
-			var faceBuf = stack.mallocPointer(1);
-			var error = FT_New_Memory_Face(getLibrary(), font, faceIndex, faceBuf);
-			if (error != FT_Err_Ok) {
-				if (error == FT_Err_Unknown_File_Format) {
-					throw new IOException("Unknown format for font");
-				}
-				throw new IOException("Error reading font");
-			}
-			face = FT_Face.create(faceBuf.get());
-			if (!"TrueType".equals(FT_Get_Font_Format(face))) {
-				FT_Done_Face(face);
+			var fontInfo = STBTTFontinfo.malloc();
+			if (!STBTruetype.stbtt_InitFont(fontInfo, font)) {
+				fontInfo.free();
 				throw new IOException("Unsupported font format");
 			}
+			face = fontInfo;
 
-			if (FT_HAS_MULTIPLE_MASTERS(face)) {
-				var mmVarBuf = stack.mallocPointer(1);
-				FT_Get_MM_Var(face, mmVarBuf);
-				var variants = FT_MM_Var.create(mmVarBuf.get());
+			/*
+			 * MISSING: Font variations. STBTrueType does not support them. See https://github.com/nothings/stb/issues/509.
+			 */
 
-				for (var a : variants.axis()) {
-					variations.put(a.tag(), new ObjectFloatMutablePair<>(new VariationAxis(true, f16Dot16ToFP32(a.minimum()), f16Dot16ToFP32(a.def()), f16Dot16ToFP32(a.maximum()), a.tag(), a.strid()), a.def()));
-				}
-				synchronized (LIBRARY_LOCK) {
-					FT_Done_MM_Var(getLibrary(), variants);
-				}
-				if (hasVariant(TAG_WEIGHT)) {
-					setVariant(TAG_WEIGHT, WEIGHT_REGULAR);
-				}
-			}
-
-			if (FT_Select_Charmap(face, FT_ENCODING_UNICODE) != FT_Err_Ok) {
-				FT_Done_Face(face);
-				throw new IOException("No unicode charmap in font");
-			}
+			var familyBuf = STBTruetype.stbtt_GetFontNameString(face,
+				STBTruetype.STBTT_PLATFORM_ID_MICROSOFT,
+				STBTruetype.STBTT_MS_EID_UNICODE_FULL,
+				STBTruetype.STBTT_MS_LANG_ENGLISH,
+				1);
+			var styleBuf = STBTruetype.stbtt_GetFontNameString(face,
+				STBTruetype.STBTT_PLATFORM_ID_MICROSOFT,
+				STBTruetype.STBTT_MS_EID_UNICODE_BMP,
+				STBTruetype.STBTT_MS_LANG_ENGLISH,
+				2);
+			if (familyBuf != null) {
+				family = StandardCharsets.UTF_16.decode(familyBuf).toString();
+			} else family = "unknown";
+			if (styleBuf != null) {
+				style = StandardCharsets.UTF_16.decode(styleBuf).toString();
+			} else style = "unknown";
 
 			try {
 				resize(size);
 			} catch (RuntimeException e) {
-				FT_Done_Face(face);
+				face.free();
 				throw e;
 			}
-
-			ftRefCount++;
 		}
 	}
 
@@ -253,7 +223,7 @@ public class Font implements Closeable {
 	}
 
 	public static int makeVariantTag(char x1, char x2, char x3, char x4) {
-		return FT_MAKE_TAG(x1, x2, x3, x4);
+		return (((int) x1 & 0xFF) << 24) | (((int) x2 & 0xFF) << 16) | (((int) x3 & 0xFF) << 8) | ((int) x4 & 0xFF);
 	}
 
 	private static float f16Dot16ToFP32(final long value) {
@@ -303,52 +273,48 @@ public class Font implements Closeable {
 		return null;
 	}
 
+	/*
+	 * STB_TrueType does not support variant fonts.
+	 * See <a href="https://github.com/nothings/stb/issues/509">the github issue</a>.
+	 */
 	private void setVariants() {
-		try (var stack = MemoryStack.stackPush()) {
-			var buf = stack.mallocCLong(variations.size());
-			variations.values().forEach(p -> buf.put(fp32ToF16Dot16(p.valueFloat())));
-			buf.flip();
-			FT_Set_Var_Design_Coordinates(face, buf);
-		}
-		lineHeight = (int) (FT_MulFix(face.height(), face.size().metrics().y_scale()) / 64);
+		// no-op
 	}
 
+	/*
+	 * STB_TrueType does not support variant fonts.
+	 * See <a href="https://github.com/nothings/stb/issues/509">the github issue</a>.
+	 */
 	public void setVariant(long tag, float value) {
-		setVariantInternal(tag, value);
-		setVariants();
+		// no-op
 	}
 
+	/*
+	 * STB_TrueType does not support variant fonts.
+	 * See <a href="https://github.com/nothings/stb/issues/509">the github issue</a>.
+	 */
 	public boolean hasVariant(long tag) {
-		return variations.containsKey(tag);
+		return false;
 	}
 
+	/*
+	 * STB_TrueType does not support variant fonts.
+	 * See <a href="https://github.com/nothings/stb/issues/509">the github issue</a>.
+	 */
 	public float getVariant(long tag) {
-		var entry = variations.get(tag);
-		if (entry == null) return 0;
-		return entry.valueFloat();
+		return 0;
 	}
 
-	private void setVariantInternal(long tag, float value) {
-		for (var e : variations.values()) {
-			if (e.key().tag() == tag) {
-				e.value(value);
-				break;
-			}
-		}
-	}
-
+	/*
+	 * STB_TrueType does not support variant fonts.
+	 * See <a href="https://github.com/nothings/stb/issues/509">the github issue</a>.
+	 */
 	public void resetVariants() {
-		if (FT_IS_VARIATION(face)) {
-			for (var e : variations.values()) {
-				e.value(e.key().def());
-			}
-			setVariants();
-		}
+		// no-op
 	}
 
 	private long getPageIndex(int no) {
-		int variation = Arrays.hashCode(variations.values().stream().mapToLong(p -> fp32ToF16Dot16(p.valueFloat())).toArray());
-		return (long) variation << 32 | no;
+		return no;
 	}
 
 	/**
@@ -371,14 +337,16 @@ public class Font implements Closeable {
 
 	private void resizeInternal(int mcSize) {
 		this.mcSize = mcSize;
-		size = (int) (mcSize * Minecraft.getInstance().getWindow().getGuiScale());
-		if (FT_Set_Pixel_Sizes(face, 0, size) != FT_Err_Ok) {
-			throw new RuntimeException("Can't set font size " + size);
+		size = (int) ((mcSize + 2) * Minecraft.getInstance().getWindow().getGuiScale());
+		stbScale = STBTruetype.stbtt_ScaleForPixelHeight(face, size);
+		try (var stack = MemoryStack.stackPush()) {
+			var asc = stack.mallocInt(1);
+			var desc = stack.mallocInt(1);
+			var space = stack.mallocInt(1);
+			STBTruetype.stbtt_GetFontVMetrics(face, asc, desc, space);
+			ascender = asc.get(0) * stbScale;
+			lineHeight = (int) ((asc.get(0) - desc.get(0) + space.get(0)) * stbScale);
 		}
-
-		lineHeight = (int) (FT_MulFix(face.height(), face.size().metrics().y_scale()) / 64);
-
-		hasKerningInfo = FT_HAS_KERNING(face);
 
 		loadGlyphDimensions();
 	}
@@ -417,16 +385,11 @@ public class Font implements Closeable {
 		subFonts.clear();
 		clearPageMap();
 
-		synchronized (LIBRARY_LOCK) {
-			if (face != null) {
-				FT_Done_Face(face);
-				face = null;
-			}
-			if (--ftRefCount == 0) {
-				FT_Done_FreeType(ftLib);
-				ftLib = 0;
-			}
+		if (face != null) {
+			face.free();
+			face = null;
 		}
+
 		if (fontMem != null) {
 			MemoryUtil.memFree(fontMem);
 			fontMem = null;
@@ -463,7 +426,7 @@ public class Font implements Closeable {
 	}
 
 	float ascender() {
-		return Mth.floor(FT_MulFix(face.ascender(), face.size().metrics().y_scale()) / 64f);
+		return ascender;
 	}
 
 	static float @NotNull [] getOffset(int alignFlags, BuiltText builtText) {
@@ -584,7 +547,6 @@ public class Font implements Closeable {
 			var c = page.charInfo[codePt & 0xFF];
 
 			float charAdvanceX = c.advanceX;
-			float charAdvanceY = c.advanceY;
 			int charX0 = c.x0;
 			int charY0 = c.y0;
 			int charX1 = c.x1;
@@ -597,12 +559,8 @@ public class Font implements Closeable {
 				c = page.charInfo[codePt & 0xFF];
 			}
 
-			if (hasKerningInfo && prevGlyphI[0] > 0 && c.glyphI > 0) {
-				try (FT_Vector kerning = FT_Vector.create()) {
-					FT_Get_Kerning(activeSubFont.face, prevGlyphI[0], c.glyphI, FT_KERNING_DEFAULT, kerning);
-					penX[0] += kerning.x() / 64f;
-					penY[0] = kerning.y() / 64f;
-				}
+			if (prevGlyphI[0] > 0 && c.glyphI > 0) {
+				penX[0] += (STBTruetype.stbtt_GetGlyphKernAdvance(activeSubFont.face, prevGlyphI[0], c.glyphI)*stbScale);
 			}
 
 			var list = screenAndTexCoords.computeIfAbsent(page.tex, unused -> new ObjectArrayList<>());
@@ -622,15 +580,9 @@ public class Font implements Closeable {
 			if (style.isStrikethrough() || style.isUnderlined()) {
 				var effectX = penX[0];
 				if (style.isStrikethrough()) {
-					var table = FT_Get_Sfnt_Table(activeSubFont.face, FT_SFNT_OS2);
-					var strikeoutpos = lineHeight() / 2f + shadowOffset;
-					var strikeoutThicknessFT = activeSubFont.face.underline_thickness();
-					if (table != 0) {
-						var t = TT_OS2.create(table);
-						strikeoutThicknessFT = t.yStrikeoutSize();
-						strikeoutpos = FT_MulFix(t.yStrikeoutPosition(), activeSubFont.face.size().metrics().y_scale()) / 64f;
-					}
-					var strikeoutThickness = FT_MulFix(strikeoutThicknessFT, activeSubFont.face.size().metrics().y_scale()) / 64f;
+					var strikeoutpos = ascender/2 - (int) Minecraft.getInstance().getWindow().getGuiScale();
+
+					var strikeoutThickness = (int) Minecraft.getInstance().getWindow().getGuiScale();
 					if (hasShadow) {
 						effects.add(new EffectData(effectX + shadowOffset, penY[0] - strikeoutpos + shadowOffset,
 							charAdvanceX, strikeoutThickness, shadowColor));
@@ -639,8 +591,8 @@ public class Font implements Closeable {
 						charAdvanceX, strikeoutThickness, textColor));
 				}
 				if (style.isUnderlined()) {
-					var underlinePos = FT_MulFix(activeSubFont.face.underline_position(), activeSubFont.face.size().metrics().y_scale()) / 64f;
-					var underlineThickness = FT_MulFix(activeSubFont.face.underline_thickness(), activeSubFont.face.size().metrics().y_scale()) / 64f;
+					var underlinePos = -(int) Minecraft.getInstance().getWindow().getGuiScale() * 2;
+					var underlineThickness = (int) Minecraft.getInstance().getWindow().getGuiScale();
 					if (hasShadow) {
 						effects.add(new EffectData(effectX + shadowOffset, penY[0] - underlinePos + shadowOffset,
 							charAdvanceX, underlineThickness, shadowColor));
@@ -656,7 +608,6 @@ public class Font implements Closeable {
 			fontBox[3] = Math.max(fontBox[3], penY[0] + charY1 - (charY0 / 2f));
 
 			penX[0] += charAdvanceX;
-			penY[0] += charAdvanceY;
 
 			prevGlyphI[0] = c.glyphI;
 			return true;
@@ -681,46 +632,22 @@ public class Font implements Closeable {
 	private void updateVariant(Style style) {
 		boolean bold = style.isBold();
 		boolean italic = style.isItalic();
-		var isBold = getVariant(TAG_WEIGHT) == WEIGHT_BOLD;
-		var isItalic = getVariant(TAG_ITALIC) == ITALIC_ENABLED;
+		var isBold = false;
+		var isItalic = false;
 		var subProps = getSubFontProperties(activeSubFont);
 		if (subProps != null) {
-			isBold |= subProps.getOrDefault(TAG_WEIGHT, WEIGHT_REGULAR) == WEIGHT_BOLD;
-			isItalic |= subProps.getOrDefault(TAG_ITALIC, ITALIC_DISABLED) == ITALIC_ENABLED;
+			isBold = subProps.getOrDefault(TAG_WEIGHT, WEIGHT_REGULAR) == WEIGHT_BOLD;
+			isItalic = subProps.getOrDefault(TAG_ITALIC, ITALIC_DISABLED) == ITALIC_ENABLED;
 		}
-		var variantsChanged = false;
 		if (bold && !isBold) {
-			if (hasVariant(TAG_WEIGHT)) {
-				setVariantInternal(TAG_WEIGHT, WEIGHT_BOLD);
-				variantsChanged = true;
-			} else {
-				activeSubFont = getSubFont(TAG_WEIGHT, WEIGHT_BOLD);
-			}
+			activeSubFont = getSubFont(TAG_WEIGHT, WEIGHT_BOLD);
 		} else if (!bold && isBold) {
-			if (hasVariant(TAG_WEIGHT)) {
-				setVariantInternal(TAG_WEIGHT, WEIGHT_REGULAR);
-				variantsChanged = true;
-			} else {
-				activeSubFont = getSubFont(TAG_WEIGHT, WEIGHT_REGULAR);
-			}
+			activeSubFont = getSubFont(TAG_WEIGHT, WEIGHT_REGULAR);
 		}
 		if (italic && !isItalic) {
-			if (hasVariant(TAG_ITALIC)) {
-				setVariantInternal(TAG_ITALIC, ITALIC_ENABLED);
-				variantsChanged = true;
-			} else {
-				activeSubFont = getSubFont(TAG_ITALIC, ITALIC_ENABLED);
-			}
+			activeSubFont = getSubFont(TAG_ITALIC, ITALIC_ENABLED);
 		} else if (!italic && isItalic) {
-			if (hasVariant(TAG_ITALIC)) {
-				setVariantInternal(TAG_ITALIC, ITALIC_DISABLED);
-				variantsChanged = true;
-			} else {
-				activeSubFont = getSubFont(TAG_ITALIC, ITALIC_DISABLED);
-			}
-		}
-		if (variantsChanged) {
-			setVariants();
+			activeSubFont = getSubFont(TAG_ITALIC, ITALIC_DISABLED);
 		}
 	}
 
@@ -737,27 +664,34 @@ public class Font implements Closeable {
 		int rowWidth = 0, maxRowWidth = 0, rowHeight = 0, totalHeight = 0;
 		for (int codePt = pageNo << 8; codePt < (pageNo + 1) << 8; codePt++) {
 			int tblRow = (codePt >> 4) & 0xF;
-			var glyphI = FT_Get_Char_Index(face, codePt);
-			if (FT_Load_Glyph(face, glyphI, FT_LOAD_NO_BITMAP | FT_LOAD_BITMAP_METRICS_ONLY) != FT_Err_Ok) {
-				log.atError().setMessage(() -> "Error loading glyph for while getting dimensions: {} ({})").addArgument(Integer.toHexString(codePt)).addArgument(Character.toString(codePt)).log();
-				continue;
+			var glyphI = STBTruetype.stbtt_FindGlyphIndex(face, codePt);
+			try (var stack = MemoryStack.stackPush()) {
+				var x0B = stack.mallocInt(1);
+				var y0B = stack.mallocInt(1);
+				var x1B = stack.mallocInt(1);
+				var y1B = stack.mallocInt(1);
+				STBTruetype.stbtt_GetGlyphBitmapBox(face, glyphI, stbScale, stbScale, x0B, y0B, x1B, y1B);
+				var advanceXB = stack.mallocInt(1);
+				var bitmap_leftB = stack.mallocInt(1);
+				STBTruetype.stbtt_GetGlyphHMetrics(face, glyphI, advanceXB, bitmap_leftB);
+
+				var c = page.charInfo[codePt & 0xFF] = new CharInfo();
+				var bearingX = bitmap_leftB.get(0) * stbScale;
+				int x0 = x0B.get(0), y0 = y0B.get(0), x1 = x1B.get(0), y1 = y1B.get(0);
+				var bearingY = ascender - y0;
+				var width = x1 - x0;
+				var height = y1 - y0;
+				c.x0 = (int) (bearingX + x0B.get(0));
+				c.y0 = -y0;
+				c.x1 = (int) (bearingX + x0B.get(0) + width);
+				c.y1 = c.y0 + height; //bearingY + (y1B.get(0) - y0B.get(0));
+				c.advanceX = advanceXB.get(0) * stbScale;
+				c.glyphI = glyphI;
+				glyphsByWidth.computeIfAbsent(size, u -> new Float2ObjectOpenHashMap<>()).computeIfAbsent(c.advanceX, unused -> new IntArrayList()).add(codePt);
+
+				rowWidth += c.x1 - c.x0 + 2;
+				rowHeight = Math.max(c.y1 - c.y0, rowHeight);
 			}
-
-			var slot = face.glyph();
-			var bmp = slot.bitmap();
-
-			var c = page.charInfo[codePt & 0xFF] = new CharInfo();
-			c.x0 = slot.bitmap_left();
-			c.y0 = slot.bitmap_top();
-			c.x1 = bmp.width() + slot.bitmap_left();
-			c.y1 = slot.bitmap_top() + bmp.rows();
-			c.advanceX = slot.advance().x() / 64f;
-			c.advanceY = slot.advance().y() / 64f;
-			c.glyphI = glyphI;
-			glyphsByWidth.computeIfAbsent(size, u -> new Float2ObjectOpenHashMap<>()).computeIfAbsent(c.advanceX, unused -> new IntArrayList()).add(codePt);
-
-			rowWidth += bmp.width() + 2;
-			rowHeight = Math.max(bmp.rows(), rowHeight);
 			if (((codePt + 1 >> 4) & 0xF) != tblRow) {
 				maxRowWidth = Math.max(rowWidth, maxRowWidth);
 				rowWidth = 0;
@@ -780,7 +714,6 @@ public class Font implements Closeable {
 
 		var texData = new NativeImage(NativeImage.Format.LUMINANCE, tWidth, tHeight, false);
 		MemoryUtil.memSet(((NativeImageAccessor) (Object) texData).getPointer(), 0, (long) tWidth * tHeight);
-		var slot = face.glyph();
 
 		int curX = 2;
 		int curY = 2;
@@ -789,20 +722,20 @@ public class Font implements Closeable {
 			int tblRow = (codePt >> 4) & 0xF;
 
 			var c = page.charInfo[codePt & 0xFF];
-			if (FT_Load_Glyph(face, c.glyphI, FT_LOAD_RENDER) != FT_Err_Ok) {
-				log.error("Error loading glyph for render: {} ({})", Integer.toHexString(codePt), Character.toString(codePt));
-				curX += 2;
-			} else {
-				var bmp = slot.bitmap();
-				final int width = bmp.width();
-				final int height = bmp.rows();
+			try (var stack = MemoryStack.stackPush()) {
+				var wB = stack.mallocInt(1);
+				var hB = stack.mallocInt(1);
+				var offXB = stack.mallocInt(1);
+				var offYB = stack.mallocInt(1);
+				var buffer = STBTruetype.stbtt_GetGlyphBitmap(face, stbScale, stbScale, c.glyphI, wB, hB, offXB, offYB);
+				final int width = wB.get(0);
+				final int height = hB.get(0);
 
 				c.u0 = (float) (curX) / texData.getWidth();
 				c.v0 = (float) (curY) / texData.getHeight();
-				c.u1 = (float) (curX + bmp.width()) / texData.getWidth();
-				c.v1 = (float) (curY + bmp.rows()) / texData.getHeight();
+				c.u1 = (float) (curX + width) / texData.getWidth();
+				c.v1 = (float) (curY + height) / texData.getHeight();
 
-				var buffer = bmp.buffer(bmp.width() * bmp.rows());
 				if (buffer != null) {
 					long src = MemoryUtil.memAddress(buffer);
 					for (int y = 0; y < height; y++) {
@@ -821,8 +754,8 @@ public class Font implements Closeable {
 
 		page.tex = new ResourceLocation(RenderingCommon.MODID,
 			"font_%s/%s/page_%d/%d".formatted(
-				face.family_nameString().replace(" ", "_").toLowerCase(Locale.ROOT),
-				face.style_nameString().replace(" ", "_").toLowerCase(Locale.ROOT),
+				family.replace(" ", "_").toLowerCase(Locale.ROOT),
+				style.replace(" ", "_").toLowerCase(Locale.ROOT),
 				pageIndex, size
 			));
 		var tex = new DynamicTexture(texData);
@@ -842,7 +775,7 @@ public class Font implements Closeable {
 	@AllArgsConstructor
 	@RequiredArgsConstructor
 	static class CharInfo {
-		float advanceX, advanceY;
+		float advanceX;
 		int x0, y0, x1, y1;
 		int glyphI;
 		float u0, v0, u1, v1;

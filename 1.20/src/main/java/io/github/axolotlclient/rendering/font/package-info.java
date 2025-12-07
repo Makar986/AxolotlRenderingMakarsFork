@@ -30,7 +30,10 @@
 /// - integration with Minecraft's rendering engine, therefore the buffer management is left out.
 /// - Slightly optimized font atlas packing
 /// - support for Minecraft's formatted text system (all formatting codes/styling options except for custom fonts obviously)
-/// - support for variable fonts
+/// - (support for variable fonts)
+///
+/// On this version (targeting Minecraft 1.20.1) this uses the STB_truetype library for rendering. As such, variable fonts
+/// are **not** supported.
 ///
 package io.github.axolotlclient.rendering.font;
 

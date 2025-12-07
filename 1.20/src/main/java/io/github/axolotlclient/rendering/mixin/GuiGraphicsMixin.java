@@ -22,6 +22,7 @@
 
 package io.github.axolotlclient.rendering.mixin;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import io.github.axolotlclient.rendering.ExRenderPipelines;
@@ -133,6 +134,12 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 	private void innerBlit(ResourceLocation atlas, int x0, int x1, int y0, int y1, float u0, float u1, float v0, float v1, int color, float roundingPxTopLeft, float roundingPxBottomLeft, float roundingPxBottomRight, float roundingPxTopRight) {
 		RenderSystem.setShaderTexture(0, atlas);
 		RenderSystem.enableBlend();
+		RenderSystem.blendFuncSeparate(
+			GlStateManager.SourceFactor.SRC_ALPHA,
+			GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
+			GlStateManager.SourceFactor.ONE,
+			GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
+		);
 		RenderSystem.setShader(() -> ExRenderPipelines.ROUNDED_RECT_TEX_SHADER);
 		Matrix4f matrix = this.pose.last().pose();
 		int z = 0;
@@ -179,6 +186,12 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 	private void innerBlit(ResourceLocation atlas, int x0, int x1, int y0, int y1, float u0, float u1, float v0, float v1, int color, float roundingPxTopLeft, float roundingPxBottomLeft, float roundingPxBottomRight, float roundingPxTopRight, float outlineWidth) {
 		RenderSystem.setShaderTexture(0, atlas);
 		RenderSystem.enableBlend();
+		RenderSystem.blendFuncSeparate(
+			GlStateManager.SourceFactor.SRC_ALPHA,
+			GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
+			GlStateManager.SourceFactor.ONE,
+			GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
+		);
 		RenderSystem.setShader(() -> ExRenderPipelines.ROUNDED_RECT_TEX_OUTLINE_SHADER);
 		Matrix4f matrix = this.pose.last().pose();
 		int z = 0;
@@ -236,6 +249,12 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 		var key = SVGCache.getInstance().load(location, (float) (width * scale), (float) (height * scale));
 		RenderSystem.setShaderTexture(0, key);
 		RenderSystem.enableBlend();
+		RenderSystem.blendFuncSeparate(
+			GlStateManager.SourceFactor.SRC_ALPHA,
+			GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
+			GlStateManager.SourceFactor.ONE,
+			GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
+		);
 		RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
 		Matrix4f matrix4f = this.pose.last().pose();
 		BufferBuilder bufferBuilder = Tesselator.getInstance().getBuilder();

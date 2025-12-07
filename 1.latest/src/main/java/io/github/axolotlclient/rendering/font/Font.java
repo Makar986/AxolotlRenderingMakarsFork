@@ -610,7 +610,7 @@ public class Font implements Closeable {
 				var effectX = penX[0];
 				if (style.isStrikethrough()) {
 					var table = FT_Get_Sfnt_Table(activeSubFont.face, FT_SFNT_OS2);
-					var strikeoutpos = lineHeight() / 2f + shadowOffset;
+					var strikeoutpos = ascender() / 2f - shadowOffset;
 					var strikeoutThicknessFT = activeSubFont.face.underline_thickness();
 					if (table != 0) {
 						var t = TT_OS2.create(table);
@@ -806,10 +806,12 @@ public class Font implements Closeable {
 			}
 		}
 
+		var family = face.family_nameString();
+		var style = face.style_nameString();
 		page.tex = Identifier.fromNamespaceAndPath(RenderingCommon.MODID,
 			"font_%s/%s/page_%d/%d".formatted(
-				face.family_nameString().replace(" ", "_").toLowerCase(Locale.ROOT),
-				face.style_nameString().replace(" ", "_").toLowerCase(Locale.ROOT),
+				family.replace(" ", "_").toLowerCase(Locale.ROOT),
+				style.replace(" ", "_").toLowerCase(Locale.ROOT),
 				pageIndex, size
 			));
 		var tex = new DynamicTexture(page.tex::toString, texData);

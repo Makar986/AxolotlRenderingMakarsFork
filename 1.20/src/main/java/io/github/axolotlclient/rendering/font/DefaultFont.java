@@ -22,18 +22,27 @@
 
 package io.github.axolotlclient.rendering.font;
 
+import it.unimi.dsi.fastutil.longs.Long2FloatOpenHashMap;
+
 public final class DefaultFont {
 	private static final Font INTER;
 	private static final FontAdapter INTER_ADAPTER;
 
 	static {
 		try (var regular = DefaultFont.class.getResourceAsStream("/assets/axolotlclient-rendering/fonts/inter_variable.ttf");
-			 var italic = DefaultFont.class.getResourceAsStream("/assets/axolotlclient-rendering/fonts/inter_variable_italic.ttf")) {
-			if (regular == null || italic == null) {
+			 var italic = DefaultFont.class.getResourceAsStream("/assets/axolotlclient-rendering/fonts/inter_variable_italic.ttf");
+			 var bold = DefaultFont.class.getResourceAsStream("/assets/axolotlclient-rendering/fonts/inter_bold.ttf");
+			 var boldItalic = DefaultFont.class.getResourceAsStream("/assets/axolotlclient-rendering/fonts/inter_bold_italic.ttf")) {
+			if (regular == null || italic == null || bold == null || boldItalic == null) {
 				throw new IllegalStateException();
 			}
+			var boldItalicTag = new Long2FloatOpenHashMap();
+			boldItalicTag.put(Font.TAG_ITALIC, Font.ITALIC_ENABLED);
+			boldItalicTag.put(Font.TAG_WEIGHT, Font.WEIGHT_BOLD);
 			INTER = Font.read(regular, 9)
-				.addSubFont(Font.TAG_ITALIC, Font.ITALIC_ENABLED, Font.read(italic, 9));
+				.addSubFont(Font.TAG_ITALIC, Font.ITALIC_ENABLED, Font.read(italic, 9))
+				.addSubFont(Font.TAG_WEIGHT, Font.WEIGHT_BOLD, Font.read(bold, 9))
+				.addSubFont(boldItalicTag, Font.read(boldItalic, 9));
 		} catch (Exception e) {
 			throw new RuntimeException("The Inter font is packaged with this library!", e);
 		}
