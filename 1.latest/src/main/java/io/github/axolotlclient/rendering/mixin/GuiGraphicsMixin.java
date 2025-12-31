@@ -68,7 +68,7 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 	protected abstract void innerBlit(RenderPipeline pipeline, Identifier atlas, int x0, int x1, int y0, int y1, float u0, float u1, float v0, float v1, int color);
 
 	@Override
-	public void axolotlclient_rendering$segment(int x0, int y0, int x1, int y1, int colorTopLeft, int colorBottomLeft, int colorBottomRight, int colorTopRight, int radius) {
+	public void axolotlclient_rendering$segment(int x0, int y0, int x1, int y1, int colorTopLeft, int colorBottomLeft, int colorBottomRight, int colorTopRight, float radius) {
 		guiRenderState.submitGuiElement(new ColoredRoundedRectangleRenderState(ExRenderPipelines.SEGMENT,
 			TextureSetup.noTexture(),
 			new Matrix3x2f(pose()),

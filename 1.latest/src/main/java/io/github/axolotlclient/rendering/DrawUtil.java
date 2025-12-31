@@ -23,14 +23,15 @@
 package io.github.axolotlclient.rendering;
 
 import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix3x2f;
 
 final class DrawUtil {
 
 	@Nullable
-	static ScreenRectangle getBounds(int x0, int y0, int x1, int y1, Matrix3x2f pose, @Nullable ScreenRectangle scissorArea) {
-		ScreenRectangle screenRectangle = new ScreenRectangle(x0, y0, x1 - x0, y1 - y0).transformMaxBounds(pose);
+	static ScreenRectangle getBounds(float x0, float y0, float x1, float y1, Matrix3x2f pose, @Nullable ScreenRectangle scissorArea) {
+		ScreenRectangle screenRectangle = new ScreenRectangle(Mth.floor(x0), Mth.floor(y0), Mth.ceil(x1 - x0), Mth.ceil(y1 - y0)).transformMaxBounds(pose);
 		return scissorArea != null ? scissorArea.intersection(screenRectangle) : screenRectangle;
 	}
 }

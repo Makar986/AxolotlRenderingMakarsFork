@@ -40,15 +40,15 @@ public interface GuiGraphicsExtension {
 	}
 
 	/* segment */
-	default void axolotlclient_rendering$segmentGradientH(int x0, int y0, int x1, int y1, int colorLeft, int colorRight, int radius) {
+	default void axolotlclient_rendering$segmentGradientH(int x0, int y0, int x1, int y1, int colorLeft, int colorRight, float radius) {
 		axolotlclient_rendering$segment(x0, y0, x1, y1, colorLeft, colorLeft, colorRight, colorRight, radius);
 	}
 
-	default void axolotlclient_rendering$segmentGradientV(int x0, int y0, int x1, int y1, int colorTop, int colorBottom, int radius) {
+	default void axolotlclient_rendering$segmentGradientV(int x0, int y0, int x1, int y1, int colorTop, int colorBottom, float radius) {
 		axolotlclient_rendering$segment(x0, y0, x1, y1, colorTop, colorBottom, colorBottom, colorTop, radius);
 	}
 
-	default void axolotlclient_rendering$segment(int x0, int y0, int x1, int y1, int colorTopLeft, int colorBottomLeft, int colorBottomRight, int colorTopRight, int radius) {
+	default void axolotlclient_rendering$segment(int x0, int y0, int x1, int y1, int colorTopLeft, int colorBottomLeft, int colorBottomRight, int colorTopRight, float radius) {
 
 	}
 

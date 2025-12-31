@@ -69,7 +69,7 @@ public class DrawUtil implements GuiGraphicsExtension {
 	}
 
 	@Unique
-	private void fill(int x0, int y0, int x1, int y1, int colorTopLeft, int colorBottomLeft, int colorBottomRight, int colorTopRight) {
+	private void fill(float x0, float y0, float x1, float y1, int colorTopLeft, int colorBottomLeft, int colorBottomRight, int colorTopRight) {
 		Tessellator tessellator = Tessellator.getInstance();
 		BufferBuilder bufferBuilder = tessellator.getBuilder();
 		GlStateManager.enableBlend();
@@ -91,13 +91,13 @@ public class DrawUtil implements GuiGraphicsExtension {
 	}
 
 	@Override
-	public void axolotlclient_rendering$segment(int x0, int y0, int x1, int y1, int colorTopLeft, int colorBottomLeft, int colorBottomRight, int colorTopRight, int radius) {
-		x0 -= radius;
-		y0 -= radius;
-		x1 += radius;
-		y1 += radius;
-		int width = Math.abs(x1 - x0);
-		int height = Math.abs(y1 - y0);
+	public void axolotlclient_rendering$segment(int x0, int y0, int x1, int y1, int colorTopLeft, int colorBottomLeft, int colorBottomRight, int colorTopRight, float radius) {
+		var x0f = x0 - radius;
+		var y0f = y0 - radius;
+		var x1f = x1 + radius;
+		var y1f = y1 + radius;
+		var width = Math.abs(x1f - x0f);
+		var height = Math.abs(y1f - y0f);
 		var shader = ExRenderPipelines.SEGMENT_PROGRAM;
 		shader.bind();
 		shader.setUniform("Rounding",
@@ -119,7 +119,7 @@ public class DrawUtil implements GuiGraphicsExtension {
 		colorBottomLeft = Rendering.scaleARGB(colorBottomLeft);
 		colorBottomRight = Rendering.scaleARGB(colorBottomRight);
 		colorTopRight = Rendering.scaleARGB(colorTopRight);
-		fill(x0, y0, x1, y1, colorTopLeft, colorBottomLeft, colorBottomRight, colorTopRight);
+		fill(x0f, y0f, x1f, y1f, colorTopLeft, colorBottomLeft, colorBottomRight, colorTopRight);
 		shader.unbind();
 	}
 

@@ -36,10 +36,10 @@ public record ColoredRoundedRectangleRenderState(
 	RenderPipeline pipeline,
 	TextureSetup textureSetup,
 	Matrix3x2f pose,
-	int x0,
-	int y0,
-	int x1,
-	int y1,
+	float x0,
+	float y0,
+	float x1,
+	float y1,
 	int col1,
 	int col2,
 	int col3,
@@ -55,10 +55,10 @@ public record ColoredRoundedRectangleRenderState(
 		RenderPipeline pipeline,
 		TextureSetup textureSetup,
 		Matrix3x2f pose,
-		int x0,
-		int y0,
-		int x1,
-		int y1,
+		float x0,
+		float y0,
+		float x1,
+		float y1,
 		int col1,
 		int col2,
 		int col3,
@@ -72,8 +72,8 @@ public record ColoredRoundedRectangleRenderState(
 
 	@Override
 	public void buildVertices(VertexConsumer consumer) {
-		int width = x1() - x0();
-		int height = y1() - y0();
+		float width = x1() - x0();
+		float height = y1() - y0();
 		consumer.addVertexWith2DPose(this.pose(), this.x0(), this.y0()).setColor(this.col1());
 		ExRenderPipelines.addRounding(consumer, radiusTopLeft(), radiusBottomLeft(), radiusBottomRight(), radiusTopRight());
 		ExRenderPipelines.addDimensions(consumer, 0, 0, width, height);

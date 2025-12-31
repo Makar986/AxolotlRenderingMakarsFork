@@ -59,32 +59,32 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 	protected abstract void flushIfUnmanaged();
 
 	@Override
-	public void axolotlclient_rendering$segment(int x0, int y0, int x1, int y1, int colorTopLeft, int colorBottomLeft, int colorBottomRight, int colorTopRight, int radius) {
+	public void axolotlclient_rendering$segment(int x0, int y0, int x1, int y1, int colorTopLeft, int colorBottomLeft, int colorBottomRight, int colorTopRight, float radius) {
 		var matrix = pose.last().pose();
 		var consumer = bufferSource.getBuffer(ExRenderPipelines.SEGMENT);
-		x0 -= radius;
-		y0 -= radius;
-		x1 += radius;
-		y1 += radius;
-		int width = x1 - x0;
-		int height = y1 - y0;
+		var x0f = x0 - radius;
+		var y0f = y0 - radius;
+		var x1f = x1 + radius;
+		var y1f = y1 + radius;
+		var width = x1f - x0f;
+		var height = y1f - y0f;
 		int z = 0;
-		consumer.vertex(matrix, x0, y0, z).color(colorTopLeft);
+		consumer.vertex(matrix, x0f, y0f, z).color(colorTopLeft);
 		ExRenderPipelines.addRounding(consumer, radius, 0, 0, 0);
 		ExRenderPipelines.addDimensions(consumer, 0, 0, width, height);
 		consumer.endVertex();
 
-		consumer.vertex(matrix, x0, y1, z).color(colorBottomLeft);
+		consumer.vertex(matrix, x0f, y1f, z).color(colorBottomLeft);
 		ExRenderPipelines.addRounding(consumer, radius, 0, 0, 0);
 		ExRenderPipelines.addDimensions(consumer, 0, height, width, height);
 		consumer.endVertex();
 
-		consumer.vertex(matrix, x1, y1, z).color(colorBottomRight);
+		consumer.vertex(matrix, x1f, y1f, z).color(colorBottomRight);
 		ExRenderPipelines.addRounding(consumer, radius, 0, 0, 0);
 		ExRenderPipelines.addDimensions(consumer, width, height, width, height);
 		consumer.endVertex();
 
-		consumer.vertex(matrix, x1, y0, z).color(colorTopRight);
+		consumer.vertex(matrix, x1f, y0f, z).color(colorTopRight);
 		ExRenderPipelines.addRounding(consumer, radius, 0, 0, 0);
 		ExRenderPipelines.addDimensions(consumer, width, 0, width, height);
 		consumer.endVertex();
