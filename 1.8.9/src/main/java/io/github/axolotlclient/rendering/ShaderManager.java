@@ -39,8 +39,11 @@ import static org.lwjgl.opengl.GL20.*;
 public class ShaderManager {
 
 	public static Shader createProgram(Identifier id) throws IOException {
-		var vId = new Identifier(id.getNamespace(), "shaders/" + id.getPath() + ".vsh");
-		var fId = new Identifier(id.getNamespace(), "shaders/" + id.getPath() + ".fsh");
+		return createProgram(id, id);
+	}
+	public static Shader createProgram(Identifier vertexShader, Identifier fragmentShader) throws IOException {
+		var vId = new Identifier(vertexShader.getNamespace(), "shaders/" + vertexShader.getPath() + ".vsh");
+		var fId = new Identifier(fragmentShader.getNamespace(), "shaders/" + fragmentShader.getPath() + ".fsh");
 
 		var program = glCreateProgram();
 		var vShader = createShader(vId, GL_VERTEX_SHADER);

@@ -73,6 +73,8 @@ public class RenderingTestMod implements ClientModInitializer {
 				guiGraphics.axolotlclient_rendering$roundedRect(guiGraphics.guiWidth()-25, 150, guiGraphics.guiWidth()-20, 200, 0xFF885533, 2.75f);
 				guiGraphics.axolotlclient_rendering$roundedRect(guiGraphics.guiWidth() - 30, 220, guiGraphics.guiWidth() - 10, 230, 0xFFFFAA33, 5f);
 				guiGraphics.axolotlclient_rendering$outlineRoundedRect(guiGraphics.guiWidth() - 30, 220, guiGraphics.guiWidth() - 10, 230, 0xFF222222, 5f, 1f);
+				guiGraphics.axolotlclient_rendering$roundedRect(250-5, 60-5, 300+5, 60+5, -1, 0);
+				guiGraphics.axolotlclient_rendering$segmentGradientH(250, 60, 300, 60, 0xFFFF0000, 0xFF00FF00, 5);
 			});
 	}
 }

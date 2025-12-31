@@ -58,6 +58,35 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 	protected abstract void flushIfUnmanaged();
 
 	@Override
+	public void axolotlclient_rendering$segment(int x0, int y0, int x1, int y1, int colorTopLeft, int colorBottomLeft, int colorBottomRight, int colorTopRight, int radius) {
+		var matrix = pose.last().pose();
+		var consumer = bufferSource.getBuffer(ExRenderPipelines.SEGMENT);
+		x0 -= radius;
+		y0 -= radius;
+		x1 += radius;
+		y1 += radius;
+		int width = x1 - x0;
+		int height = y1 - y0;
+		int z = 0;
+		consumer.addVertex(matrix, x0, y0, z).setColor(colorTopLeft);
+		ExRenderPipelines.addRounding(consumer, radius, 0, 0, 0);
+		ExRenderPipelines.addDimensions(consumer, 0, 0, width, height);
+
+		consumer.addVertex(matrix, x0, y1, z).setColor(colorBottomLeft);
+		ExRenderPipelines.addRounding(consumer, radius, 0, 0, 0);
+		ExRenderPipelines.addDimensions(consumer, 0, height, width, height);
+
+		consumer.addVertex(matrix, x1, y1, z).setColor(colorBottomRight);
+		ExRenderPipelines.addRounding(consumer, radius, 0, 0, 0);
+		ExRenderPipelines.addDimensions(consumer, width, height, width, height);
+
+		consumer.addVertex(matrix, x1, y0, z).setColor(colorTopRight);
+		ExRenderPipelines.addRounding(consumer, radius, 0, 0, 0);
+		ExRenderPipelines.addDimensions(consumer, width, 0, width, height);
+		this.flushIfUnmanaged();
+	}
+
+	@Override
 	public void axolotlclient_rendering$roundedRectGradientVarying(int x0, int y0, int x1, int y1, int colorTopLeft, int colorBottomLeft, int colorBottomRight, int colorTopRight, float roundingPxTopLeft, float roundingPxBottomLeft, float roundingPxBottomRight, float roundingPxTopRight) {
 		var matrix = pose.last().pose();
 		var consumer = bufferSource.getBuffer(ExRenderPipelines.ROUNDED_RECT);

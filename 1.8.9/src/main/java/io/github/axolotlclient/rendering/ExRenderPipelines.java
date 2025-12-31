@@ -35,19 +35,20 @@ public class ExRenderPipelines {
 		ROUNDED_RECT_TEX_PROGRAM,
 		ROUNDED_RECT_OUTLINE_PROGRAM,
 		ROUNDED_RECT_TEX_OUTLINE_PROGRAM,
-		FONT_PROGRAM;
+		FONT_PROGRAM,
+		SEGMENT_PROGRAM;
 
 	public static void init() {
 		ResourceLoaderEvents.END_RESOURCE_RELOAD.register(() -> {
 			ShaderManager.safeClose(ROUNDED_RECT_PROGRAM, ROUNDED_RECT_TEX_PROGRAM,
 				ROUNDED_RECT_OUTLINE_PROGRAM, ROUNDED_RECT_TEX_OUTLINE_PROGRAM,
-				FONT_PROGRAM);
+				FONT_PROGRAM, SEGMENT_PROGRAM);
 			load();
 		});
 		MinecraftClientEvents.STOP.register(mc ->
 			ShaderManager.safeClose(ROUNDED_RECT_PROGRAM, ROUNDED_RECT_TEX_PROGRAM,
 				ROUNDED_RECT_OUTLINE_PROGRAM, ROUNDED_RECT_TEX_OUTLINE_PROGRAM,
-				FONT_PROGRAM));
+				FONT_PROGRAM, SEGMENT_PROGRAM));
 	}
 
 	private static void load() {
@@ -57,6 +58,7 @@ public class ExRenderPipelines {
 			ROUNDED_RECT_OUTLINE_PROGRAM = ShaderManager.createProgram(new Identifier(RenderingCommon.MODID, "core/rounded_rect_outline"));
 			ROUNDED_RECT_TEX_OUTLINE_PROGRAM = ShaderManager.createProgram(new Identifier(RenderingCommon.MODID, "core/rounded_rect_tex_outline"));
 			FONT_PROGRAM = ShaderManager.createProgram(new Identifier(RenderingCommon.MODID, "core/font"));
+			SEGMENT_PROGRAM = ShaderManager.createProgram(new Identifier(RenderingCommon.MODID, "core/rounded_rect"), new Identifier(RenderingCommon.MODID, "core/segment"));
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}

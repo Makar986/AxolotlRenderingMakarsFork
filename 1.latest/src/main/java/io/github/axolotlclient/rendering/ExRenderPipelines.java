@@ -76,6 +76,17 @@ public class ExRenderPipelines {
 			.add("Dimensions", DIMENSIONS)
 			.build(), VertexFormat.Mode.QUADS).build());
 
+	public static final RenderPipeline SEGMENT = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
+		.withLocation(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "segment"))
+		.withVertexShader(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "core/rounded_rect"))
+		.withFragmentShader(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "core/segment"))
+		.withVertexFormat(VertexFormat.builder()
+			.add("Position", VertexFormatElement.POSITION)
+			.add("Color", VertexFormatElement.COLOR)
+			.add("Rounding", ROUNDING)
+			.add("Dimensions", DIMENSIONS)
+			.build(), VertexFormat.Mode.QUADS).build());
+
 	public static final RenderPipeline ROUNDED_RECT_TEX = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
 		.withLocation(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "rounded_rect_tex"))
 		.withVertexShader(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "core/rounded_rect_tex"))

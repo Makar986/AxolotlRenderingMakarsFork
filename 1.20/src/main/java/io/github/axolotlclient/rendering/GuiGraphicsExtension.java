@@ -39,6 +39,19 @@ public interface GuiGraphicsExtension {
 		this.axolotlclient_rendering$roundedRect(x, minY + 1, x + 1, maxY, color, 1.25f);
 	}
 
+	/* segment */
+	default void axolotlclient_rendering$segmentGradientH(int x0, int y0, int x1, int y1, int colorLeft, int colorRight, int radius) {
+		axolotlclient_rendering$segment(x0, y0, x1, y1, colorLeft, colorLeft, colorRight, colorRight, radius);
+	}
+
+	default void axolotlclient_rendering$segmentGradientV(int x0, int y0, int x1, int y1, int colorTop, int colorBottom, int radius) {
+		axolotlclient_rendering$segment(x0, y0, x1, y1, colorTop, colorBottom, colorBottom, colorTop, radius);
+	}
+
+	default void axolotlclient_rendering$segment(int x0, int y0, int x1, int y1, int colorTopLeft, int colorBottomLeft, int colorBottomRight, int colorTopRight, int radius) {
+
+	}
+
 	/* outlineRoundedRect */
 	default void axolotlclient_rendering$outlineCircle(int cX, int cY, int color, int radius, float outlineWidth) {
 		this.axolotlclient_rendering$outlineRoundedRect(cX - radius, cY - radius, cX + radius, cY + radius, color, radius, outlineWidth);

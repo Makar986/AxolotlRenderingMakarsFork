@@ -5,7 +5,7 @@ plugins {
 	id("io.github.p03w.machete")
 }
 
-val minecraftVersion = "1.21.11-rc2"
+val minecraftVersion = "1.21.11"
 val minecraftFriendly = "1.21.11"
 val fapiVersion = "0.139.4"
 
@@ -118,7 +118,7 @@ publishing {
 			val repository = if (project.version.toString().contains("beta") || project.version.toString()
 					.contains("alpha")
 			) "snapshots" else "releases"
-			url = uri("https://moehreag.duckdns.org/maven/$repository")
+			url = uri("https://maven.axolotlclient.com/$repository")
 			credentials(PasswordCredentials::class)
 			authentication {
 				create<BasicAuthentication>("basic")

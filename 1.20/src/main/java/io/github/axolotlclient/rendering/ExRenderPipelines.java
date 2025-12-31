@@ -35,7 +35,7 @@ public class ExRenderPipelines {
 	private static final VertexFormatElement OUTLINE_WIDTH = new VertexFormatElement(0, VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.GENERIC, 1);
 
 	@ApiStatus.Internal
-	public static ShaderInstance ROUNDED_RECT_SHADER, ROUNDED_RECT_TEX_SHADER, ROUNDED_RECT_OUTLINE_SHADER, ROUNDED_RECT_TEX_OUTLINE_SHADER, FONT_SHADER;
+	public static ShaderInstance SEGMENT_SHADER, ROUNDED_RECT_SHADER, ROUNDED_RECT_TEX_SHADER, ROUNDED_RECT_OUTLINE_SHADER, ROUNDED_RECT_TEX_OUTLINE_SHADER, FONT_SHADER;
 
 	public static final VertexFormat ROUNDED_RECT_FORMAT = new VertexFormat(ImmutableMap.<String, VertexFormatElement>builder()
 		.put("Position", DefaultVertexFormat.ELEMENT_POSITION)
@@ -58,6 +58,16 @@ public class ExRenderPipelines {
 		RenderType.SMALL_BUFFER_SIZE,
 		RenderType.CompositeState.builder()
 			.setShaderState(new RenderStateShard.ShaderStateShard(() -> ExRenderPipelines.ROUNDED_RECT_SHADER))
+			.setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
+			.setDepthTestState(RenderStateShard.LEQUAL_DEPTH_TEST)
+			.createCompositeState(false));
+
+	public static RenderType SEGMENT = RenderType.create(RenderingCommon.MODID + ":segment",
+		ROUNDED_RECT_FORMAT,
+		VertexFormat.Mode.QUADS,
+		RenderType.SMALL_BUFFER_SIZE,
+		RenderType.CompositeState.builder()
+			.setShaderState(new RenderStateShard.ShaderStateShard(() -> ExRenderPipelines.SEGMENT_SHADER))
 			.setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
 			.setDepthTestState(RenderStateShard.LEQUAL_DEPTH_TEST)
 			.createCompositeState(false));

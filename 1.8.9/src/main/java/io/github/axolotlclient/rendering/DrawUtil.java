@@ -91,6 +91,39 @@ public class DrawUtil implements GuiGraphicsExtension {
 	}
 
 	@Override
+	public void axolotlclient_rendering$segment(int x0, int y0, int x1, int y1, int colorTopLeft, int colorBottomLeft, int colorBottomRight, int colorTopRight, int radius) {
+		x0 -= radius;
+		y0 -= radius;
+		x1 += radius;
+		y1 += radius;
+		int width = Math.abs(x1 - x0);
+		int height = Math.abs(y1 - y0);
+		var shader = ExRenderPipelines.SEGMENT_PROGRAM;
+		shader.bind();
+		shader.setUniform("Rounding",
+			/*radiusBottomRight*/ 0,
+			/*radiusTopRight*/ 0,
+			/*radiusBottomLeft*/ 0,
+			/*radiusTopLeft*/ radius);
+		var buf = MemoryTracker.createFloatBuffer(16);
+		buf.put(new float[]{
+			width, 0, width, height,
+			0, 0, width, height,
+			0, height, width, height,
+			width, height, width, height
+		});
+		buf.flip();
+		shader.setUniform("Dimensions", buf);
+		GlStateManager.color4f(1, 1, 1, 1);
+		colorTopLeft = Rendering.scaleARGB(colorTopLeft);
+		colorBottomLeft = Rendering.scaleARGB(colorBottomLeft);
+		colorBottomRight = Rendering.scaleARGB(colorBottomRight);
+		colorTopRight = Rendering.scaleARGB(colorTopRight);
+		fill(x0, y0, x1, y1, colorTopLeft, colorBottomLeft, colorBottomRight, colorTopRight);
+		shader.unbind();
+	}
+
+	@Override
 	public void axolotlclient_rendering$roundedRectGradientVarying(int x0, int y0, int x1, int y1, int colorTopLeft, int colorBottomLeft, int colorBottomRight, int colorTopRight, float roundingPxTopLeft, float roundingPxBottomLeft, float roundingPxBottomRight, float roundingPxTopRight) {
 		int width = Math.abs(x1 - x0);
 		int height = Math.abs(y1 - y0);

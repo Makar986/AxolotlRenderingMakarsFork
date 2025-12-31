@@ -8,8 +8,8 @@ plugins {
 	id("com.gradleup.shadow") version "9.+" apply false
 	id("dev.yumi.gradle.licenser") version "2.0.+"
 	id("io.github.p03w.machete") version "2.+" apply false
-	id("fabric-loom") version "1.13.+" apply false
-	id("ploceus") version "1.13.+" apply false
+	id("fabric-loom") version "1.14.+" apply false
+	id("ploceus") version "1.14.+" apply false
 }
 
 version = "${project.version}"
@@ -17,7 +17,7 @@ group = "io.github.axolotlclient.waypoints"
 
 repositories {
 	maven {
-		url = uri("https://moehreag.duckdns.org/maven/releases")
+		url = uri("https://maven.axolotlclient.com/releases")
 	}
 	mavenCentral()
 }
@@ -27,8 +27,8 @@ allprojects {
 		maven("https://maven.terraformersmc.com/releases")
 		maven("https://maven.fabricmc.net")
 		maven("https://maven.quiltmc.org/repository/release")
-		maven("https://moehreag.duckdns.org/maven/releases")
-		maven("https://moehreag.duckdns.org/maven/snapshots")
+		maven("https://maven.axolotlclient.com/releases")
+		maven("https://maven.axolotlclient.com/snapshots")
 		maven("https://maven.parchmentmc.org")
 		maven("https://repo.hypixel.net/repository/Hypixel/") {
 			content {
@@ -60,7 +60,7 @@ subprojects {
 
 	tasks.getByName("jar", Jar::class) {
 		filesMatching("LICENSE") {
-			rename("^(LICENSE.*?)(\\..*)?$", "\$1_${archiveBaseName}\$2")
+			rename("^(LICENSE.*?)(\\..*)?$", "$1_${archiveBaseName}$2")
 		}
 	}
 
