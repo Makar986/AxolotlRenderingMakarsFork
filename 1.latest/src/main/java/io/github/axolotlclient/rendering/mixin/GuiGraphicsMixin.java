@@ -68,14 +68,17 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 	protected abstract void innerBlit(RenderPipeline pipeline, Identifier atlas, int x0, int x1, int y0, int y1, float u0, float u1, float v0, float v1, int color);
 
 	@Override
-	public void axolotlclient_rendering$segment(int x0, int y0, int x1, int y1, int colorTopLeft, int colorBottomLeft, int colorBottomRight, int colorTopRight, float radius) {
-		guiRenderState.submitGuiElement(new ColoredRoundedRectangleRenderState(ExRenderPipelines.SEGMENT,
-			TextureSetup.noTexture(),
-			new Matrix3x2f(pose()),
-			x0 - radius, y0 - radius, x1 + radius, y1 + radius,
-			colorTopLeft, colorBottomLeft, colorBottomRight, colorTopRight,
-			radius, 0, 0, 0,
-			scissorStack.peek()));
+	public void axolotlclient_rendering$segment(int x0, int y0, int x1, int y1, int colorX0Y0, int colorX0Y1, int colorX1Y1, int colorX1Y0, float radius) {
+		Matrix3x2f pose = new Matrix3x2f(pose());
+		var x0f = x0 <= x1 ? x0 - radius : x0 + radius;
+		var y0f = y0 <= y1 ? y0 - radius : y0 + radius;
+		var x1f = x0 <= x1 ? x1 + radius : x1 - radius;
+		var y1f = y0 <= y1 ? y1 + radius : y1 - radius;
+		guiRenderState.submitGuiElement(new SegmentRenderState(ExRenderPipelines.SEGMENT,
+			TextureSetup.noTexture(), pose,
+			x0f, y0f, x1f, y1f,
+			colorX0Y0, colorX0Y1, colorX1Y1, colorX1Y0,
+			radius, scissorStack.peek()));
 	}
 
 	@Override

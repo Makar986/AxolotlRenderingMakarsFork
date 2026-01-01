@@ -58,31 +58,55 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 	protected abstract void flushIfUnmanaged();
 
 	@Override
-	public void axolotlclient_rendering$segment(int x0, int y0, int x1, int y1, int colorTopLeft, int colorBottomLeft, int colorBottomRight, int colorTopRight, float radius) {
+	public void axolotlclient_rendering$segment(int x0, int y0, int x1, int y1, int colorX0Y0, int colorX0Y1, int colorX1Y1, int colorX1Y0, float radius) {
 		var matrix = pose.last().pose();
 		var consumer = bufferSource.getBuffer(ExRenderPipelines.SEGMENT);
-		var x0f = x0 - radius;
-		var y0f = y0 - radius;
-		var x1f = x1 + radius;
-		var y1f = y1 + radius;
+		var x0f = x0 <= x1 ? x0 - radius : x0 + radius;
+		var y0f = y0 <= y1 ? y0 - radius : y0 + radius;
+		var x1f = x0 <= x1 ? x1 + radius : x1 - radius;
+		var y1f = y0 <= y1 ? y1 + radius : y1 - radius;
 		var width = x1f - x0f;
 		var height = y1f - y0f;
 		int z = 0;
-		consumer.addVertex(matrix, x0f, y0f, z).setColor(colorTopLeft);
-		ExRenderPipelines.addRounding(consumer, radius, 0, 0, 0);
-		ExRenderPipelines.addDimensions(consumer, 0, 0, width, height);
+		Runnable addX0Y0 = () -> {
+			consumer.addVertex(matrix, x0f, y0f, z).setColor(colorX0Y0);
+			ExRenderPipelines.addRounding(consumer, radius, 0, 0, 0);
+			ExRenderPipelines.addDimensions(consumer, 0, 0, width, height);
+		}, addX0Y1 = () -> {
+			consumer.addVertex(matrix, x0f, y1f, z).setColor(colorX0Y1);
+			ExRenderPipelines.addRounding(consumer, radius, 0, 0, 0);
+			ExRenderPipelines.addDimensions(consumer, 0, height, width, height);
+		}, addX1Y1 = () -> {
+			consumer.addVertex(matrix, x1f, y1f, z).setColor(colorX1Y1);
+			ExRenderPipelines.addRounding(consumer, radius, 0, 0, 0);
+			ExRenderPipelines.addDimensions(consumer, width, height, width, height);
+		}, addX1Y0 = () -> {
+			consumer.addVertex(matrix, x1f, y0f, z).setColor(colorX1Y0);
+			ExRenderPipelines.addRounding(consumer, radius, 0, 0, 0);
+			ExRenderPipelines.addDimensions(consumer, width, 0, width, height);
+		};
+		if (x0 <= x1 && y0 <= y1) {
+			addX0Y0.run();
+			addX0Y1.run();
+			addX1Y1.run();
+			addX1Y0.run();
+		} else if (x0 > x1 && y0 <= y1) {
+			addX0Y0.run();
+			addX1Y0.run();
+			addX1Y1.run();
+			addX0Y1.run();
+		} else if (x0 <= x1) {
+			addX0Y1.run();
+			addX0Y0.run();
+			addX1Y0.run();
+			addX1Y1.run();
+		} else {
+			addX1Y0.run();
+			addX0Y0.run();
+			addX0Y1.run();
+			addX1Y1.run();
+		}
 
-		consumer.addVertex(matrix, x0f, y1f, z).setColor(colorBottomLeft);
-		ExRenderPipelines.addRounding(consumer, radius, 0, 0, 0);
-		ExRenderPipelines.addDimensions(consumer, 0, height, width, height);
-
-		consumer.addVertex(matrix, x1f, y1f, z).setColor(colorBottomRight);
-		ExRenderPipelines.addRounding(consumer, radius, 0, 0, 0);
-		ExRenderPipelines.addDimensions(consumer, width, height, width, height);
-
-		consumer.addVertex(matrix, x1f, y0f, z).setColor(colorTopRight);
-		ExRenderPipelines.addRounding(consumer, radius, 0, 0, 0);
-		ExRenderPipelines.addDimensions(consumer, width, 0, width, height);
 		this.flushIfUnmanaged();
 	}
 

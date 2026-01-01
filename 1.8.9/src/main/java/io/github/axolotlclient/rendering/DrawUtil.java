@@ -91,13 +91,13 @@ public class DrawUtil implements GuiGraphicsExtension {
 	}
 
 	@Override
-	public void axolotlclient_rendering$segment(int x0, int y0, int x1, int y1, int colorTopLeft, int colorBottomLeft, int colorBottomRight, int colorTopRight, float radius) {
-		var x0f = x0 - radius;
-		var y0f = y0 - radius;
-		var x1f = x1 + radius;
-		var y1f = y1 + radius;
-		var width = Math.abs(x1f - x0f);
-		var height = Math.abs(y1f - y0f);
+	public void axolotlclient_rendering$segment(int x0, int y0, int x1, int y1, int colorX0Y0, int colorX0Y1, int colorX1Y1, int colorX1Y0, float radius) {
+		var x0f = x0 <= x1 ? x0 - radius : x0 + radius;
+		var y0f = y0 <= y1 ? y0 - radius : y0 + radius;
+		var x1f = x0 <= x1 ? x1 + radius : x1 - radius;
+		var y1f = y0 <= y1 ? y1 + radius : y1 - radius;
+		var width = (x1f - x0f);
+		var height = (y1f - y0f);
 		var shader = ExRenderPipelines.SEGMENT_PROGRAM;
 		shader.bind();
 		shader.setUniform("Rounding",
@@ -106,20 +106,83 @@ public class DrawUtil implements GuiGraphicsExtension {
 			/*radiusBottomLeft*/ 0,
 			/*radiusTopLeft*/ radius);
 		var buf = MemoryTracker.createFloatBuffer(16);
-		buf.put(new float[]{
+		/*buf.put(new float[]{
 			width, 0, width, height,
 			0, 0, width, height,
 			0, height, width, height,
 			width, height, width, height
-		});
-		buf.flip();
-		shader.setUniform("Dimensions", buf);
+		});*/
+		Tessellator tessellator = Tessellator.getInstance();
+		BufferBuilder bufferBuilder = tessellator.getBuilder();
+		GlStateManager.enableBlend();
+		GlStateManager.disableTexture();
+		GlStateManager.blendFuncSeparate(770, 771, 1, 0);
 		GlStateManager.color4f(1, 1, 1, 1);
-		colorTopLeft = Rendering.scaleARGB(colorTopLeft);
-		colorBottomLeft = Rendering.scaleARGB(colorBottomLeft);
-		colorBottomRight = Rendering.scaleARGB(colorBottomRight);
-		colorTopRight = Rendering.scaleARGB(colorTopRight);
-		fill(x0f, y0f, x1f, y1f, colorTopLeft, colorBottomLeft, colorBottomRight, colorTopRight);
+		var colorTL = Rendering.scaleARGB(colorX0Y0);
+		var colorBL = Rendering.scaleARGB(colorX0Y1);
+		var colorBR = Rendering.scaleARGB(colorX1Y1);
+		var colorTR = Rendering.scaleARGB(colorX1Y0);
+		bufferBuilder.begin(7, DefaultVertexFormat.POSITION_COLOR);
+		Runnable addX1Y0 = () -> bufferBuilder.vertex(x1f, y0f, 0.0).color((colorTR >> 16 & 0xFF) / 255f, (colorTR >> 8 & 0xFF) / 255f, (colorTR & 0xFF) / 255f, (colorTR >> 24 & 0xFF) / 255f).nextVertex();
+		Runnable addX0Y0 = () -> bufferBuilder.vertex(x0f, y0f, 0.0).color((colorTL >> 16 & 0xFF) / 255f, (colorTL >> 8 & 0xFF) / 255f, (colorTL & 0xFF) / 255f, (colorTL >> 24 & 0xFF) / 255f).nextVertex();
+		Runnable addX0Y1 = () -> bufferBuilder.vertex(x0f, y1f, 0.0).color((colorBL >> 16 & 0xFF) / 255f, (colorBL >> 8 & 0xFF) / 255f, (colorBL & 0xFF) / 255f, (colorBL >> 24 & 0xFF) / 255f).nextVertex();
+		Runnable addX1Y1 = () -> bufferBuilder.vertex(x1f, y1f, 0.0).color((colorBR >> 16 & 0xFF) / 255f, (colorBR >> 8 & 0xFF) / 255f, (colorBR & 0xFF) / 255f, (colorBR >> 24 & 0xFF) / 255f).nextVertex();
+		if (x0 <= x1 && y0 <= y1) {
+			buf.put(new float[]{
+				width, 0, width, height,
+				0, 0, width, height,
+				0, height, width, height,
+				width, height, width, height
+			});
+			buf.flip();
+			shader.setUniform("Dimensions", buf);
+			addX1Y0.run();
+			addX0Y0.run();
+			addX0Y1.run();
+			addX1Y1.run();
+		} else if (x0 > x1 && y0 <= y1) {
+			buf.put(new float[]{
+				width, height, width, height,
+				0, height, width, height,
+				0, 0, width, height,
+				width, 0, width, height
+			});
+			buf.flip();
+			shader.setUniform("Dimensions", buf);
+			addX1Y1.run();
+			addX0Y1.run();
+			addX0Y0.run();
+			addX1Y0.run();
+		} else if (x0 <= x1) {
+			buf.put(new float[]{
+				0, height, width, height,
+				0, 0, width, height,
+				width, 0, width, height,
+				width, height, width, height
+			});
+			buf.flip();
+			shader.setUniform("Dimensions", buf);
+			addX0Y1.run();
+			addX0Y0.run();
+			addX1Y0.run();
+			addX1Y1.run();
+		} else {
+			buf.put(new float[]{
+				0, 0, width, height,
+				0, height, width, height,
+				width, height, width, height,
+				width, 0, width, height,
+			});
+			buf.flip();
+			shader.setUniform("Dimensions", buf);
+			addX0Y0.run();
+			addX0Y1.run();
+			addX1Y1.run();
+			addX1Y0.run();
+		}
+		tessellator.end();
+		GlStateManager.enableTexture();
+		GlStateManager.disableBlend();
 		shader.unbind();
 	}
 
@@ -144,10 +207,6 @@ public class DrawUtil implements GuiGraphicsExtension {
 		buf.flip();
 		shader.setUniform("Dimensions", buf);
 		GlStateManager.color4f(1, 1, 1, 1);
-		colorTopLeft = Rendering.scaleARGB(colorTopLeft);
-		colorBottomLeft = Rendering.scaleARGB(colorBottomLeft);
-		colorBottomRight = Rendering.scaleARGB(colorBottomRight);
-		colorTopRight = Rendering.scaleARGB(colorTopRight);
 		fill(x0, y0, x1, y1, colorTopLeft, colorBottomLeft, colorBottomRight, colorTopRight);
 		shader.unbind();
 	}
@@ -174,10 +233,6 @@ public class DrawUtil implements GuiGraphicsExtension {
 		shader.setUniform("Dimensions", buf);
 		shader.setUniform("OutlineWidth", outlineWidth);
 		GlStateManager.color4f(1, 1, 1, 1);
-		colorTopLeft = Rendering.scaleARGB(colorTopLeft);
-		colorBottomLeft = Rendering.scaleARGB(colorBottomLeft);
-		colorBottomRight = Rendering.scaleARGB(colorBottomRight);
-		colorTopRight = Rendering.scaleARGB(colorTopRight);
 		fill(x0, y0, x1, y1, colorTopLeft, colorBottomLeft, colorBottomRight, colorTopRight);
 		shader.unbind();
 	}

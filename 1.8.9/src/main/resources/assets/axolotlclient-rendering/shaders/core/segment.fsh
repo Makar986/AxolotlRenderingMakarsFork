@@ -18,7 +18,7 @@ void main() {
 
 	vec2 hDim = dimensions.zw/2.;
 	float w = rounding.w;
-	float d = sdSegment(dimensions.xy-hDim, -hDim+w, hDim-w, w);
+	float d = sdSegment(dimensions.xy-hDim, -hDim + w * sign(dimensions.zw), hDim - w * sign(dimensions.zw), w);
 	color.a *= 1.0-smoothstep(0.0, 0.5, d);
 
 	if (color.a == 0.0) {

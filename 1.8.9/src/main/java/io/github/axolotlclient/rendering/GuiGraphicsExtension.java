@@ -43,15 +43,29 @@ public interface GuiGraphicsExtension {
 	}
 
 	/* segment */
-	default void axolotlclient_rendering$segmentGradientH(int x0, int y0, int x1, int y1, int colorLeft, int colorRight, float radius) {
-		axolotlclient_rendering$segment(x0, y0, x1, y1, colorLeft, colorLeft, colorRight, colorRight, radius);
+	/// @see #axolotlclient_rendering$segment(int, int, int, int, int, int, int, int, float)
+	default void axolotlclient_rendering$segmentGradientH(int x0, int y0, int x1, int y1, int colorX0, int colorX1, float radius) {
+		axolotlclient_rendering$segment(x0, y0, x1, y1, colorX0, colorX0, colorX1, colorX1, radius);
 	}
 
-	default void axolotlclient_rendering$segmentGradientV(int x0, int y0, int x1, int y1, int colorTop, int colorBottom, float radius) {
-		axolotlclient_rendering$segment(x0, y0, x1, y1, colorTop, colorBottom, colorBottom, colorTop, radius);
+	/// @see #axolotlclient_rendering$segment(int, int, int, int, int, int, int, int, float)
+	default void axolotlclient_rendering$segmentGradientV(int x0, int y0, int x1, int y1, int colorY0, int colorY1, float radius) {
+		axolotlclient_rendering$segment(x0, y0, x1, y1, colorY0, colorY1, colorY1, colorY0, radius);
 	}
 
-	default void axolotlclient_rendering$segment(int x0, int y0, int x1, int y1, int colorTopLeft, int colorBottomLeft, int colorBottomRight, int colorTopRight, float radius) {
+	/// Draw a line segment.
+	/// @param x0 starting point, x coordinate
+	/// @param y0 starting point, y coordinate
+	/// @param x1 end point, x coordinate
+	/// @param y1 end point, y coordinate
+	/// @param colorX0Y0 color (start, start)
+	/// @param colorX0Y1 color (start, end)
+	/// @param colorX1Y1 color (end, end)
+	/// @param colorX1Y0 color (end, start)
+	/// @param radius line radius, the width will be 2*radius.
+	/// @implNote The line will overdraw by `radius` on each end. This is intentional,
+	/// it means that the drawn line is filled exactly `radius` distance from the vector `[start, end]`.
+	default void axolotlclient_rendering$segment(int x0, int y0, int x1, int y1, int colorX0Y0, int colorX0Y1, int colorX1Y1, int colorX1Y0, float radius) {
 
 	}
 
