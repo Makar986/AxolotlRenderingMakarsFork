@@ -70,23 +70,28 @@ public class RenderingTestMod implements ClientModInitializer {
 			guiGraphics.axolotlclient_rendering$roundedRect(guiGraphics.guiWidth() - 30, 220, guiGraphics.guiWidth() - 10, 230, 0xFFFFAA33, 5f);
 			guiGraphics.axolotlclient_rendering$outlineRoundedRect(guiGraphics.guiWidth() - 30, 220, guiGraphics.guiWidth() - 10, 230, 0xFF222222, 5f, 1f);
 
-			guiGraphics.axolotlclient_rendering$roundedRect(250-5, 60-5, 300+5, 60+5, -1, 0);
+			guiGraphics.axolotlclient_rendering$roundedRect(250 - 5, 60 - 5, 300 + 5, 60 + 5, -1, 0);
 			guiGraphics.axolotlclient_rendering$segmentGradientH(250, 60, 300, 60, 0xFFFF0000, 0xFF00FF00, 5);
 
+			var x = 280;
+			var y = 160;
 			var r = 5;
-			guiGraphics.axolotlclient_rendering$segmentGradientH(200, 100, 250, 70, 0xFF00FF00, 0xFF0000FF, r);
-			guiGraphics.axolotlclient_rendering$segmentGradientH(200, 70, 250, 100, 0xFF00FF00, 0xFF0000FF, r);
+			guiGraphics.axolotlclient_rendering$roundedRect(x + 70 - r, y - 20 - r, x + 120 + r, y - 20 + r, -1, 0);
+			guiGraphics.axolotlclient_rendering$segmentGradientH(x + 70, y - 20, x + 120, y - 20, 0xFFFF0000, 0xFF00FF00, r);
 
-			guiGraphics.axolotlclient_rendering$segmentGradientH(200, 100, 250, 130, 0xFF00FF00, 0xFF0000FF, r);
-			guiGraphics.axolotlclient_rendering$segmentGradientH(200, 130, 250, 100, 0xFF00FF00, 0xFF0000FF, r);
+			guiGraphics.axolotlclient_rendering$segmentGradientH(x + 50, y + 30, x + 100, y, 0xFF00FF00, 0xFF0000FF, r);
+			guiGraphics.axolotlclient_rendering$segmentGradientH(x + 50, y, x + 100, y + 30, 0xFF00FF00, 0xFF0000FF, r);
 
-			guiGraphics.axolotlclient_rendering$segmentGradientH(200, 100, 150, 130, 0xFF00FF00, 0xFF0000FF, r);
-			guiGraphics.axolotlclient_rendering$segmentGradientH(200, 130, 150, 100, 0xFF00FF00, 0xFF0000FF, r);
+			guiGraphics.axolotlclient_rendering$segmentGradientH(x + 50, y + 30, x + 100, y + 60, 0xFF00FF00, 0xFF0000FF, r);
+			guiGraphics.axolotlclient_rendering$segmentGradientH(x + 50, y + 60, x + 100, y + 30, 0xFF00FF00, 0xFF0000FF, r);
 
-			guiGraphics.axolotlclient_rendering$segmentGradientH(200, 100, 150, 70, 0xFF00FF00, 0xFF0000FF, r);
-			guiGraphics.axolotlclient_rendering$segmentGradientH(200, 70, 150, 100, 0xFF00FF00, 0xFF0000FF, r);
+			guiGraphics.axolotlclient_rendering$segmentGradientH(x + 50, y + 30, x, y + 60, 0xFF00FF00, 0xFF0000FF, r);
+			guiGraphics.axolotlclient_rendering$segmentGradientH(x + 50, y + 60, x, y + 30, 0xFF00FF00, 0xFF0000FF, r);
 
-			guiGraphics.axolotlclient_rendering$segmentGradientV(150, 50, 250, 70, 0xFFFF0000, 0xFF00FF00, 1f);
+			guiGraphics.axolotlclient_rendering$segmentGradientH(x + 50, y + 30, x, y, 0xFF00FF00, 0xFF0000FF, r);
+			guiGraphics.axolotlclient_rendering$segmentGradientH(x + 50, y, x, y + 30, 0xFF00FF00, 0xFF0000FF, r);
+
+			guiGraphics.axolotlclient_rendering$segmentGradientV(x, y - 20, x + 100, y, 0xFFFF0000, 0xFF00FF00, 1f);
 		});
 	}
 }

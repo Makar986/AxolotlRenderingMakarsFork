@@ -1,5 +1,9 @@
 @file:Suppress("UnstableApiUsage")
 
+import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder
+
+
 plugins {
 	id("fabric-loom")
 	id("io.github.p03w.machete")
@@ -126,7 +130,7 @@ tasks.modrinth {
 
 modrinth {
 	token = System.getenv("MODRINTH_TOKEN")
-	projectId = ""
+	projectId = "2qX7WO3l"
 	versionNumber = "${project.version}"
 	versionType = if (project.version.toString().contains("beta")) {
 		"beta"
@@ -143,29 +147,10 @@ modrinth {
 		required.project("fabric-api")
 	}
 
-	// Changelog fetching: Credit LambdAurora.
-	// https://github.com/LambdAurora/LambDynamicLights/blob/1ef85f486084873b5d97b8a08df72f57859a3295/build.gradle#L145
-	// License: MIT
-	val changelogText = file("../CHANGELOG.md").readText()
-	val regexVersion =
-		((project.version) as String).split("+")[0].replace("\\.".toRegex(), "\\.").replace("\\+".toRegex(), "+")
-	val changelogRegex = "###? ${regexVersion}\\n\\n(( *- .+\\n)+)".toRegex()
-	val matcher = changelogRegex.find(changelogText)
-
-	if (matcher != null) {
-		var changelogContent = matcher.groups[1]?.value
-
-		val changelogLines = changelogText.split("\n")
-		val linkRefRegex = "^\\[([A-z0-9 _\\-/+.]+)]: ".toRegex()
-		for (line in changelogLines.reversed()) {
-			if ((linkRefRegex.matches(line)))
-				changelogContent += "\n" + line
-			else break
-		}
-		changelog = changelogContent
-	} else {
-		afterEvaluate {
-			tasks.modrinth.configure {isEnabled = false}
-		}
-	}
+	var git = Git(FileRepositoryBuilder().setGitDir(project.rootDir.resolve(".git")).build())
+	val id = git.log().setMaxCount(1)().first().id
+	val abbrev = git.repository.newObjectReader()
+		.abbreviate(id, 8).name()
+	changelog = "The changelog is available at https://codeberg.org/AxolotlClient/AxolotlClient-rendering/graph <br>" +
+		"Commit: [$abbrev](https://codeberg.org/AxolotlClient/AxolotlClient-rendering/commit/${id.name})"
 }

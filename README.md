@@ -1,5 +1,7 @@
 # AxolotlClient Rendering
 
+*This library is also available on [modrinth](https://modrinth.com/project/axolotlclient-rendering)!*
+
 Small(-ish) rendering library integrated into Minecraft's rendering
 
 Current features:
@@ -10,7 +12,7 @@ Current features:
 - Convenient rendering of static SVG images using Apache Batik
 
 This library is published to our maven:
-https://moehreag.duckdns.org/maven/#/releases/io/github/axolotlclient/rendering/AxolotlClient-rendering
+https://maven.axolotlclient.com/#/releases/io/github/axolotlclient/rendering/AxolotlClient-rendering
 
 ### Examples
 

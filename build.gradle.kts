@@ -15,6 +15,15 @@ plugins {
 version = "${project.version}"
 group = "io.github.axolotlclient.waypoints"
 
+buildscript {
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath("org.eclipse.jgit:org.eclipse.jgit:7.5.0.202512021534-r")
+	}
+}
+
 repositories {
 	maven {
 		url = uri("https://maven.axolotlclient.com/releases")
