@@ -52,19 +52,19 @@ public class RenderingTestMod implements ClientModInitializer {
 					300, 120, -1, 100, 5f);
 
 				var t = "Example §otext§r §nwith§r §kmultiple§r §mwords and §5some §a§lcolors§r.";
-				guiGraphics.drawString(Minecraft.getInstance().font, t, 20, 100, -1);
-				guiGraphics.axolotlclient_rendering$drawString(font, t, 20, 110, -1);
-				font.withSize(12, () -> guiGraphics.axolotlclient_rendering$drawString(font, t, 20, 125, -1));
+				guiGraphics.text(Minecraft.getInstance().font, t, 20, 100, -1);
+				guiGraphics.axolotlclient_rendering$text(font, t, 20, 110, -1);
+				font.withSize(12, () -> guiGraphics.axolotlclient_rendering$text(font, t, 20, 125, -1));
 				var w = Component.literal("Lorem ipsum dolor sit amet, consetetur sadipscing elitr, " +
 					"sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, " +
 					"sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. " +
 					"Stet clita kasd gubergren, no sea takimata sanctus est");
-				guiGraphics.axolotlclient_rendering$drawWordWrap(font, w, 20, 150, 80, -1);
+				guiGraphics.axolotlclient_rendering$textWithWordWrap(font, w, 20, 150, 80, -1);
 				guiGraphics.axolotlclient_rendering$blitSVG(Identifier.fromNamespaceAndPath("axolotlclient-rendering", "textures/svg/23.svg"),
 					guiGraphics.guiWidth() - 50, 0, 50, 50, -1);
-				guiGraphics.drawString(adapter, Component.literal("AAAAaÄǍÄÅ"), 20, 140, -1);
-				guiGraphics.drawWordWrap(adapter, w, 100, 150, 80, -1);
-				guiGraphics.drawWordWrap(Minecraft.getInstance().font, w, 180, 150, 80, -1);
+				guiGraphics.text(adapter, Component.literal("AAAAaÄǍÄÅ"), 20, 140, -1);
+				guiGraphics.textWithWordWrap(adapter, w, 100, 150, 80, -1);
+				guiGraphics.textWithWordWrap(Minecraft.getInstance().font, w, 180, 150, 80, -1);
 				guiGraphics.axolotlclient_rendering$roundedVLine(guiGraphics.guiWidth() - 30, 150 - 1, 200, 0xFF8833FF);
 				guiGraphics.axolotlclient_rendering$roundedRect(guiGraphics.guiWidth() - 15, 150, guiGraphics.guiWidth() - 14, 200, 0xFF885533, 1.5f);
 				guiGraphics.axolotlclient_rendering$roundedRect(guiGraphics.guiWidth() - 18, 150, guiGraphics.guiWidth() - 16, 200, 0xFF777777, 1.5f);

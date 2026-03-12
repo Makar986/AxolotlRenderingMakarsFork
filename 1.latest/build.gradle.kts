@@ -5,13 +5,13 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder
 
 
 plugins {
-	id("fabric-loom")
+	id("net.fabricmc.fabric-loom")
 	id("io.github.p03w.machete")
 }
 
-val minecraftVersion = "1.21.11"
-val minecraftFriendly = "1.21.11"
-val fapiVersion = "0.139.4"
+val minecraftVersion = "26.1-pre-1"
+val minecraftFriendly = "26.1"
+val fapiVersion = "0.143.12"
 
 group = project.property("maven_group") as String
 version = "${project.property("version")}+$minecraftFriendly"
@@ -35,18 +35,12 @@ repositories {
 
 dependencies {
 	minecraft("com.mojang:minecraft:$minecraftVersion")
-	mappings(loom.layered {
-		officialMojangMappings {
-			nameSyntheticMembers = true
-		}
-		parchment("org.parchmentmc.data:parchment-1.21.10:2025.10.12@zip")
-	})
 
-	modImplementation("net.fabricmc:fabric-loader:${project.property("fabric_loader")}")
+	implementation("net.fabricmc:fabric-loader:${project.property("fabric_loader")}")
 
-	modImplementation("net.fabricmc.fabric-api:fabric-api:$fapiVersion+$minecraftFriendly")
+	implementation("net.fabricmc.fabric-api:fabric-api:$fapiVersion+$minecraftFriendly")
 
-	modCompileOnly("com.terraformersmc:modmenu:17.0.0-alpha.1")
+	compileOnly("com.terraformersmc:modmenu:18.0.0-alpha.5")
 
 	implementation(include(project(path = ":common", configuration = "shadow"))!!)
 
@@ -87,14 +81,14 @@ tasks.processResources {
 tasks.withType(JavaCompile::class).configureEach {
 	options.encoding = "UTF-8"
 
-	if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_22)) {
-		options.release = 21
+	if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_26)) {
+		options.release = 25
 	}
 }
 
 java {
-	sourceCompatibility = JavaVersion.VERSION_21
-	targetCompatibility = JavaVersion.VERSION_21
+	sourceCompatibility = JavaVersion.VERSION_25
+	targetCompatibility = JavaVersion.VERSION_25
 }
 
 tasks.runClient {
@@ -132,7 +126,7 @@ publishing {
 }
 
 tasks.modrinth {
-	dependsOn(tasks.getByName("optimizeOutputsOfRemapJar"))
+	dependsOn(tasks.getByName("optimizeOutputsOfJar"))
 }
 
 modrinth {
@@ -146,10 +140,10 @@ modrinth {
 	} else {
 		"release"
 	}
-	uploadFile = tasks.remapJar.get()
+	uploadFile = tasks.jar.get()
 	gameVersions.set(listOf(minecraftVersion))
 	loaders.set(listOf("quilt", "fabric"))
-	additionalFiles.set(listOf(tasks.remapSourcesJar))
+	additionalFiles.set(listOf(tasks.sourcesJar))
 	dependencies {
 		required.project("fabric-api")
 	}

@@ -18,7 +18,7 @@ import java.util.zip.ZipOutputStream
 import kotlin.io.path.*
 
 plugins {
-	id("fabric-loom")
+	id("net.fabricmc.fabric-loom-remap")
 	id("ploceus")
 	id("io.github.p03w.machete")
 }

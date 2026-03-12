@@ -50,7 +50,7 @@ public class SVGCache {
 	private final Minecraft minecraft = Minecraft.getInstance();
 
 	private SVGCache() {
-		ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloader(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "svgcache"),
+		ResourceLoader.get(PackType.CLIENT_RESOURCES).registerReloadListener(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "svgcache"),
 			(ResourceManagerReloadListener) (man -> cache.clear()));
 	}
 

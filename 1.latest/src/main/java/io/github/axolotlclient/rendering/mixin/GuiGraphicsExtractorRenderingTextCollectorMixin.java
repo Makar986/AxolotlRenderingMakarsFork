@@ -28,13 +28,13 @@ import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 
-@Mixin(GuiGraphics.RenderingTextCollector.class)
-public abstract class GuiGraphicsRenderingTextCollectorMixin {
+@Mixin(GuiGraphicsExtractor.RenderingTextCollector.class)
+public abstract class GuiGraphicsExtractorRenderingTextCollectorMixin {
 
 	@WrapOperation(method = "accept(Lnet/minecraft/client/gui/TextAlignment;IILnet/minecraft/client/gui/ActiveTextCollector$Parameters;Lnet/minecraft/util/FormattedCharSequence;)V", at = @At(value = "FIELD", target = "Lnet/minecraft/client/Minecraft;font:Lnet/minecraft/client/gui/Font;", opcode = Opcodes.GETFIELD))
 	private Font allowCustomFont(Minecraft instance, Operation<Font> original, @Local(argsOnly = true) ActiveTextCollector.Parameters parameters) {

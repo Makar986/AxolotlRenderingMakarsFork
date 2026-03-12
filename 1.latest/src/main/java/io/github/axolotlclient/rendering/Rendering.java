@@ -34,7 +34,7 @@ public class Rendering implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		ResourceLoader.get(PackType.CLIENT_RESOURCES)
-			.registerReloader(Identifier.fromNamespaceAndPath(RenderingCommon.MODID,
+			.registerReloadListener(Identifier.fromNamespaceAndPath(RenderingCommon.MODID,
 					"font_reloader"),
 				(ResourceManagerReloadListener) resourceManager -> Font.reload());
 		ClientLifecycleEvents.CLIENT_STOPPING.register(mc -> Font.closeAll());

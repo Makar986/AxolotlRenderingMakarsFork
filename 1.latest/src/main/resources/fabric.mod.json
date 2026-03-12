@@ -27,18 +27,18 @@
 	],
 	"depends": {
 		"fabricloader": ">=0.15.11",
-		"minecraft": "1.21.x",
+		"minecraft": "<26.2 >=26.1-pre.1",
 		"fabric-api": "*"
 	},
 	"custom": {
 		"loom:injected_interfaces": {
-			"net/minecraft/class_332": [
-				"io/github/axolotlclient/rendering/GuiGraphicsExtension"
+			"net/minecraft/client/gui/GuiGraphicsExtractor": [
+				"io/github/axolotlclient/rendering/GuiGraphicsExtractorExtension"
 			],
-			"net/minecraft/class_12225\u0024class_12227": [
+			"net.minecraft.client.gui.ActiveTextCollector\u0024Parameters": [
 				"io/github/axolotlclient/rendering/ActiveTextCollectorParametersExtension"
 			],
-			"net/minecraft/class_339": [
+			"net/minecraft/client/gui/components/AbstractWidget": [
 				"io/github/axolotlclient/rendering/AbstractWidgetExtension"
 			]
 		},

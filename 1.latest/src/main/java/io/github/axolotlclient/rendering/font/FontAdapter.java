@@ -28,6 +28,7 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import io.github.axolotlclient.rendering.ExRenderPipelines;
+import io.github.axolotlclient.rendering.GuiGraphicsExtractorExtension;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.Font;
@@ -45,6 +46,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.StringDecomposer;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fc;
 
 /**
  * Convenience class to adapt {@link io.github.axolotlclient.rendering.font.Font} to
@@ -53,7 +55,7 @@ import org.joml.Matrix4f;
  *
  * @implNote Assumes a font size of <b>9 pixels</b>. Spacing can be janky as a result of this assumption
  * as barely any font will have an integer font size. In order to get correct results, use methods
- * in {@link io.github.axolotlclient.rendering.GuiGraphicsExtension} that directly accept a {@link io.github.axolotlclient.rendering.font.Font}.
+ * in {@link GuiGraphicsExtractorExtension} that directly accept a {@link io.github.axolotlclient.rendering.font.Font}.
  */
 @SuppressWarnings({"NullableProblems", "DataFlowIssue"})
 public class FontAdapter extends Font {
@@ -66,22 +68,22 @@ public class FontAdapter extends Font {
 	}
 
 	@Override
-	public void drawInBatch(String text, float x, float y, int color, boolean drawShadow, Matrix4f pose, MultiBufferSource bufferSource, DisplayMode mode, int backgroundColor, int packedLightCoords) {
+	public void drawInBatch(String str, float x, float y, int color, boolean dropShadow, Matrix4fc pose, MultiBufferSource bufferSource, DisplayMode displayMode, int backgroundColor, int packedLightCoords) {
+		mc.font.drawInBatch(str, x, y, color, dropShadow, pose, bufferSource, displayMode, backgroundColor, packedLightCoords);
+	}
+
+	@Override
+	public void drawInBatch(Component text, float x, float y, int color, boolean drawShadow, Matrix4fc pose, MultiBufferSource bufferSource, DisplayMode mode, int backgroundColor, int packedLightCoords) {
 		mc.font.drawInBatch(text, x, y, color, drawShadow, pose, bufferSource, mode, backgroundColor, packedLightCoords);
 	}
 
 	@Override
-	public void drawInBatch(Component text, float x, float y, int color, boolean drawShadow, Matrix4f pose, MultiBufferSource bufferSource, DisplayMode mode, int backgroundColor, int packedLightCoords) {
+	public void drawInBatch(FormattedCharSequence text, float x, float y, int color, boolean drawShadow, Matrix4fc pose, MultiBufferSource bufferSource, DisplayMode mode, int backgroundColor, int packedLightCoords) {
 		mc.font.drawInBatch(text, x, y, color, drawShadow, pose, bufferSource, mode, backgroundColor, packedLightCoords);
 	}
 
 	@Override
-	public void drawInBatch(FormattedCharSequence text, float x, float y, int color, boolean drawShadow, Matrix4f pose, MultiBufferSource bufferSource, DisplayMode mode, int backgroundColor, int packedLightCoords) {
-		mc.font.drawInBatch(text, x, y, color, drawShadow, pose, bufferSource, mode, backgroundColor, packedLightCoords);
-	}
-
-	@Override
-	public void drawInBatch8xOutline(FormattedCharSequence text, float x, float y, int color, int backgroundColor, Matrix4f pose, MultiBufferSource bufferSource, int packedLightCoords) {
+	public void drawInBatch8xOutline(FormattedCharSequence text, float x, float y, int color, int backgroundColor, Matrix4fc pose, MultiBufferSource bufferSource, int packedLightCoords) {
 		mc.font.drawInBatch8xOutline(text, x, y, color, backgroundColor, pose, bufferSource, packedLightCoords);
 	}
 
@@ -105,7 +107,7 @@ public class FontAdapter extends Font {
 				if (backgroundColor != 0) {
 					visitor.acceptEffect(new TextRenderable() {
 						@Override
-						public void render(Matrix4f matrix, VertexConsumer consumer, int packedLight, boolean noDepth) {
+						public void render(Matrix4fc matrix, VertexConsumer consumer, int packedLight, boolean noDepth) {
 							var pose = new Matrix4f(matrix).mul(transform);
 							consumer.addVertex(pose, x - 1f, y - 1f, 0.01f).setColor(backgroundColor);
 							consumer.addVertex(pose, x - 1f, y - 1f + built.textBox()[3] + 1f, 0.01f).setColor(backgroundColor);
@@ -157,7 +159,7 @@ public class FontAdapter extends Font {
 						}
 
 						@Override
-						public void render(Matrix4f matrix, VertexConsumer consumer, int packedLight, boolean noDepth) {
+						public void render(Matrix4fc matrix, VertexConsumer consumer, int packedLight, boolean noDepth) {
 							var pose = new Matrix4f(matrix).mul(transform);
 							for (var g : entry.getValue()) {
 								consumer.addVertex(pose, g.x(), g.y(), 0).setUv(g.u(), g.v()).setColor(g.color());
@@ -206,7 +208,7 @@ public class FontAdapter extends Font {
 				if (!built.effects().isEmpty()) {
 					visitor.acceptEffect(new TextRenderable() {
 						@Override
-						public void render(Matrix4f matrix, VertexConsumer consumer, int packedLight, boolean noDepth) {
+						public void render(Matrix4fc matrix, VertexConsumer consumer, int packedLight, boolean noDepth) {
 							var pose = new Matrix4f(matrix).mul(transform);
 							for (var e : built.effects()) {
 								consumer.addVertex(pose, e.x(), e.y(), 0).setColor(e.color());

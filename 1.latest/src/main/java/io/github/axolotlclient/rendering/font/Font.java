@@ -52,7 +52,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.StringSplitter;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.locale.Language;
@@ -430,22 +430,22 @@ public class Font implements Closeable {
 		}
 	}
 
-	public void renderText(GuiGraphics graphics, FormattedCharSequence text, float x, float y, int color, boolean shadow, int alignFlags) {
+	public void renderText(GuiGraphicsExtractor graphics, FormattedCharSequence text, float x, float y, int color, boolean shadow, int alignFlags) {
 		var built = buildText(color, shadow, text::accept);
 		renderTextCommon(graphics, x, y, alignFlags, built);
 	}
 
-	public void renderText(GuiGraphics graphics, String text, float x, float y, int color, boolean shadow, int alignFlags) {
+	public void renderText(GuiGraphicsExtractor graphics, String text, float x, float y, int color, boolean shadow, int alignFlags) {
 		var built = buildText(color, shadow, s -> StringDecomposer.iterateFormatted(text, Style.EMPTY, s));
 		renderTextCommon(graphics, x, y, alignFlags, built);
 	}
 
-	public void renderText(GuiGraphics graphics, Component text, float x, float y, int color, boolean shadow, int alignFlags) {
+	public void renderText(GuiGraphicsExtractor graphics, Component text, float x, float y, int color, boolean shadow, int alignFlags) {
 		var built = buildText(color, shadow, s -> StringDecomposer.iterateFormatted(text, Style.EMPTY, s));
 		renderTextCommon(graphics, x, y, alignFlags, built);
 	}
 
-	private void renderTextCommon(GuiGraphics graphics, float x, float y, int alignFlags, BuiltText builtText) {
+	private void renderTextCommon(GuiGraphicsExtractor graphics, float x, float y, int alignFlags, BuiltText builtText) {
 		float[] startOffset = getOffset(alignFlags, builtText);
 		var scale = Minecraft.getInstance().getWindow().getGuiScale();
 
@@ -486,16 +486,16 @@ public class Font implements Closeable {
 		return startOffset;
 	}
 
-	private void renderTextCommon(GuiGraphics graphics, BuiltText builtText) {
+	private void renderTextCommon(GuiGraphicsExtractor graphics, BuiltText builtText) {
 		var box = builtText.textBox();
 		var scissor = graphics.scissorStack.peek();
 		var rect = new ScreenRectangle(Mth.ceil(box[0]), Mth.ceil(box[1]), Mth.ceil(box[2]), Mth.ceil(box[3])).transformMaxBounds(graphics.pose());
 		rect = scissor != null ? scissor.intersection(rect) : rect;
 		for (var pageGlyphs : builtText.coordData().object2ObjectEntrySet()) {
-			graphics.guiRenderState.submitGuiElement(new FontRenderStates.PageGlyphs(pageGlyphs.getKey(), new Matrix3x2f(graphics.pose()), pageGlyphs.getValue(), rect, scissor));
+			graphics.guiRenderState.addGuiElement(new FontRenderStates.PageGlyphs(pageGlyphs.getKey(), new Matrix3x2f(graphics.pose()), pageGlyphs.getValue(), rect, scissor));
 		}
 		if (!builtText.effects().isEmpty()) {
-			graphics.guiRenderState.submitGuiElement(new FontRenderStates.Effects(new Matrix3x2f(graphics.pose()), builtText.effects(), rect, scissor));
+			graphics.guiRenderState.addGuiElement(new FontRenderStates.Effects(new Matrix3x2f(graphics.pose()), builtText.effects(), rect, scissor));
 		}
 	}
 

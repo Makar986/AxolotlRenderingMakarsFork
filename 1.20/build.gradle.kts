@@ -5,7 +5,7 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder
 
 
 plugins {
-	id("fabric-loom")
+	id("net.fabricmc.fabric-loom-remap")
 	id("io.github.p03w.machete")
 }
 

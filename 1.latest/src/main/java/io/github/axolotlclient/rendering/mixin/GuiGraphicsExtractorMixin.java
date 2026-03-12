@@ -30,10 +30,10 @@ import io.github.axolotlclient.rendering.font.Font;
 import io.github.axolotlclient.rendering.svg.SVGCache;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ActiveTextCollector;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.render.TextureSetup;
-import net.minecraft.client.gui.render.state.GuiRenderState;
+import net.minecraft.client.renderer.state.gui.GuiRenderState;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -46,12 +46,12 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 
-@Mixin(GuiGraphics.class)
-public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
+@Mixin(GuiGraphicsExtractor.class)
+public abstract class GuiGraphicsExtractorMixin implements GuiGraphicsExtractorExtension {
 
 	@Shadow
 	@Final
-	public GuiGraphics.ScissorStack scissorStack;
+	public GuiGraphicsExtractor.ScissorStack scissorStack;
 
 	@Shadow
 	public abstract Matrix3x2fStack pose();
@@ -62,7 +62,7 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 
 	@Shadow
 	@Final
-	Minecraft minecraft;
+	private Minecraft minecraft;
 
 	@Shadow
 	protected abstract void innerBlit(RenderPipeline pipeline, Identifier atlas, int x0, int x1, int y0, int y1, float u0, float u1, float v0, float v1, int color);
@@ -74,7 +74,7 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 		var y0f = y0 <= y1 ? y0 - radius : y0 + radius;
 		var x1f = x0 <= x1 ? x1 + radius : x1 - radius;
 		var y1f = y0 <= y1 ? y1 + radius : y1 - radius;
-		guiRenderState.submitGuiElement(new SegmentRenderState(ExRenderPipelines.SEGMENT,
+		guiRenderState.addGuiElement(new SegmentRenderState(ExRenderPipelines.SEGMENT,
 			TextureSetup.noTexture(), pose,
 			x0f, y0f, x1f, y1f,
 			colorX0Y0, colorX0Y1, colorX1Y1, colorX1Y0,
@@ -83,7 +83,7 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 
 	@Override
 	public void axolotlclient_rendering$roundedRectGradientVarying(int x0, int y0, int x1, int y1, int colorTopLeft, int colorBottomLeft, int colorBottomRight, int colorTopRight, float roundingPxTopLeft, float roundingPxBottomLeft, float roundingPxBottomRight, float roundingPxTopRight) {
-		guiRenderState.submitGuiElement(new ColoredRoundedRectangleRenderState(ExRenderPipelines.ROUNDED_RECT,
+		guiRenderState.addGuiElement(new ColoredRoundedRectangleRenderState(ExRenderPipelines.ROUNDED_RECT,
 			TextureSetup.noTexture(),
 			new Matrix3x2f(pose()),
 			x0, y0, x1, y1,
@@ -94,7 +94,7 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 
 	@Override
 	public void axolotlclient_rendering$outlineRoundedRectGradientVarying(int x0, int y0, int x1, int y1, int colorTopLeft, int colorBottomLeft, int colorBottomRight, int colorTopRight, float roundingPxTopLeft, float roundingPxBottomLeft, float roundingPxBottomRight, float roundingPxTopRight, float outlineWidth) {
-		guiRenderState.submitGuiElement(new ColoredRoundedRectangleOutlineRenderState(ExRenderPipelines.ROUNDED_RECT_OUTLINE,
+		guiRenderState.addGuiElement(new ColoredRoundedRectangleOutlineRenderState(ExRenderPipelines.ROUNDED_RECT_OUTLINE,
 			TextureSetup.noTexture(),
 			new Matrix3x2f(pose()),
 			x0, y0, x1, y1,
@@ -116,7 +116,7 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 	@Unique
 	private void innerBlit(RenderPipeline pipeline, Identifier atlas, int x0, int x1, int y0, int y1, float u0, float u1, float v0, float v1, int color, float roundingPxTopLeft, float roundingPxBottomLeft, float roundingPxBottomRight, float roundingPxTopRight) {
 		var tex = this.minecraft.getTextureManager().getTexture(atlas);
-		this.guiRenderState.submitGuiElement(
+		this.guiRenderState.addGuiElement(
 			new ColoredRoundedRectangleBlitRenderState(
 				pipeline,
 				TextureSetup.singleTexture(tex.getTextureView(), tex.getSampler()),
@@ -144,7 +144,7 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 	@Unique
 	private void innerBlit(RenderPipeline pipeline, Identifier atlas, int x0, int x1, int y0, int y1, float u0, float u1, float v0, float v1, int color, float roundingPxTopLeft, float roundingPxBottomLeft, float roundingPxBottomRight, float roundingPxTopRight, float outlineWidth) {
 		var tex = this.minecraft.getTextureManager().getTexture(atlas);
-		this.guiRenderState.submitGuiElement(
+		this.guiRenderState.addGuiElement(
 			new ColoredRoundedRectangleBlitOutlineRenderState(
 				pipeline,
 				TextureSetup.singleTexture(tex.getTextureView(), tex.getSampler()),
@@ -159,18 +159,18 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 	}
 
 	@Override
-	public void axolotlclient_rendering$drawString(Font font, String text, float x, float y, int color, boolean shadow, int origin) {
-		font.renderText((GuiGraphics) (Object) this, text, x, y, color, shadow, origin);
+	public void axolotlclient_rendering$text(Font font, String text, float x, float y, int color, boolean shadow, int origin) {
+		font.renderText((GuiGraphicsExtractor) (Object) this, text, x, y, color, shadow, origin);
 	}
 
 	@Override
-	public void axolotlclient_rendering$drawString(Font font, FormattedCharSequence text, float x, float y, int color, boolean shadow, int origin) {
-		font.renderText((GuiGraphics) (Object) this, text, x, y, color, shadow, origin);
+	public void axolotlclient_rendering$text(Font font, FormattedCharSequence text, float x, float y, int color, boolean shadow, int origin) {
+		font.renderText((GuiGraphicsExtractor) (Object) this, text, x, y, color, shadow, origin);
 	}
 
 	@Override
-	public void axolotlclient_rendering$drawString(Font font, Component text, float x, float y, int color, boolean shadow, int origin) {
-		font.renderText((GuiGraphics) (Object) this, text, x, y, color, shadow, origin);
+	public void axolotlclient_rendering$text(Font font, Component text, float x, float y, int color, boolean shadow, int origin) {
+		font.renderText((GuiGraphicsExtractor) (Object) this, text, x, y, color, shadow, origin);
 	}
 
 	@Override
@@ -180,8 +180,8 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 		innerBlit(RenderPipelines.GUI_TEXTURED, key, x, x + width, y, y + height, 0, 1f, 0f, 1, color);
 	}
 
-	@WrapOperation(method = "textRendererForWidget", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;createDefaultTextParameters(F)Lnet/minecraft/client/gui/ActiveTextCollector$Parameters;"))
-	private ActiveTextCollector.Parameters allowCustomFontRenderingForWidgets(GuiGraphics instance, float v, Operation<ActiveTextCollector.Parameters> original, AbstractWidget widget) {
+	@WrapOperation(method = "textRendererForWidget", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;createDefaultTextParameters(F)Lnet/minecraft/client/gui/ActiveTextCollector$Parameters;"))
+	private ActiveTextCollector.Parameters allowCustomFontRenderingForWidgets(GuiGraphicsExtractor instance, float v, Operation<ActiveTextCollector.Parameters> original, AbstractWidget widget) {
 		var font = widget.axolotlclient_rendering$getFont();
 		var o = original.call(instance, v);
 		if (font != null) return o.axolotlclient_rendering$withFont(font);

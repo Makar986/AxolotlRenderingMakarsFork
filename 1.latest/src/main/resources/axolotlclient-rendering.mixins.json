@@ -7,8 +7,8 @@
 		"AbstractWidgetMixin",
 		"ActiveTextCollectorParametersMixin",
 		"BufferBuilderAccessor",
-		"GuiGraphicsMixin",
-		"GuiGraphicsRenderingTextCollectorMixin",
+	  "GuiGraphicsExtractorMixin",
+	  "GuiGraphicsExtractorRenderingTextCollectorMixin",
 		"VertexFormatElementMixin",
 		"WindowMixin"
 	],
