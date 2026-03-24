@@ -66,7 +66,7 @@ public class RenderingTestMod implements ClientModInitializer {
 			guiGraphics.guiWidth() - 50, 0, 50, 50, -1);
 		var el = new GuiElement();
 		el.drawString(adapter, "AAAAaÄǍÄÅ", 20, 140, -1);
-		Minecraft.getInstance().textRenderer.drawSplit(w, 180, 150, 80, -1);
+		Minecraft.getInstance().textRenderer.splitAndDraw(w, 180, 150, 80, -1);
 		guiGraphics.axolotlclient_rendering$roundedVLine(guiGraphics.guiWidth() - 30, 150 - 1, 200, 0xFF8833FF);
 		guiGraphics.axolotlclient_rendering$roundedRect(guiGraphics.guiWidth() - 15, 150, guiGraphics.guiWidth() - 14, 200, 0xFF885533, 1.5f);
 		guiGraphics.axolotlclient_rendering$roundedRect(guiGraphics.guiWidth() - 18, 150, guiGraphics.guiWidth() - 16, 200, 0xFF777777, 1.5f);

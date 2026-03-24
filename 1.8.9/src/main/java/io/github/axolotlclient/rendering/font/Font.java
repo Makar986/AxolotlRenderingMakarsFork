@@ -33,9 +33,9 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Consumer;
 
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.Tessellator;
+import net.minecraft.client.render.platform.GlStateManager;
+import net.minecraft.client.render.vertex.DefaultVertexFormat;
+import net.minecraft.client.render.vertex.Tesselator;
 import io.github.axolotlclient.rendering.ExRenderPipelines;
 import io.github.axolotlclient.rendering.Rendering;
 import io.github.axolotlclient.rendering.RenderingCommon;
@@ -480,11 +480,11 @@ public class Font implements Closeable {
 	}
 
 	private void renderTextCommon(BuiltText builtText) {
-		Tessellator tess = Tessellator.getInstance();
+		Tesselator tess = Tesselator.getInstance();
 		GlStateManager.enableBlend();
 		ExRenderPipelines.FONT_PROGRAM.bind();
 		GlStateManager.color3f(1, 1, 1);
-		var vertexConsumer = tess.getBuilder();
+		var vertexConsumer = tess.getBuffer();
 		for (var pageGlyphs : builtText.coordData().object2ObjectEntrySet().stream().skip(0).toList()) {
 			Minecraft.getInstance().getTextureManager().bind(pageGlyphs.getKey());
 			vertexConsumer.begin(GL11.GL_QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);

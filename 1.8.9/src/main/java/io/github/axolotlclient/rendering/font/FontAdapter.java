@@ -67,7 +67,7 @@ public class FontAdapter extends TextRenderer {
 	}
 
 	@Override
-	public void drawSplit(String string, int i, int j, int k, int l) {
+	public void splitAndDraw(String string, int i, int j, int k, int l) {
 		DrawUtil.get().axolotlclient_rendering$drawWordWrap(font, string, i, j, adjustColor(k), l);
 	}
 

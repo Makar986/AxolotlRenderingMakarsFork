@@ -33,7 +33,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(GameOptions.class)
 public abstract class GameOptionsMixin {
 
-	@Inject(method = "setValue(Lnet/minecraft/client/options/GameOptions$Option;I)V", at = @At(value = "FIELD", target = "Lnet/minecraft/client/options/GameOptions;guiScale:I", ordinal = 0, opcode = Opcodes.GETFIELD))
+	@Inject(method = "set(Lnet/minecraft/client/options/GameOptions$Option;I)V", at = @At(value = "FIELD", target = "Lnet/minecraft/client/options/GameOptions;guiScale:I", ordinal = 0, opcode = Opcodes.GETFIELD))
 	private void refreshScale(GameOptions.Option option, int i, CallbackInfo ci) {
 		Rendering.resetWindow();
 	}

@@ -25,7 +25,7 @@ package io.github.axolotlclient.rendering.svg;
 import java.nio.ByteBuffer;
 import java.util.concurrent.CompletableFuture;
 
-import com.mojang.blaze3d.platform.TextureUtil;
+import net.minecraft.client.render.texture.TextureUtil;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import lombok.extern.slf4j.Slf4j;
@@ -65,7 +65,7 @@ public class SVGCache {
 						for (int x = 0; x < tex.getPixels().length; x++) {
 							tex.getPixels()[x] = Integer.rotateRight(tex.getPixels()[x], 8);
 						}
-						minecraft.submit(tex::upload);
+						minecraft.executeTask(tex::upload);
 					}
 				} catch (Exception e) {
 					log.error("Failed to load SVG resource! ", e);

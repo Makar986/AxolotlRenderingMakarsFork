@@ -38,7 +38,7 @@ public abstract class MinecraftMixin {
 		Font.onScaleChange();
 	}
 
-	@Inject(method = "updateWindow", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;onResolutionChanged(II)V"))
+	@Inject(method = "updateWindow", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;resize(II)V"))
 	public void axolotlclient$onResize(CallbackInfo ci) {
 		Rendering.resetWindow();
 	}

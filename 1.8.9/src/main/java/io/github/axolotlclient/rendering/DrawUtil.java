@@ -22,11 +22,11 @@
 
 package io.github.axolotlclient.rendering;
 
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.platform.MemoryTracker;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.Tessellator;
+import net.minecraft.client.render.platform.GlStateManager;
+import net.minecraft.client.render.platform.MemoryTracker;
+import net.minecraft.client.render.vertex.BufferBuilder;
+import net.minecraft.client.render.vertex.DefaultVertexFormat;
+import net.minecraft.client.render.vertex.Tesselator;
 import io.github.axolotlclient.rendering.font.Font;
 import io.github.axolotlclient.rendering.svg.SVGCache;
 import net.minecraft.client.Minecraft;
@@ -70,8 +70,8 @@ public class DrawUtil implements GuiGraphicsExtension {
 
 	@Unique
 	private void fill(float x0, float y0, float x1, float y1, int colorTopLeft, int colorBottomLeft, int colorBottomRight, int colorTopRight) {
-		Tessellator tessellator = Tessellator.getInstance();
-		BufferBuilder bufferBuilder = tessellator.getBuilder();
+		Tesselator tesselator = Tesselator.getInstance();
+		BufferBuilder bufferBuilder = tesselator.getBuffer();
 		GlStateManager.enableBlend();
 		GlStateManager.disableTexture();
 		GlStateManager.blendFuncSeparate(770, 771, 1, 0);
@@ -85,7 +85,7 @@ public class DrawUtil implements GuiGraphicsExtension {
 		bufferBuilder.vertex(x0, y0, 0.0).color((colorTopLeft >> 16 & 0xFF) / 255f, (colorTopLeft >> 8 & 0xFF) / 255f, (colorTopLeft & 0xFF) / 255f, (colorTopLeft >> 24 & 0xFF) / 255f).nextVertex();
 		bufferBuilder.vertex(x0, y1, 0.0).color((colorBottomLeft >> 16 & 0xFF) / 255f, (colorBottomLeft >> 8 & 0xFF) / 255f, (colorBottomLeft & 0xFF) / 255f, (colorBottomLeft >> 24 & 0xFF) / 255f).nextVertex();
 		bufferBuilder.vertex(x1, y1, 0.0).color((colorBottomRight >> 16 & 0xFF) / 255f, (colorBottomRight >> 8 & 0xFF) / 255f, (colorBottomRight & 0xFF) / 255f, (colorBottomRight >> 24 & 0xFF) / 255f).nextVertex();
-		tessellator.end();
+		tesselator.end();
 		GlStateManager.enableTexture();
 		GlStateManager.disableBlend();
 	}
@@ -112,8 +112,8 @@ public class DrawUtil implements GuiGraphicsExtension {
 			0, height, width, height,
 			width, height, width, height
 		});*/
-		Tessellator tessellator = Tessellator.getInstance();
-		BufferBuilder bufferBuilder = tessellator.getBuilder();
+		Tesselator tesselator = Tesselator.getInstance();
+		BufferBuilder bufferBuilder = tesselator.getBuffer();
 		GlStateManager.enableBlend();
 		GlStateManager.disableTexture();
 		GlStateManager.blendFuncSeparate(770, 771, 1, 0);
@@ -180,7 +180,7 @@ public class DrawUtil implements GuiGraphicsExtension {
 			addX1Y1.run();
 			addX1Y0.run();
 		}
-		tessellator.end();
+		tesselator.end();
 		GlStateManager.enableTexture();
 		GlStateManager.disableBlend();
 		shader.unbind();
@@ -272,14 +272,14 @@ public class DrawUtil implements GuiGraphicsExtension {
 		buf.flip();
 		shader.setUniform("Dimensions", buf);
 		GlStateManager.color4f((color >> 16 & 0xFF) / 255f, (color >> 8 & 0xFF) / 255f, (color & 0xFF) / 255f, (color >> 24 & 0xFF) / 255f);
-		Tessellator tessellator = Tessellator.getInstance();
-		BufferBuilder bufferBuilder = tessellator.getBuilder();
+		Tesselator tesselator = Tesselator.getInstance();
+		BufferBuilder bufferBuilder = tesselator.getBuffer();
 		bufferBuilder.begin(7, DefaultVertexFormat.POSITION_TEX);
 		bufferBuilder.vertex(x0, y1, 0.0).texture(u0, v1).nextVertex();
 		bufferBuilder.vertex(x1, y1, 0.0).texture(u1, v1).nextVertex();
 		bufferBuilder.vertex(x1, y0, 0.0).texture(u1, v0).nextVertex();
 		bufferBuilder.vertex(x0, y0, 0.0).texture(u0, v0).nextVertex();
-		tessellator.end();
+		tesselator.end();
 		shader.unbind();
 	}
 
@@ -319,14 +319,14 @@ public class DrawUtil implements GuiGraphicsExtension {
 		shader.setUniform("Dimensions", buf);
 		shader.setUniform("OutlineWidth", outlineWidth);
 		GlStateManager.color4f((color >> 16 & 0xFF) / 255f, (color >> 8 & 0xFF) / 255f, (color & 0xFF) / 255f, (color >> 24 & 0xFF) / 255f);
-		Tessellator tessellator = Tessellator.getInstance();
-		BufferBuilder bufferBuilder = tessellator.getBuilder();
+		Tesselator tesselator = Tesselator.getInstance();
+		BufferBuilder bufferBuilder = tesselator.getBuffer();
 		bufferBuilder.begin(7, DefaultVertexFormat.POSITION_TEX);
 		bufferBuilder.vertex(x0, y1, 0.0).texture(u0, v1).nextVertex();
 		bufferBuilder.vertex(x1, y1, 0.0).texture(u1, v1).nextVertex();
 		bufferBuilder.vertex(x1, y0, 0.0).texture(u1, v0).nextVertex();
 		bufferBuilder.vertex(x0, y0, 0.0).texture(u0, v0).nextVertex();
-		tessellator.end();
+		tesselator.end();
 		shader.unbind();
 	}
 
@@ -347,13 +347,13 @@ public class DrawUtil implements GuiGraphicsExtension {
 		GlStateManager.enableBlend();
 		Minecraft.getInstance().getTextureManager().bind(key);
 		GlStateManager.color4f((color >> 16 & 0xFF) / 255f, (color >> 8 & 0xFF) / 255f, (color & 0xFF) / 255f, (color >> 24 & 0xFF) / 255f);
-		Tessellator tessellator = Tessellator.getInstance();
-		BufferBuilder bufferBuilder = tessellator.getBuilder();
+		Tesselator tesselator = Tesselator.getInstance();
+		BufferBuilder bufferBuilder = tesselator.getBuffer();
 		bufferBuilder.begin(7, DefaultVertexFormat.POSITION_TEX);
 		bufferBuilder.vertex(x, y+height, 0.0).texture(0, 1f).nextVertex();
 		bufferBuilder.vertex(x+width, y+height, 0.0).texture(1f, 1f).nextVertex();
 		bufferBuilder.vertex(x+width, y, 0.0).texture(1f, 0).nextVertex();
 		bufferBuilder.vertex(x, y, 0.0).texture(0, 0).nextVertex();
-		tessellator.end();
+		tesselator.end();
 	}
 }

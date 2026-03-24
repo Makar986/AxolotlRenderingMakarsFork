@@ -24,9 +24,9 @@ plugins {
 }
 
 val minecraftVersion = "1.8.9"
-val feather = "1.8.9+build.27"
-val osl = "0.16.3"
-val lwjglVersion = "3.3.6"
+val feather = "1"
+val osl = "0.17.2"
+val lwjglVersion = "3.4.1"
 
 group = project.property("maven_group")!!
 version = "${project.property("version")}+$minecraftVersion"
@@ -46,9 +46,12 @@ loom {
 	}
 }
 
+ploceus {
+	setIntermediaryGeneration(2)
+}
+
 repositories {
 	mavenCentral()
-	maven { url = uri("https://jitpack.io") }
 }
 
 configurations {
@@ -57,13 +60,13 @@ configurations {
 
 dependencies {
 	minecraft("com.mojang:minecraft:$minecraftVersion")
-	mappings("net.ornithemc:feather:$feather")
+	mappings(ploceus.featherMappings(feather))
 
 	modImplementation("net.fabricmc:fabric-loader:${project.property("fabric_loader")}")
 
 	ploceus.dependOsl(osl)
 
-	modImplementation("com.terraformersmc:modmenu:0.3.1+mc1.8.9")
+	//modImplementation("com.terraformersmc:modmenu:0.3.1+mc1.8.9")
 
 	implementation(include(project(path = ":common", configuration = "shadow"))!!)
 
