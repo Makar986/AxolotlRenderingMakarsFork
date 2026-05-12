@@ -9,7 +9,7 @@ plugins {
 	id("io.github.p03w.machete")
 }
 
-val minecraftVersion = "26.1"
+val minecraftVersion = "26.1.2"
 val minecraftFriendly = "26.1"
 val fapiVersion = "0.144.0"
 

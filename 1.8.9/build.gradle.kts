@@ -25,7 +25,7 @@ plugins {
 
 val minecraftVersion = "1.8.9"
 val feather = "1"
-val osl = "0.17.2"
+val osl = "0.18.0"
 val lwjglVersion = "3.4.1"
 
 group = project.property("maven_group")!!
@@ -240,10 +240,6 @@ tasks.processIncludeJars.configure {
 }
 
 tasks.runClient {
-	if (project.property("native_glfw") == "true") {
-		val glfwPath = project.properties.getOrDefault("native_glfw_path", "/usr/lib/libglfw.so")
-		jvmArgs("-Dorg.lwjgl.glfw.libname=$glfwPath")
-	}
 	classpath(sourceSets.getByName("test").runtimeClasspath)
 	jvmArgs("-XX:+AllowEnhancedClassRedefinition", "-XX:+IgnoreUnrecognizedVMOptions")
 }
