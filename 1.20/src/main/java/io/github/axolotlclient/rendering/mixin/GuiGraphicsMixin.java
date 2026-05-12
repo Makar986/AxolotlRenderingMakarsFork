@@ -157,7 +157,7 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 		ExRenderPipelines.addOutlineWidth(consumer, outlineWidth);
 		consumer.endVertex();
 
-		consumer.vertex(matrix, x0, y1, z).color(colorTopLeft);
+		consumer.vertex(matrix, x0, y1, z).color(colorBottomLeft);
 		ExRenderPipelines.addRounding(consumer, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
 		ExRenderPipelines.addDimensions(consumer, 0, height, width, height);
 		ExRenderPipelines.addOutlineWidth(consumer, outlineWidth);
