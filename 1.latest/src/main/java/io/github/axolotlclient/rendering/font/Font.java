@@ -34,8 +34,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
+import com.mojang.blaze3d.GpuFormat;
+import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.systems.GpuDevice;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.FilterMode;
+import com.mojang.logging.LogUtils;
 import io.github.axolotlclient.rendering.FontRenderStates;
 import io.github.axolotlclient.rendering.RenderingCommon;
 import io.github.axolotlclient.rendering.util.ARGB;
@@ -54,7 +61,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
-import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.texture.Dumpable;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -64,6 +72,7 @@ import net.minecraft.util.*;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix3x2f;
+import org.jspecify.annotations.NullMarked;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
@@ -71,6 +80,7 @@ import org.lwjgl.util.freetype.FT_Face;
 import org.lwjgl.util.freetype.FT_MM_Var;
 import org.lwjgl.util.freetype.FT_Vector;
 import org.lwjgl.util.freetype.TT_OS2;
+import org.slf4j.Logger;
 
 import static org.lwjgl.util.freetype.FreeType.*;
 
@@ -814,7 +824,7 @@ public class Font implements Closeable {
 				style.replace(" ", "_").toLowerCase(Locale.ROOT),
 				pageIndex, size
 			));
-		var tex = new DynamicTexture(page.tex::toString, texData);
+		var tex = new FontTexture(page.tex::toString, texData);
 		Minecraft.getInstance().getTextureManager().register(page.tex, tex);
 	}
 
@@ -863,5 +873,48 @@ public class Font implements Closeable {
 	}
 
 	private record VariationAxis(boolean supported, float min, float def, float max, float tag, int strid) {
+	}
+
+	// Basically a DynamicTexture but using GpuFormat.R8_UNORM instead of RGBA8_UNORM
+	@NullMarked
+	private static class FontTexture extends AbstractTexture implements Dumpable {
+		private static final Logger LOGGER = LogUtils.getLogger();
+		private final NativeImage pixels;
+
+		FontTexture(Supplier<String> label, NativeImage pixels) {
+			this.pixels = pixels;
+			createTexture(label);
+			upload();
+		}
+
+		@Override
+		public void dumpContents(Identifier selfId, Path dir) throws IOException {
+			if (!this.pixels.isClosed()) {
+				String outputId = selfId.toDebugFileName() + ".png";
+				Path path = dir.resolve(outputId);
+				this.pixels.writeToFile(path);
+			}
+		}
+
+		private void createTexture(final Supplier<String> label) {
+			GpuDevice device = RenderSystem.getDevice();
+			this.texture = device.createTexture(label, GpuBuffer.USAGE_HINT_CLIENT_STORAGE | GpuBuffer.USAGE_MAP_READ, GpuFormat.R8_UNORM, this.pixels.getWidth(), this.pixels.getHeight(), 1, 1);
+			this.sampler = RenderSystem.getSamplerCache().getRepeat(FilterMode.NEAREST);
+			this.textureView = device.createTextureView(this.texture);
+		}
+
+		private void upload() {
+			if (this.texture != null) {
+				RenderSystem.getDevice().createCommandEncoder().writeToTexture(this.texture, this.pixels);
+			} else {
+				LOGGER.warn("Trying to upload disposed texture {}", this.getTexture().getLabel());
+			}
+		}
+
+		@Override
+		public void close() {
+			this.pixels.close();
+			super.close();
+		}
 	}
 }

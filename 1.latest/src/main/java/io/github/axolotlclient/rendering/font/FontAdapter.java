@@ -34,11 +34,9 @@ import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.font.TextRenderable;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.locale.Language;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
@@ -68,23 +66,8 @@ public class FontAdapter extends Font {
 	}
 
 	@Override
-	public void drawInBatch(String str, float x, float y, int color, boolean dropShadow, Matrix4fc pose, MultiBufferSource bufferSource, DisplayMode displayMode, int backgroundColor, int packedLightCoords) {
-		mc.font.drawInBatch(str, x, y, color, dropShadow, pose, bufferSource, displayMode, backgroundColor, packedLightCoords);
-	}
-
-	@Override
-	public void drawInBatch(Component text, float x, float y, int color, boolean drawShadow, Matrix4fc pose, MultiBufferSource bufferSource, DisplayMode mode, int backgroundColor, int packedLightCoords) {
-		mc.font.drawInBatch(text, x, y, color, drawShadow, pose, bufferSource, mode, backgroundColor, packedLightCoords);
-	}
-
-	@Override
-	public void drawInBatch(FormattedCharSequence text, float x, float y, int color, boolean drawShadow, Matrix4fc pose, MultiBufferSource bufferSource, DisplayMode mode, int backgroundColor, int packedLightCoords) {
-		mc.font.drawInBatch(text, x, y, color, drawShadow, pose, bufferSource, mode, backgroundColor, packedLightCoords);
-	}
-
-	@Override
-	public void drawInBatch8xOutline(FormattedCharSequence text, float x, float y, int color, int backgroundColor, Matrix4fc pose, MultiBufferSource bufferSource, int packedLightCoords) {
-		mc.font.drawInBatch8xOutline(text, x, y, color, backgroundColor, pose, bufferSource, packedLightCoords);
+	public PreparedText prepare8xTextOutline(FormattedCharSequence str, float x, float y, int outlineColor) {
+		return mc.font.prepare8xTextOutline(str, x, y, outlineColor);
 	}
 
 	@Override
@@ -97,7 +80,7 @@ public class FontAdapter extends Font {
 	private @NotNull PreparedText getPreparedText(float x, float y, io.github.axolotlclient.rendering.font.Font.BuiltText built, int backgroundColor) {
 		var s = 1f / mc.getWindow().getGuiScale();
 		float[] startOffset = io.github.axolotlclient.rendering.font.Font.getOffset(0, built);
-		var transform = new Matrix4f().translate(x, y-1f, 0)
+		var transform = new Matrix4f().translate(x, y - 1f, 0)
 			.scale(s, s, 1)
 			.translate(0, font.ascender(), 0)
 			.translate(-startOffset[0], -startOffset[1], 0);

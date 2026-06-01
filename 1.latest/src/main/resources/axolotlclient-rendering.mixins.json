@@ -1,7 +1,7 @@
 {
 	"required": true,
 	"package": "io.github.axolotlclient.rendering.mixin",
-	"compatibilityLevel": "JAVA_21",
+	"compatibilityLevel": "JAVA_25",
 	"client": [
 		"AbstractStringWidgetMixin",
 		"AbstractWidgetMixin",
@@ -9,7 +9,6 @@
 		"BufferBuilderAccessor",
 	  "GuiGraphicsExtractorMixin",
 	  "GuiGraphicsExtractorRenderingTextCollectorMixin",
-		"VertexFormatElementMixin",
 		"WindowMixin"
 	],
 	"injectors": {

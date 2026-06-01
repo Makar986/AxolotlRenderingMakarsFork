@@ -22,107 +22,80 @@
 
 package io.github.axolotlclient.rendering;
 
-import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-
+import com.mojang.blaze3d.GpuFormat;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormatElement;
 import io.github.axolotlclient.rendering.mixin.BufferBuilderAccessor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import org.lwjgl.system.MemoryUtil;
 
 public class ExRenderPipelines {
-	private static final MethodHandle HANDLE;
 
-	static {
-		try {
-			// We can get away with not remapping the name manually here because blaze3d isn't obfuscated anymore
-			HANDLE = MethodHandles.publicLookup().findStaticGetter(VertexFormatElement.class, "MAX_COUNT", int.class);
-		} catch (NoSuchFieldException | IllegalAccessException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	private static int nextUnusedVFEIndex() {
-		try {
-			for (int i = 0; i < (Integer) HANDLE.invoke(); i++) {
-				if (VertexFormatElement.byId(i) == null) {
-					return i;
-				}
-			}
-		} catch (Throwable ignored) {
-		}
-		throw new IllegalStateException("Not enough VertexFormatElement IDs available. " +
-			"This should not be possible unless other mods are broken.");
-	}
-
-	public static final int NUM_CUSTOM_VERTEX_FORMAT_ELEMENTS = 4;
-	private static final VertexFormatElement ROUNDING = VertexFormatElement.register(nextUnusedVFEIndex(), 0, VertexFormatElement.Type.FLOAT, false, 4);
-	private static final VertexFormatElement DIMENSIONS = VertexFormatElement.register(nextUnusedVFEIndex(), 0, VertexFormatElement.Type.FLOAT, false, 4);
-	private static final VertexFormatElement OUTLINE_WIDTH = VertexFormatElement.register(nextUnusedVFEIndex(), 0, VertexFormatElement.Type.FLOAT, false, 1);
-
+	public static final String ROUNDING_SEMANTIC_NAME = "Rounding";
+	public static final String DIMENSIONS_SEMANTIC_NAME = "Dimensions";
 	public static final RenderPipeline ROUNDED_RECT = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
 		.withLocation(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "rounded_rect"))
 		.withVertexShader(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "core/rounded_rect"))
 		.withFragmentShader(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "core/rounded_rect"))
-		.withVertexFormat(VertexFormat.builder()
-			.add("Position", VertexFormatElement.POSITION)
-			.add("Color", VertexFormatElement.COLOR)
-			.add("Rounding", ROUNDING)
-			.add("Dimensions", DIMENSIONS)
-			.build(), VertexFormat.Mode.QUADS).build());
+		.withVertexBinding(0, VertexFormat.builder(0)
+			.addAttribute(DefaultVertexFormat.POSITION_SEMANTIC_NAME, GpuFormat.RGB32_FLOAT)
+			.addAttribute(DefaultVertexFormat.COLOR_SEMANTIC_NAME, GpuFormat.RGBA8_UNORM)
+			.addAttribute(ROUNDING_SEMANTIC_NAME, GpuFormat.RGBA32_FLOAT)
+			.addAttribute(DIMENSIONS_SEMANTIC_NAME, GpuFormat.RGBA32_FLOAT)
+			.build()).build());
 
 	public static final RenderPipeline SEGMENT = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
 		.withLocation(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "segment"))
 		.withVertexShader(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "core/rounded_rect"))
 		.withFragmentShader(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "core/segment"))
-		.withVertexFormat(VertexFormat.builder()
-			.add("Position", VertexFormatElement.POSITION)
-			.add("Color", VertexFormatElement.COLOR)
-			.add("Rounding", ROUNDING)
-			.add("Dimensions", DIMENSIONS)
-			.build(), VertexFormat.Mode.QUADS).build());
+		.withVertexBinding(0, VertexFormat.builder(0)
+			.addAttribute(DefaultVertexFormat.POSITION_SEMANTIC_NAME, GpuFormat.RGB32_FLOAT)
+			.addAttribute(DefaultVertexFormat.COLOR_SEMANTIC_NAME, GpuFormat.RGBA8_UNORM)
+			.addAttribute(ROUNDING_SEMANTIC_NAME, GpuFormat.RGBA32_FLOAT)
+			.addAttribute(DIMENSIONS_SEMANTIC_NAME, GpuFormat.RGBA32_FLOAT)
+			.build()).build());
 
 	public static final RenderPipeline ROUNDED_RECT_TEX = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
 		.withLocation(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "rounded_rect_tex"))
 		.withVertexShader(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "core/rounded_rect_tex"))
 		.withFragmentShader(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "core/rounded_rect_tex"))
-		.withVertexFormat(VertexFormat.builder()
-			.add("Position", VertexFormatElement.POSITION)
-			.add("Color", VertexFormatElement.COLOR)
-			.add("UV0", VertexFormatElement.UV0)
-			.add("Rounding", ROUNDING)
-			.add("Dimensions", DIMENSIONS)
-			.build(), VertexFormat.Mode.QUADS).build());
+		.withVertexBinding(0, VertexFormat.builder(0)
+			.addAttribute(DefaultVertexFormat.POSITION_SEMANTIC_NAME, GpuFormat.RGB32_FLOAT)
+			.addAttribute(DefaultVertexFormat.COLOR_SEMANTIC_NAME, GpuFormat.RGBA8_UNORM)
+			.addAttribute(DefaultVertexFormat.UV0_SEMANTIC_NAME, GpuFormat.RG32_FLOAT)
+			.addAttribute(ROUNDING_SEMANTIC_NAME, GpuFormat.RGBA32_FLOAT)
+			.addAttribute(DIMENSIONS_SEMANTIC_NAME, GpuFormat.RGBA32_FLOAT)
+			.build()).build());
 
+	public static final String OUTLINE_WIDTH_SEMANTIC_NAME = "OutlineWidth";
 	public static final RenderPipeline ROUNDED_RECT_OUTLINE = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
 		.withLocation(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "rounded_rect_outline"))
 		.withVertexShader(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "core/rounded_rect_outline"))
 		.withFragmentShader(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "core/rounded_rect_outline"))
-		.withVertexFormat(VertexFormat.builder()
-			.add("Position", VertexFormatElement.POSITION)
-			.add("Color", VertexFormatElement.COLOR)
-			.add("Rounding", ROUNDING)
-			.add("Dimensions", DIMENSIONS)
-			.add("OutlineWidth", OUTLINE_WIDTH)
-			.build(), VertexFormat.Mode.QUADS).build());
+		.withVertexBinding(0, VertexFormat.builder(0)
+			.addAttribute(DefaultVertexFormat.POSITION_SEMANTIC_NAME, GpuFormat.RGB32_FLOAT)
+			.addAttribute(DefaultVertexFormat.COLOR_SEMANTIC_NAME, GpuFormat.RGBA8_UNORM)
+			.addAttribute(ROUNDING_SEMANTIC_NAME, GpuFormat.RGBA32_FLOAT)
+			.addAttribute(DIMENSIONS_SEMANTIC_NAME, GpuFormat.RGBA32_FLOAT)
+			.addAttribute(OUTLINE_WIDTH_SEMANTIC_NAME, GpuFormat.R32_FLOAT)
+			.build()).build());
 
 	public static final RenderPipeline ROUNDED_RECT_TEX_OUTLINE = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
 		.withLocation(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "rounded_rect_tex_outline"))
 		.withVertexShader(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "core/rounded_rect_tex_outline"))
 		.withFragmentShader(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "core/rounded_rect_tex_outline"))
-		.withVertexFormat(VertexFormat.builder()
-			.add("Position", VertexFormatElement.POSITION)
-			.add("Color", VertexFormatElement.COLOR)
-			.add("UV0", VertexFormatElement.UV0)
-			.add("Rounding", ROUNDING)
-			.add("Dimensions", DIMENSIONS)
-			.add("OutlineWidth", OUTLINE_WIDTH)
-			.build(), VertexFormat.Mode.QUADS).build());
+		.withVertexBinding(0, VertexFormat.builder(0)
+			.addAttribute(DefaultVertexFormat.POSITION_SEMANTIC_NAME, GpuFormat.RGB32_FLOAT)
+			.addAttribute(DefaultVertexFormat.COLOR_SEMANTIC_NAME, GpuFormat.RGBA8_UNORM)
+			.addAttribute(DefaultVertexFormat.UV0_SEMANTIC_NAME, GpuFormat.RG32_FLOAT)
+			.addAttribute(ROUNDING_SEMANTIC_NAME, GpuFormat.RGBA32_FLOAT)
+			.addAttribute(DIMENSIONS_SEMANTIC_NAME, GpuFormat.RGBA32_FLOAT)
+			.addAttribute(OUTLINE_WIDTH_SEMANTIC_NAME, GpuFormat.R32_FLOAT)
+			.build()).build());
 
 	public static final RenderPipeline FONT = RenderPipelines.register(RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
 		.withLocation(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "font"))
@@ -131,7 +104,7 @@ public class ExRenderPipelines {
 		.build());
 
 	public static void addRounding(VertexConsumer consumer, float tl, float bl, float br, float tr) {
-		var offset = beginElement(consumer, ROUNDING);
+		var offset = beginElement(consumer, ROUNDING_SEMANTIC_NAME);
 		if (offset != -1L) {
 			MemoryUtil.memPutFloat(offset, br);
 			MemoryUtil.memPutFloat(offset + 4L, tr);
@@ -141,7 +114,7 @@ public class ExRenderPipelines {
 	}
 
 	public static void addDimensions(VertexConsumer consumer, float relX, float relY, float width, float height) {
-		var offset = beginElement(consumer, DIMENSIONS);
+		var offset = beginElement(consumer, DIMENSIONS_SEMANTIC_NAME);
 		if (offset != -1L) {
 			MemoryUtil.memPutFloat(offset, relX);
 			MemoryUtil.memPutFloat(offset + 4L, relY);
@@ -151,16 +124,21 @@ public class ExRenderPipelines {
 	}
 
 	public static void addOutlineWidth(VertexConsumer consumer, float outlineWidth) {
-		var offset = beginElement(consumer, OUTLINE_WIDTH);
+		var offset = beginElement(consumer, OUTLINE_WIDTH_SEMANTIC_NAME);
 		if (offset != -1) {
 			MemoryUtil.memPutFloat(offset, outlineWidth);
 		}
 	}
 
-	private static long beginElement(VertexConsumer consumer, VertexFormatElement element) {
+	private static long beginElement(VertexConsumer consumer, String elementName) {
 		if (!(consumer instanceof BufferBuilder builder)) {
 			throw new IllegalArgumentException("Not a BufferBuilder!");
 		}
-		return ((BufferBuilderAccessor) builder).begin(element);
+		var element = ((BufferBuilderAccessor) builder).getFormat().getElement(elementName);
+		if (element == null) {
+			return -1;
+		}
+		var vertexPointer = ((BufferBuilderAccessor) builder).getVertexPointer();
+		return vertexPointer > -1 ? vertexPointer+element.offset() : vertexPointer;
 	}
 }

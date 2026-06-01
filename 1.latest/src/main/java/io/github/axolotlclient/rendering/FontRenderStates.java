@@ -25,6 +25,8 @@ package io.github.axolotlclient.rendering;
 import java.util.List;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import io.github.axolotlclient.rendering.font.Font;
 import net.minecraft.client.Minecraft;
@@ -59,7 +61,7 @@ public final class FontRenderStates {
 		@Override
 		public @NotNull TextureSetup textureSetup() {
 			var tex = Minecraft.getInstance().getTextureManager().getTexture(this.tex);
-			return TextureSetup.singleTexture(tex.getTextureView(), tex.getSampler());
+			return TextureSetup.singleTexture(tex.getTextureView(), RenderSystem.getSamplerCache().getClampToEdge(FilterMode.NEAREST));
 		}
 
 		@Override
