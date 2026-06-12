@@ -27,7 +27,7 @@ import java.io.UncheckedIOException;
 
 import net.minecraft.resource.Identifier;
 import net.ornithemc.osl.lifecycle.api.client.MinecraftClientEvents;
-import net.ornithemc.osl.resource.loader.api.ResourceLoaderEvents;
+import net.ornithemc.osl.resource.loader.api.client.ClientResourceLoaderEvents;
 
 public class ExRenderPipelines {
 
@@ -39,7 +39,7 @@ public class ExRenderPipelines {
 		SEGMENT_PROGRAM;
 
 	public static void init() {
-		ResourceLoaderEvents.END_RESOURCE_RELOAD.register(() -> {
+		ClientResourceLoaderEvents.END_RESOURCE_RELOAD.register((manager, ctx) -> {
 			ShaderManager.safeClose(ROUNDED_RECT_PROGRAM, ROUNDED_RECT_TEX_PROGRAM,
 				ROUNDED_RECT_OUTLINE_PROGRAM, ROUNDED_RECT_TEX_OUTLINE_PROGRAM,
 				FONT_PROGRAM, SEGMENT_PROGRAM);

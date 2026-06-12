@@ -25,14 +25,14 @@ package io.github.axolotlclient.rendering.svg;
 import java.nio.ByteBuffer;
 import java.util.concurrent.CompletableFuture;
 
-import net.minecraft.client.render.texture.TextureUtil;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import lombok.extern.slf4j.Slf4j;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.render.texture.DynamicTexture;
+import net.minecraft.client.render.texture.TextureUtil;
 import net.minecraft.resource.Identifier;
-import net.ornithemc.osl.resource.loader.api.ResourceLoaderEvents;
+import net.ornithemc.osl.resource.loader.api.client.ClientResourceLoaderEvents;
 
 @Slf4j
 public class SVGCache {
@@ -46,7 +46,7 @@ public class SVGCache {
 	private final Minecraft minecraft = Minecraft.getInstance();
 
 	private SVGCache() {
-		ResourceLoaderEvents.END_RESOURCE_RELOAD.register(cache::clear);
+		ClientResourceLoaderEvents.END_RESOURCE_RELOAD.register((manager, ctx) -> cache.clear());
 	}
 
 	public Identifier load(Identifier loc, float w, float h) {

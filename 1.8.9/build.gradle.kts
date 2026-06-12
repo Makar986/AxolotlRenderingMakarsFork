@@ -25,7 +25,7 @@ plugins {
 
 val minecraftVersion = "1.8.9"
 val feather = "1"
-val osl = "0.18.0"
+val osl = "0.19.0"
 val lwjglVersion = "3.4.1"
 
 group = project.property("maven_group")!!
