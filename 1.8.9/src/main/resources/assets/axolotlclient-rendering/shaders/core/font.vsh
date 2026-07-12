@@ -1,10 +1,10 @@
-#version 130
+#version 120
 
 uniform mat4 ModelViewMat;
 uniform mat4 ProjMat;
 
-out vec4 vertexColor;
-out vec2 texCoord0;
+varying vec4 vertexColor;
+varying vec2 texCoord0;
 
 void main() {
     gl_Position =  gl_ModelViewProjectionMatrix * gl_Vertex;

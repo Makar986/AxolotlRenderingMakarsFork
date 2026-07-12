@@ -1,14 +1,14 @@
-#version 130
+#version 120
 
-uniform mat4 Dimensions;
+uniform vec4 Dimensions;
 uniform vec4 Rounding;
 uniform float OutlineWidth;
 
-out float outlineWidth;
-out vec2 texCoord0;
-out vec4 vertexColor;
-out vec4 rounding;
-out vec4 dimensions;
+varying float outlineWidth;
+varying vec2 texCoord0;
+varying vec4 vertexColor;
+varying vec4 rounding;
+varying vec4 dimensions;
 
 void main() {
     gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;
@@ -16,6 +16,6 @@ void main() {
     texCoord0 = vec2(gl_MultiTexCoord0.xy);
     vertexColor = gl_Color;
     rounding = Rounding;
-    dimensions = Dimensions[gl_VertexID];
+    dimensions = vec4(gl_Vertex.xy - Dimensions.xy, Dimensions.zw);
     outlineWidth = OutlineWidth;
 }
