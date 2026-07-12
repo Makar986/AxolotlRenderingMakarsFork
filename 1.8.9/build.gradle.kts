@@ -51,7 +51,10 @@ ploceus {
 }
 
 repositories {
-	mavenCentral()
+	exclusiveContent {
+		forRepository { mavenCentral() }
+		filter { includeGroup("org.lwjgl") }
+	}
 }
 
 configurations {
