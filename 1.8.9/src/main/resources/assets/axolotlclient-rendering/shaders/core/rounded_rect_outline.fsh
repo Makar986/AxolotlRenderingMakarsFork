@@ -1,11 +1,9 @@
-#version 130
+#version 120
 
-in float outlineWidth;
-in vec4 rounding;
-in vec4 dimensions;
-in vec4 vertexColor;
-
-out vec4 fragColor;
+varying float outlineWidth;
+varying vec4 rounding;
+varying vec4 dimensions;
+varying vec4 vertexColor;
 
 // https://www.shadertoy.com/view/4llXD7, MIT License
 float sdRoundBox(in vec2 pos, in vec2 halfDim, in vec4 radius) {
@@ -25,5 +23,5 @@ void main() {
 	if (color.a == 0.0) {
 		discard;
 	}
-	fragColor = color;
+	gl_FragColor = color;
 }

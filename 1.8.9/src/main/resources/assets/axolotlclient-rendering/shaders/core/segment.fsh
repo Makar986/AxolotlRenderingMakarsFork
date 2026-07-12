@@ -1,10 +1,8 @@
-#version 130
+#version 120
 
-in vec4 rounding;
-in vec4 dimensions;
-in vec4 vertexColor;
-
-out vec4 fragColor;
+varying vec4 rounding;
+varying vec4 dimensions;
+varying vec4 vertexColor;
 
 // https://www.shadertoy.com/view/3tdSDj, MIT License
 float sdSegment( in vec2 p, in vec2 a, in vec2 b, float r) {
@@ -25,5 +23,5 @@ void main() {
 	if (color.a == 0.0) {
 		discard;
 	}
-	fragColor = color;
+	gl_FragColor = color;
 }

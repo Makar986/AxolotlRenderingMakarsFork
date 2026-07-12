@@ -1,13 +1,11 @@
-#version 130
+#version 120
 
 uniform sampler2D Sampler0;
 
-in vec2 texCoord0;
-in vec4 vertexColor;
-in vec4 rounding;
-in vec4 dimensions;
-
-out vec4 fragColor;
+varying vec2 texCoord0;
+varying vec4 vertexColor;
+varying vec4 rounding;
+varying vec4 dimensions;
 
 // https://www.shadertoy.com/view/4llXD7, MIT License
 float sdRoundBox(in vec2 pos, in vec2 halfDim, in vec4 radius) {
@@ -27,5 +25,5 @@ void main() {
 	if (color.a == 0.0) {
 		discard;
 	}
-	fragColor = color;
+	gl_FragColor = color;
 }

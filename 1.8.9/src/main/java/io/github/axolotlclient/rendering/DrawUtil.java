@@ -23,7 +23,6 @@
 package io.github.axolotlclient.rendering;
 
 import net.minecraft.client.render.platform.GlStateManager;
-import net.minecraft.client.render.platform.MemoryTracker;
 import net.minecraft.client.render.vertex.BufferBuilder;
 import net.minecraft.client.render.vertex.DefaultVertexFormat;
 import net.minecraft.client.render.vertex.Tesselator;
@@ -105,13 +104,7 @@ public class DrawUtil implements GuiGraphicsExtension {
 			/*radiusTopRight*/ 0,
 			/*radiusBottomLeft*/ 0,
 			/*radiusTopLeft*/ radius);
-		var buf = MemoryTracker.createFloatBuffer(16);
-		/*buf.put(new float[]{
-			width, 0, width, height,
-			0, 0, width, height,
-			0, height, width, height,
-			width, height, width, height
-		});*/
+		shader.setUniform("Dimensions", x0f, y0f, width, height);
 		Tesselator tesselator = Tesselator.getInstance();
 		BufferBuilder bufferBuilder = tesselator.getBuffer();
 		GlStateManager.enableBlend();
@@ -128,53 +121,21 @@ public class DrawUtil implements GuiGraphicsExtension {
 		Runnable addX0Y1 = () -> bufferBuilder.vertex(x0f, y1f, 0.0).color((colorBL >> 16 & 0xFF) / 255f, (colorBL >> 8 & 0xFF) / 255f, (colorBL & 0xFF) / 255f, (colorBL >> 24 & 0xFF) / 255f).nextVertex();
 		Runnable addX1Y1 = () -> bufferBuilder.vertex(x1f, y1f, 0.0).color((colorBR >> 16 & 0xFF) / 255f, (colorBR >> 8 & 0xFF) / 255f, (colorBR & 0xFF) / 255f, (colorBR >> 24 & 0xFF) / 255f).nextVertex();
 		if (x0 <= x1 && y0 <= y1) {
-			buf.put(new float[]{
-				width, 0, width, height,
-				0, 0, width, height,
-				0, height, width, height,
-				width, height, width, height
-			});
-			buf.flip();
-			shader.setUniform("Dimensions", buf);
 			addX1Y0.run();
 			addX0Y0.run();
 			addX0Y1.run();
 			addX1Y1.run();
 		} else if (x0 > x1 && y0 <= y1) {
-			buf.put(new float[]{
-				width, height, width, height,
-				0, height, width, height,
-				0, 0, width, height,
-				width, 0, width, height
-			});
-			buf.flip();
-			shader.setUniform("Dimensions", buf);
 			addX1Y1.run();
 			addX0Y1.run();
 			addX0Y0.run();
 			addX1Y0.run();
 		} else if (x0 <= x1) {
-			buf.put(new float[]{
-				0, height, width, height,
-				0, 0, width, height,
-				width, 0, width, height,
-				width, height, width, height
-			});
-			buf.flip();
-			shader.setUniform("Dimensions", buf);
 			addX0Y1.run();
 			addX0Y0.run();
 			addX1Y0.run();
 			addX1Y1.run();
 		} else {
-			buf.put(new float[]{
-				0, 0, width, height,
-				0, height, width, height,
-				width, height, width, height,
-				width, 0, width, height,
-			});
-			buf.flip();
-			shader.setUniform("Dimensions", buf);
 			addX0Y0.run();
 			addX0Y1.run();
 			addX1Y1.run();
@@ -197,15 +158,7 @@ public class DrawUtil implements GuiGraphicsExtension {
 			/*radiusTopRight*/ roundingPxTopRight,
 			/*radiusBottomLeft*/ roundingPxBottomLeft,
 			/*radiusTopLeft*/ roundingPxTopLeft);
-		var buf = MemoryTracker.createFloatBuffer(16);
-		buf.put(new float[]{
-			width, 0, width, height,
-			0, 0, width, height,
-			0, height, width, height,
-			width, height, width, height
-		});
-		buf.flip();
-		shader.setUniform("Dimensions", buf);
+		shader.setUniform("Dimensions", Math.min(x0, x1), Math.min(y0, y1), width, height);
 		GlStateManager.color4f(1, 1, 1, 1);
 		fill(x0, y0, x1, y1, colorTopLeft, colorBottomLeft, colorBottomRight, colorTopRight);
 		shader.unbind();
@@ -222,15 +175,7 @@ public class DrawUtil implements GuiGraphicsExtension {
 			/*radiusTopRight*/ roundingPxTopRight,
 			/*radiusBottomLeft*/ roundingPxBottomLeft,
 			/*radiusTopLeft*/ roundingPxTopLeft);
-		var buf = MemoryTracker.createFloatBuffer(16);
-		buf.put(new float[]{
-			width, 0, width, height,
-			0, 0, width, height,
-			0, height, width, height,
-			width, height, width, height
-		});
-		buf.flip();
-		shader.setUniform("Dimensions", buf);
+		shader.setUniform("Dimensions", Math.min(x0, x1), Math.min(y0, y1), width, height);
 		shader.setUniform("OutlineWidth", outlineWidth);
 		GlStateManager.color4f(1, 1, 1, 1);
 		fill(x0, y0, x1, y1, colorTopLeft, colorBottomLeft, colorBottomRight, colorTopRight);
@@ -262,15 +207,7 @@ public class DrawUtil implements GuiGraphicsExtension {
 			/*radiusTopRight*/ roundingPxTopRight,
 			/*radiusBottomLeft*/ roundingPxBottomLeft,
 			/*radiusTopLeft*/ roundingPxTopLeft);
-		var buf = MemoryTracker.createFloatBuffer(16);
-		buf.put(new float[]{
-			width, 0, width, height,
-			0, 0, width, height,
-			0, height, width, height,
-			width, height, width, height
-		});
-		buf.flip();
-		shader.setUniform("Dimensions", buf);
+		shader.setUniform("Dimensions", Math.min(x0, x1), Math.min(y0, y1), width, height);
 		GlStateManager.color4f((color >> 16 & 0xFF) / 255f, (color >> 8 & 0xFF) / 255f, (color & 0xFF) / 255f, (color >> 24 & 0xFF) / 255f);
 		Tesselator tesselator = Tesselator.getInstance();
 		BufferBuilder bufferBuilder = tesselator.getBuffer();
@@ -308,15 +245,7 @@ public class DrawUtil implements GuiGraphicsExtension {
 			/*radiusTopRight*/ roundingPxTopRight,
 			/*radiusBottomLeft*/ roundingPxBottomLeft,
 			/*radiusTopLeft*/ roundingPxTopLeft);
-		var buf = MemoryTracker.createFloatBuffer(16);
-		buf.put(new float[]{
-			width, 0, width, height,
-			0, 0, width, height,
-			0, height, width, height,
-			width, height, width, height
-		});
-		buf.flip();
-		shader.setUniform("Dimensions", buf);
+		shader.setUniform("Dimensions", Math.min(x0, x1), Math.min(y0, y1), width, height);
 		shader.setUniform("OutlineWidth", outlineWidth);
 		GlStateManager.color4f((color >> 16 & 0xFF) / 255f, (color >> 8 & 0xFF) / 255f, (color & 0xFF) / 255f, (color >> 24 & 0xFF) / 255f);
 		Tesselator tesselator = Tesselator.getInstance();
