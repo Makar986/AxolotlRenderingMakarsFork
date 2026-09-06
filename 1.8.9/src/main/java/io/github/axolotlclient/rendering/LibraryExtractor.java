@@ -24,17 +24,12 @@ package io.github.axolotlclient.rendering;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.function.Consumer;
 
 import lombok.extern.slf4j.Slf4j;
 import net.fabricmc.loader.api.FabricLoader;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.kamranzafar.jtar.TarEntry;
 import org.kamranzafar.jtar.TarInputStream;
 import org.tukaani.xz.XZInputStream;
@@ -47,15 +42,17 @@ public class LibraryExtractor {
 	public void run(Consumer<Path> classpathAdder) {
 		if (FabricLoader.getInstance().isDevelopmentEnvironment()) return;
 		try {
-			var out = Files.createTempDirectory(MODID+"_dependencies");
-			Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-				try {
-					recursiveDelete(out);
-				} catch (IOException e) {
-					log.warn("Failed to delete temp libraries dir!", e);
+			var container = FabricLoader.getInstance().getModContainer(MODID).orElseThrow();
+			var version = container.getMetadata().getVersion().getFriendlyString();
+			var out = Path.of(System.getProperty("java.io.tmpdir"), MODID+"_"+version+"_dependencies");
+			if (Files.exists(out)) {
+				try (var libraries = Files.list(out)) {
+					libraries.forEach(classpathAdder);
 				}
-			}));
-			var path = FabricLoader.getInstance().getModContainer(MODID).orElseThrow(IOException::new).findPath("libraries.tar.xz").orElseThrow(IOException::new);
+				return;
+			}
+			Files.createDirectories(out);
+			var path = container.findPath("libraries.tar.xz").orElseThrow(IOException::new);
 			try (var in = Files.newInputStream(path)) {
 
 				try (var buf = new BufferedInputStream(in);
@@ -74,23 +71,5 @@ public class LibraryExtractor {
 		} catch (IOException e) {
 			log.error("Failed to extract libraries, the game is likely to crash!", e);
 		}
-	}
-
-	private void recursiveDelete(Path p) throws IOException {
-		if (!Files.exists(p)) return;
-		Files.walkFileTree(p, new SimpleFileVisitor<>() {
-			@Override
-			public @NotNull FileVisitResult visitFile(@NotNull Path file, @NotNull BasicFileAttributes attrs) throws IOException {
-				Files.deleteIfExists(file);
-				return super.visitFile(file, attrs);
-			}
-
-			@Override
-			public @NotNull FileVisitResult postVisitDirectory(@NotNull Path dir, @Nullable IOException exc) throws IOException {
-				Files.deleteIfExists(dir);
-				return super.postVisitDirectory(dir, exc);
-			}
-		});
-		Files.deleteIfExists(p);
 	}
 }

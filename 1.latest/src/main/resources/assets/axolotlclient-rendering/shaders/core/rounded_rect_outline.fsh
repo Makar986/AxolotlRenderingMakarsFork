@@ -1,13 +1,14 @@
 #version 330
+#extension GL_ARB_separate_shader_objects : require
 
-#moj_import <minecraft:dynamictransforms.glsl>
+#include <minecraft:dynamictransforms.glsl>
 
-in float outlineWidth;
-in vec4 rounding;
-in vec4 dimensions;
-in vec4 vertexColor;
+layout(location = 3) in float outlineWidth;
+layout(location = 2) in vec4 vertexColor;
+layout(location = 1) in vec4 dimensions;
+layout(location = 0) in vec4 rounding;
 
-out vec4 fragColor;
+layout(location = 0) out vec4 fragColor;
 
 // https://www.shadertoy.com/view/4llXD7, MIT License
 float sdRoundBox(in vec2 pos, in vec2 halfDim, in vec4 radius) {
