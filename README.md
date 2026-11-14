@@ -48,11 +48,19 @@ Fork of [AxolotlClient-rendering](https://codeberg.org/AxolotlClient/AxolotlClie
 
 ---
 
-## Getting Started
+## Supported Versions
 
-### 1. JitPack (Easiest)
+| Minecraft Version | Supported Loaders | Subproject | JitPack Artifact |
+|---|---|---|---|
+| **1.21.1** | **NeoForge**, **Fabric** | `:1.21` | `com.github.Makar986.AxolotlRenderingMakarsFork:1.21:v1.0.0` |
+| **1.20.1** | **Forge**, **Fabric** | `:1.20` | `com.github.Makar986.AxolotlRenderingMakarsFork:1.20:v1.0.0` |
+| **1.8.9** | **Forge**, **Fabric** | `:1.8.9` | `com.github.Makar986.AxolotlRenderingMakarsFork:1.8.9:v1.0.0` |
 
-Add the JitPack repository and the dependency to your `build.gradle` or `build.gradle.kts`:
+---
+
+## Getting Started (JitPack)
+
+Add the JitPack repository and the desired version artifact to your `build.gradle` or `build.gradle.kts`:
 
 #### Gradle (Kotlin DSL)
 ```kotlin
@@ -61,36 +69,63 @@ repositories {
 }
 
 dependencies {
-    // Replace <mc-version> with 1.8.9, 1.20, 1.21, etc.
-    implementation("com.github.Makar986:AxolotlRenderingMakarsFork:1.0.0")
+    // NeoForge & Fabric 1.21.1:
+    implementation("com.github.Makar986.AxolotlRenderingMakarsFork:1.21:v1.0.0")
+
+    // Or Forge & Fabric 1.20.1:
+    // implementation("com.github.Makar986.AxolotlRenderingMakarsFork:1.20:v1.0.0")
+
+    // Or Forge & Fabric 1.8.9:
+    // implementation("com.github.Makar986.AxolotlRenderingMakarsFork:1.8.9:v1.0.0")
 }
 ```
 
-#### Gradle (Groovy)
+#### Gradle (Groovy DSL)
 ```groovy
 repositories {
     maven { url 'https://jitpack.io' }
 }
 
 dependencies {
-    implementation 'com.github.Makar986:AxolotlRenderingMakarsFork:1.0.0'
+    // NeoForge & Fabric 1.21.1:
+    implementation 'com.github.Makar986.AxolotlRenderingMakarsFork:1.21:v1.0.0'
+
+    // Or Forge & Fabric 1.20.1:
+    // implementation 'com.github.Makar986.AxolotlRenderingMakarsFork:1.20:v1.0.0'
+
+    // Or Forge & Fabric 1.8.9:
+    // implementation 'com.github.Makar986.AxolotlRenderingMakarsFork:1.8.9:v1.0.0'
 }
 ```
 
-### 2. GitHub Packages Maven
+---
 
-```kotlin
-repositories {
-    maven {
-        name = "GitHubPackages"
-        url = uri("https://maven.pkg.github.com/Makar986/AxolotlRenderingMakarsFork")
-        credentials {
-            username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
-            password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
-        }
-    }
-}
+## Testing & Launching
+
+### 1. In-game HUD Test Client (Instant Test)
+The repository includes a preconfigured test mod (`RenderingTestMod`) with an in-game HUD overlay displaying all features (ReGlass LiquidGlass, GaussianBlur, JSVG icons, and MSDF font rendering):
+
+```bash
+# Launch 1.21.1 client test:
+./gradlew :1.21:runClient
+
+# Launch 1.20.1 client test:
+./gradlew :1.20:runClient
+
+# Launch 1.8.9 client test:
+./gradlew :1.8.9:runClient
 ```
+
+### 2. Testing on NeoForge 1.21.1 & Forge Profiles
+Every built jar already includes loader metadata (`META-INF/neoforge.mods.toml` for NeoForge, `META-INF/mods.toml` for Forge, and `mcmod.info` for 1.8.9 Forge) along with Mixin configs:
+
+1. Build the mod JAR:
+   ```bash
+   ./gradlew :1.21:build
+   ```
+2. Take the resulting jar from `1.21/build/libs/` (e.g. `axolotlclient-rendering-1.0.0+1.21.1.jar`).
+3. Place it into the `mods/` directory of your **NeoForge 1.21.1** profile in Prism Launcher, Modrinth App, CurseForge, or the Minecraft Launcher. NeoForge will detect and load it automatically.
+4. For Forge 1.20.1 or Forge 1.8.9, follow the same steps using `:1.20:build` or `:1.8.9:build`.
 
 ---
 

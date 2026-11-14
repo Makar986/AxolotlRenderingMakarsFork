@@ -20,8 +20,8 @@ include 'common'
 include '1.8.9'
 include '1.20'
 include '1.21'
-include '1.latest'
 
-// Optional extra subprojects (experimental legacy branches):
-// include '1.12.2'
+// Development/experimental subprojects:
+// include '1.latest' // Minecraft 26w snapshot (requires Java 25)
 // include '1.16.5'
+// include '1.12.2'
