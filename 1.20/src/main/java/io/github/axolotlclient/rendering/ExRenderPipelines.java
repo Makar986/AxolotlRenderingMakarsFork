@@ -35,7 +35,7 @@ public class ExRenderPipelines {
 	private static final VertexFormatElement OUTLINE_WIDTH = new VertexFormatElement(0, VertexFormatElement.Type.FLOAT, VertexFormatElement.Usage.GENERIC, 1);
 
 	@ApiStatus.Internal
-	public static ShaderInstance SEGMENT_SHADER, ROUNDED_RECT_SHADER, ROUNDED_RECT_TEX_SHADER, ROUNDED_RECT_OUTLINE_SHADER, ROUNDED_RECT_TEX_OUTLINE_SHADER, FONT_SHADER, GAUSSIAN_BLUR_SHADER, LIQUID_GLASS_SHADER;
+	public static ShaderInstance SEGMENT_SHADER, ROUNDED_RECT_SHADER, ROUNDED_RECT_TEX_SHADER, ROUNDED_RECT_OUTLINE_SHADER, ROUNDED_RECT_TEX_OUTLINE_SHADER, FONT_SHADER, GAUSSIAN_BLUR_SHADER, LIQUID_GLASS_SHADER, MSDF_FONT_SHADER;
 
 	public static final VertexFormat ROUNDED_RECT_FORMAT = new VertexFormat(ImmutableMap.<String, VertexFormatElement>builder()
 		.put("Position", DefaultVertexFormat.ELEMENT_POSITION)

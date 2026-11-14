@@ -27,7 +27,9 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import io.github.axolotlclient.rendering.ExRenderPipelines;
 import io.github.axolotlclient.rendering.GuiGraphicsExtension;
+import io.github.axolotlclient.rendering.LiquidGlassStyle;
 import io.github.axolotlclient.rendering.font.Font;
+import io.github.axolotlclient.rendering.font.msdf.MsdfFont;
 import io.github.axolotlclient.rendering.svg.SVGCache;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -364,7 +366,17 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 
 	@Override
 	public void axolotlclient_rendering$liquidGlass(float x, float y, float width, float height, float rounding, int tintColor, int borderColor, float borderWidth, float blurRadius, float distortion) {
-		if (ExRenderPipelines.LIQUID_GLASS_SHADER == null) return;
+		LiquidGlassStyle style = LiquidGlassStyle.create()
+			.tint(tintColor, ((tintColor >> 24) & 0xFF) / 255.0f)
+			.border(borderColor, borderWidth)
+			.blurRadius(blurRadius)
+			.refractionDispersion(distortion > 0 ? distortion * 1.5f : 7.0f);
+		this.axolotlclient_rendering$liquidGlass(x, y, width, height, rounding, style);
+	}
+
+	@Override
+	public void axolotlclient_rendering$liquidGlass(float x, float y, float width, float height, float rounding, LiquidGlassStyle style) {
+		if (ExRenderPipelines.LIQUID_GLASS_SHADER == null || style == null) return;
 		var mc = Minecraft.getInstance();
 		var renderTarget = mc.getMainRenderTarget();
 		if (renderTarget == null) return;
@@ -374,30 +386,63 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 		RenderSystem.defaultBlendFunc();
 		RenderSystem.setShader(() -> ExRenderPipelines.LIQUID_GLASS_SHADER);
 
+		var shader = ExRenderPipelines.LIQUID_GLASS_SHADER;
+		if (shader.getUniform("Optics0") != null) {
+			shader.getUniform("Optics0").set(style.getRefThickness(), style.getRefFactor(), style.getRefDispersion(), style.getRefFresnelRange());
+		}
+		if (shader.getUniform("Optics1") != null) {
+			shader.getUniform("Optics1").set(style.getRefFresnelHardness(), style.getRefFresnelFactor(), style.getGlareRange(), style.getGlareHardness());
+		}
+		if (shader.getUniform("Border") != null) {
+			int bc = style.getBorderColor();
+			float br = ((bc >> 16) & 0xFF) / 255.0f;
+			float bg = ((bc >> 8) & 0xFF) / 255.0f;
+			float bb = (bc & 0xFF) / 255.0f;
+			shader.getUniform("Border").set(style.getBorderWidth(), br, bg, bb);
+		}
+		if (shader.getUniform("Extra") != null) {
+			shader.getUniform("Extra").set(style.getBlurRadius(), style.getShadowExpand(), style.getShadowFactor(), style.getShadowColorAlpha());
+		}
+
 		Matrix4f matrix4f = this.pose.last().pose();
 		BufferBuilder consumer = Tesselator.getInstance().getBuilder();
 		consumer.begin(VertexFormat.Mode.QUADS, ExRenderPipelines.ROUNDED_RECT_TEX_FORMAT);
 
-		consumer.vertex(matrix4f, x, y, 0).uv(0f, 1f).color(tintColor);
+		int tint = style.getTintColor();
+		if ((tint & 0xFF000000) == 0 && style.getTintAlpha() > 0.0f) {
+			tint |= ((int) (style.getTintAlpha() * 255.0f) << 24);
+		}
+
+		consumer.vertex(matrix4f, x, y, 0).uv(0f, 1f).color(tint);
 		ExRenderPipelines.addRounding(consumer, rounding, rounding, rounding, rounding);
 		ExRenderPipelines.addDimensions(consumer, 0, 0, width, height);
 		consumer.endVertex();
 
-		consumer.vertex(matrix4f, x, y + height, 0).uv(0f, 0f).color(tintColor);
+		consumer.vertex(matrix4f, x, y + height, 0).uv(0f, 0f).color(tint);
 		ExRenderPipelines.addRounding(consumer, rounding, rounding, rounding, rounding);
 		ExRenderPipelines.addDimensions(consumer, 0, height, width, height);
 		consumer.endVertex();
 
-		consumer.vertex(matrix4f, x + width, y + height, 0).uv(1f, 0f).color(tintColor);
+		consumer.vertex(matrix4f, x + width, y + height, 0).uv(1f, 0f).color(tint);
 		ExRenderPipelines.addRounding(consumer, rounding, rounding, rounding, rounding);
 		ExRenderPipelines.addDimensions(consumer, width, height, width, height);
 		consumer.endVertex();
 
-		consumer.vertex(matrix4f, x + width, y, 0).uv(1f, 1f).color(tintColor);
+		consumer.vertex(matrix4f, x + width, y, 0).uv(1f, 1f).color(tint);
 		ExRenderPipelines.addRounding(consumer, rounding, rounding, rounding, rounding);
 		ExRenderPipelines.addDimensions(consumer, width, 0, width, height);
 		consumer.endVertex();
 
 		BufferUploader.drawWithShader(consumer.end());
+	}
+
+	@Override
+	public void axolotlclient_rendering$drawMsdfString(MsdfFont font, String text, float x, float y, float size, int color, boolean dropShadow) {
+		if (font == null || text == null || text.isEmpty()) return;
+		if (dropShadow) {
+			font.drawWithShadow((GuiGraphics) (Object) this, text, x, y, size, color);
+		} else {
+			font.draw((GuiGraphics) (Object) this, text, x, y, size, color);
+		}
 	}
 }

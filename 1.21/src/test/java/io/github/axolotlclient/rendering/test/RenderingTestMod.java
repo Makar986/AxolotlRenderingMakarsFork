@@ -22,14 +22,22 @@
 
 package io.github.axolotlclient.rendering.test;
 
+import io.github.axolotlclient.rendering.LiquidGlassStyle;
 import io.github.axolotlclient.rendering.font.DefaultFont;
+import io.github.axolotlclient.rendering.font.msdf.DefaultMsdfFont;
+import io.github.axolotlclient.rendering.font.msdf.MsdfFont;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
+import java.io.File;
+
 public class RenderingTestMod implements ClientModInitializer {
+
+	private static MsdfFont rubikFont = null;
+	private static boolean rubikAttempted = false;
 
 	@Override
 	public void onInitializeClient() {
@@ -95,8 +103,40 @@ public class RenderingTestMod implements ClientModInitializer {
 			// GaussianBlur demo
 			guiGraphics.axolotlclient_rendering$roundedGaussianBlur(400, 50, 120, 80, 10f, 6f, 3.5f);
 
-			// LiquidGlass demo
-			guiGraphics.axolotlclient_rendering$liquidGlass(400, 150, 140, 90, 12f, 0x25FFFFFF, 0x55FFFFFF, 1.2f, 5.0f, 4.0f);
+			// LiquidGlass demo (ReGlass physics: Snell refraction, chromatic dispersion, Fresnel & glare)
+			LiquidGlassStyle glassStyle = LiquidGlassStyle.create()
+				.tint(0xFFFFFF, 0.15f)
+				.refractionThickness(13.15f)
+				.refractionFactor(1.4f)
+				.refractionDispersion(7.0f)
+				.fresnel(39.71f, 0.2f, 0.2f)
+				.glare(30.0f, 0.2f, 0.9f)
+				.blurRadius(8.0f)
+				.border(0x80FFFFFF, 1.2f);
+			guiGraphics.axolotlclient_rendering$liquidGlass(400, 150, 180, 95, 14f, glassStyle);
+
+			// MSDF Font demo (Montserrat default built-in)
+			var msdfFont = DefaultMsdfFont.montserrat();
+			if (msdfFont != null) {
+				guiGraphics.axolotlclient_rendering$drawMsdfString(msdfFont, "MSDF Montserrat Font", 410, 165, 14f, 0xFFFFFFFF, true);
+				guiGraphics.axolotlclient_rendering$drawMsdfString(msdfFont, "ReGlass Liquid Style", 410, 185, 11f, 0xFF77DDFF, true);
+				guiGraphics.axolotlclient_rendering$drawMsdfString(msdfFont, "Sharp at 22px!", 410, 205, 22f, 0xFFFFCC00, true);
+			}
+
+			// Try loading another MSDF font from user's fonts.zip if present (cached)
+			if (!rubikAttempted) {
+				rubikAttempted = true;
+				try {
+					File zip = new File("/home/makar/Downloads/fonts.zip");
+					if (zip.exists()) {
+						rubikFont = MsdfFont.fromZip(zip, "BoldRubik");
+					}
+				} catch (Exception ignored) {
+				}
+			}
+			if (rubikFont != null) {
+				guiGraphics.axolotlclient_rendering$drawMsdfString(rubikFont, "Loaded from fonts.zip: Rubik Bold 16px", 400, 260, 16f, 0xFF55FF55, true);
+			}
 		});
 	}
 }

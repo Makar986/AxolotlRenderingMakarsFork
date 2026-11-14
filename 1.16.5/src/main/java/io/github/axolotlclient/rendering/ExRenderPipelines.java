@@ -39,7 +39,10 @@ public class ExRenderPipelines {
 		ROUNDED_RECT_OUTLINE_PROGRAM,
 		ROUNDED_RECT_TEX_OUTLINE_PROGRAM,
 		FONT_PROGRAM,
-		SEGMENT_PROGRAM;
+		SEGMENT_PROGRAM,
+		GAUSSIAN_BLUR_PROGRAM,
+		LIQUID_GLASS_PROGRAM,
+		MSDF_FONT_PROGRAM;
 
 	public static void init() {
 		ResourceManagerHelper.get(PackType.CLIENT_RESOURCES).registerReloadListener(new SimpleSynchronousResourceReloadListener() {
@@ -52,14 +55,14 @@ public class ExRenderPipelines {
 			public void onResourceManagerReload(ResourceManager resourceManager) {
 				ShaderManager.safeClose(ROUNDED_RECT_PROGRAM, ROUNDED_RECT_TEX_PROGRAM,
 					ROUNDED_RECT_OUTLINE_PROGRAM, ROUNDED_RECT_TEX_OUTLINE_PROGRAM,
-					FONT_PROGRAM, SEGMENT_PROGRAM);
+					FONT_PROGRAM, SEGMENT_PROGRAM, GAUSSIAN_BLUR_PROGRAM, LIQUID_GLASS_PROGRAM, MSDF_FONT_PROGRAM);
 				load();
 			}
 		});
 		ClientLifecycleEvents.CLIENT_STOPPING.register(mc ->
 			ShaderManager.safeClose(ROUNDED_RECT_PROGRAM, ROUNDED_RECT_TEX_PROGRAM,
 				ROUNDED_RECT_OUTLINE_PROGRAM, ROUNDED_RECT_TEX_OUTLINE_PROGRAM,
-				FONT_PROGRAM, SEGMENT_PROGRAM));
+				FONT_PROGRAM, SEGMENT_PROGRAM, GAUSSIAN_BLUR_PROGRAM, LIQUID_GLASS_PROGRAM, MSDF_FONT_PROGRAM));
 	}
 
 	private static void load() {
@@ -70,6 +73,9 @@ public class ExRenderPipelines {
 			ROUNDED_RECT_TEX_OUTLINE_PROGRAM = ShaderManager.createProgram(new ResourceLocation(RenderingCommon.MODID, "core/rounded_rect_tex_outline"));
 			FONT_PROGRAM = ShaderManager.createProgram(new ResourceLocation(RenderingCommon.MODID, "core/font"));
 			SEGMENT_PROGRAM = ShaderManager.createProgram(new ResourceLocation(RenderingCommon.MODID, "core/rounded_rect"), new ResourceLocation(RenderingCommon.MODID, "core/segment"));
+			GAUSSIAN_BLUR_PROGRAM = ShaderManager.createProgram(new ResourceLocation(RenderingCommon.MODID, "core/gaussian_blur"));
+			LIQUID_GLASS_PROGRAM = ShaderManager.createProgram(new ResourceLocation(RenderingCommon.MODID, "core/liquid_glass"));
+			MSDF_FONT_PROGRAM = ShaderManager.createProgram(new ResourceLocation(RenderingCommon.MODID, "core/msdf_font"));
 		} catch (IOException e) {
 			throw new UncheckedIOException(e);
 		}

@@ -320,8 +320,18 @@ public class DrawUtil implements GuiGraphicsExtension {
 
 	@Override
 	public void axolotlclient_rendering$liquidGlass(float x, float y, float width, float height, float rounding, int tintColor, int borderColor, float borderWidth, float blurRadius, float distortion) {
+		LiquidGlassStyle style = LiquidGlassStyle.create()
+			.tint(tintColor, ((tintColor >> 24) & 0xFF) / 255.0f)
+			.border(borderColor, borderWidth)
+			.blurRadius(blurRadius)
+			.refractionDispersion(distortion > 0 ? distortion * 1.5f : 7.0f);
+		this.axolotlclient_rendering$liquidGlass(x, y, width, height, rounding, style);
+	}
+
+	@Override
+	public void axolotlclient_rendering$liquidGlass(float x, float y, float width, float height, float rounding, LiquidGlassStyle style) {
 		var shader = ExRenderPipelines.LIQUID_GLASS_PROGRAM;
-		if (shader == null) return;
+		if (shader == null || style == null) return;
 		var mc = Minecraft.getInstance();
 		var target = mc.getRenderTarget();
 		if (target != null) {
@@ -334,13 +344,17 @@ public class DrawUtil implements GuiGraphicsExtension {
 		shader.setUniform("Rounding", rounding, rounding, rounding, rounding);
 		var win = getWindow();
 		shader.setUniform("ScreenSize", (float) win.getWidth(), (float) win.getHeight());
-		shader.setUniform("BlurRadius", blurRadius);
-		shader.setUniform("Distortion", distortion);
-		int tc = Rendering.scaleARGB(tintColor);
-		shader.setUniform("GlassTint", (tc >> 16 & 0xFF) / 255f, (tc >> 8 & 0xFF) / 255f, (tc & 0xFF) / 255f, (tc >> 24 & 0xFF) / 255f);
-		int bc = Rendering.scaleARGB(borderColor);
+		shader.setUniform("BlurRadius", style.getBlurRadius());
+		shader.setUniform("Optics0", style.getRefThickness(), style.getRefFactor(), style.getRefDispersion(), style.getRefFresnelRange());
+		shader.setUniform("Optics1", style.getRefFresnelHardness(), style.getRefFresnelFactor(), style.getGlareRange(), style.getGlareHardness());
+
+		int tc = Rendering.scaleARGB(style.getTintColor());
+		float ta = style.getTintAlpha() > 0 ? style.getTintAlpha() : ((tc >> 24 & 0xFF) / 255f);
+		shader.setUniform("GlassTint", (tc >> 16 & 0xFF) / 255f, (tc >> 8 & 0xFF) / 255f, (tc & 0xFF) / 255f, ta);
+
+		int bc = Rendering.scaleARGB(style.getBorderColor());
 		shader.setUniform("BorderColor", (bc >> 16 & 0xFF) / 255f, (bc >> 8 & 0xFF) / 255f, (bc & 0xFF) / 255f, (bc >> 24 & 0xFF) / 255f);
-		shader.setUniform("BorderWidth", borderWidth);
+		shader.setUniform("BorderWidth", style.getBorderWidth());
 		GlStateManager.color4f(1f, 1f, 1f, 1f);
 
 		Tesselator tesselator = Tesselator.getInstance();
@@ -352,5 +366,15 @@ public class DrawUtil implements GuiGraphicsExtension {
 		bufferBuilder.vertex(x, y, 0.0).texture(0.0, 1.0).nextVertex();
 		tesselator.end();
 		shader.unbind();
+	}
+
+	@Override
+	public void axolotlclient_rendering$drawMsdfString(io.github.axolotlclient.rendering.font.msdf.MsdfFont font, String text, float x, float y, float size, int color, boolean dropShadow) {
+		if (font == null || text == null || text.isEmpty()) return;
+		if (dropShadow) {
+			font.drawWithShadow(text, x, y, size, color);
+		} else {
+			font.draw(text, x, y, size, color);
+		}
 	}
 }

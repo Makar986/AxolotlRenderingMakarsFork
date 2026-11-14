@@ -387,4 +387,15 @@ public interface GuiGraphicsExtension {
 
 	default void axolotlclient_rendering$liquidGlass(float x, float y, float width, float height, float rounding, int tintColor, int borderColor, float borderWidth, float blurRadius, float distortion) {
 	}
+
+	default void axolotlclient_rendering$liquidGlass(float x, float y, float width, float height, float rounding, LiquidGlassStyle style) {
+	}
+
+	/* MSDF Font */
+	default void axolotlclient_rendering$drawMsdfString(io.github.axolotlclient.rendering.font.msdf.MsdfFont font, String text, float x, float y, float size, int color) {
+		this.axolotlclient_rendering$drawMsdfString(font, text, x, y, size, color, false);
+	}
+
+	default void axolotlclient_rendering$drawMsdfString(io.github.axolotlclient.rendering.font.msdf.MsdfFont font, String text, float x, float y, float size, int color, boolean dropShadow) {
+	}
 }
