@@ -20,9 +20,9 @@ Fork of [AxolotlClient-rendering](https://codeberg.org/AxolotlClient/AxolotlClie
   - Subpixel kerning, custom sizing, text measurements, and drop shadow support.
 - **GaussianBlur Shader Effect**: Added separable Gaussian blur filter (`axolotlclient_rendering$roundedGaussianBlur`) supporting arbitrary blur radii, sigma control, tinting, and smooth rounded corners.
 - **Multi-Loader Compatibility**:
-  - **Forge**: 1.8.9, 1.12.2, 1.16.5, 1.20.1
+  - **Forge**: 1.20.1
   - **NeoForge**: 1.21.1+
-  - **Fabric / Quilt**: 1.8.9 – 1.21+
+  - **Fabric / Quilt / Ornithe**: 1.8.9, 1.12.2, 1.16.5, 1.20.1, 1.21+
 - **Artifact Size**: Library footprint reduced drastically by stripping heavy XML/Batik runtimes.
 
 ---
@@ -56,7 +56,7 @@ Fork of [AxolotlClient-rendering](https://codeberg.org/AxolotlClient/AxolotlClie
 | `:1.20.forge` | **1.20.1** | **Forge** | `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :1.20.forge:runClient` |
 | `:1.21.fabric` | **1.21.1** | **Fabric** | `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :1.21.fabric:runClient` |
 | `:1.21.neoforge` | **1.21.1** | **NeoForge** | `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :1.21.neoforge:runClient` |
-| `:1.8.9` | **1.8.9** | **Forge / Fabric** | `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :1.8.9:runClient` |
+| `:1.8.9.fabric` | **1.8.9** | **Fabric / Ornithe** | `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :1.8.9.fabric:runClient` |
 
 ### Standalone Version Folders
 Every version folder in the repository is explicitly namespaced by its modloader:
@@ -91,7 +91,7 @@ dependencies {
     // implementation("com.github.Makar986.AxolotlRenderingMakarsFork:1.20.fabric:v1.0.0")
 
     // 1.8.9:
-    // implementation("com.github.Makar986.AxolotlRenderingMakarsFork:1.8.9:v1.0.0")
+    // implementation("com.github.Makar986.AxolotlRenderingMakarsFork:1.8.9.fabric:v1.0.0")
 }
 ```
 
@@ -112,7 +112,7 @@ dependencies {
     // implementation 'com.github.Makar986.AxolotlRenderingMakarsFork:1.20.fabric:v1.0.0'
 
     // 1.8.9:
-    // implementation 'com.github.Makar986.AxolotlRenderingMakarsFork:1.8.9:v1.0.0'
+    // implementation 'com.github.Makar986.AxolotlRenderingMakarsFork:1.8.9.fabric:v1.0.0'
 }
 ```
 
@@ -135,20 +135,22 @@ JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :1.21.fabric:runClient
 # Launch NeoForge 1.21.1 client directly:
 JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :1.21.neoforge:runClient
 
-# Launch 1.8.9 client:
-JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :1.8.9:runClient
+# Launch 1.8.9 Fabric client directly:
+JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :1.8.9.fabric:runClient
 ```
 
 ### 2. Testing on NeoForge 1.21.1 & Forge Profiles
-Every built jar already includes loader metadata (`META-INF/neoforge.mods.toml` for NeoForge, `META-INF/mods.toml` for Forge, and `mcmod.info` for 1.8.9 Forge) along with Mixin configs:
+Every built jar already includes loader metadata (`META-INF/neoforge.mods.toml` for NeoForge, `META-INF/mods.toml` for Forge) along with Mixin configs:
 
 1. Build the mod JAR:
    ```bash
-   ./gradlew :1.21:build
+   ./gradlew :1.21.neoforge:build
+   # or for Fabric:
+   ./gradlew :1.21.fabric:build
    ```
-2. Take the resulting jar from `1.21/build/libs/` (e.g. `axolotlclient-rendering-1.0.0+1.21.1.jar`).
+2. Take the resulting jar from the subproject `build/libs/` directory (e.g. `1.21.neoforge/build/libs/axolotlclient-rendering-1.0.0+1.21.1.jar`).
 3. Place it into the `mods/` directory of your **NeoForge 1.21.1** profile in Prism Launcher, Modrinth App, CurseForge, or the Minecraft Launcher. NeoForge will detect and load it automatically.
-4. For Forge 1.20.1 or Forge 1.8.9, follow the same steps using `:1.20:build` or `:1.8.9:build`.
+4. For Forge 1.20.1, build with `./gradlew :1.20.forge:build`.
 
 ---
 
