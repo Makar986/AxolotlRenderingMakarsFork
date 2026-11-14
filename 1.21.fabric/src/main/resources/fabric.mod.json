@@ -1,0 +1,48 @@
+{
+	"schemaVersion": 1,
+	"id": "axolotlclient-rendering",
+	"version": "${version}",
+	"name": "AxolotlClient Rendering",
+	"description": "Rendering Library",
+	"authors": [
+		"moehreag"
+	],
+	"contributors": [
+	],
+	"contact": {
+		"homepage": "https://axolotlclient.com/",
+		"sources": "https://github.com/AxolotlClient/AxolotlClient-rendering/"
+	},
+	"license": "LGPL-3.0-or-later",
+	"icon": "assets/axolotlclient-rendering/icon.png",
+	"accessWidener": "axolotlclient-rendering.accesswidener",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"io.github.axolotlclient.rendering.Rendering"
+		]
+	},
+	"mixins": [
+		"axolotlclient-rendering.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.15.11",
+		"minecraft": "<=1.21.1 >=1.21",
+		"fabric-api": "*"
+	},
+	"custom": {
+		"loom:injected_interfaces": {
+			"net/minecraft/class_332": [
+				"io/github/axolotlclient/rendering/GuiGraphicsExtension"
+			]
+		},
+		"modmenu": {
+			"parent": {
+				"id": "axolotlclient",
+				"name": "AxolotlClient",
+				"icon": "assets/axolotlclient-rendering/icon.png"
+			},
+			"badges": ["library"]
+		}
+	}
+}

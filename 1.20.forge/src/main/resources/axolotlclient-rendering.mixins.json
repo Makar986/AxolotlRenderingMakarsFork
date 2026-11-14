@@ -1,0 +1,14 @@
+{
+	"required": true,
+	"package": "io.github.axolotlclient.rendering.mixin",
+	"compatibilityLevel": "JAVA_17",
+	"client": [
+		"GameRendererMixin",
+		"GuiGraphicsMixin",
+		"NativeImageAccessor",
+		"WindowMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

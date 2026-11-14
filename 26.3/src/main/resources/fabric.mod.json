@@ -1,0 +1,54 @@
+{
+	"schemaVersion": 1,
+	"id": "axolotlclient-rendering",
+	"version": "${version}",
+	"name": "AxolotlClient Rendering",
+	"description": "Rendering Library",
+	"authors": [
+		"moehreag"
+	],
+	"contributors": [
+	],
+	"contact": {
+		"homepage": "https://axolotlclient.com/",
+		"sources": "https://github.com/AxolotlClient/AxolotlClient-rendering/"
+	},
+	"license": "LGPL-3.0-or-later",
+	"icon": "assets/axolotlclient-rendering/icon.png",
+	"accessWidener": "axolotlclient-rendering.accesswidener",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"io.github.axolotlclient.rendering.Rendering"
+		]
+	},
+	"mixins": [
+		"axolotlclient-rendering.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.15.11",
+		"minecraft": ">26.2",
+		"fabric-api": "*"
+	},
+	"custom": {
+		"loom:injected_interfaces": {
+			"net/minecraft/client/gui/GuiGraphicsExtractor": [
+				"io/github/axolotlclient/rendering/GuiGraphicsExtractorExtension"
+			],
+			"net.minecraft.client.gui.ActiveTextCollector\u0024Parameters": [
+				"io/github/axolotlclient/rendering/ActiveTextCollectorParametersExtension"
+			],
+			"net/minecraft/client/gui/components/AbstractWidget": [
+				"io/github/axolotlclient/rendering/AbstractWidgetExtension"
+			]
+		},
+		"modmenu": {
+			"parent": {
+				"id": "axolotlclient",
+				"name": "AxolotlClient",
+				"icon": "assets/axolotlclient-rendering/icon.png"
+			},
+			"badges": ["library"]
+		}
+	}
+}

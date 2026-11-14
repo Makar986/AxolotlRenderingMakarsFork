@@ -48,13 +48,23 @@ Fork of [AxolotlClient-rendering](https://codeberg.org/AxolotlClient/AxolotlClie
 
 ---
 
-## Supported Versions
+## Supported Versions & Subprojects
 
-| Minecraft Version | Supported Loaders | Subproject | JitPack Artifact |
+| Subproject | Minecraft Version | Loader | Direct IDE / CLI Run Task |
 |---|---|---|---|
-| **1.21.1** | **NeoForge**, **Fabric** | `:1.21` | `com.github.Makar986.AxolotlRenderingMakarsFork:1.21:v1.0.0` |
-| **1.20.1** | **Forge**, **Fabric** | `:1.20` | `com.github.Makar986.AxolotlRenderingMakarsFork:1.20:v1.0.0` |
-| **1.8.9** | **Forge**, **Fabric** | `:1.8.9` | `com.github.Makar986.AxolotlRenderingMakarsFork:1.8.9:v1.0.0` |
+| `:1.20.fabric` | **1.20.1** | **Fabric** | `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :1.20.fabric:runClient` |
+| `:1.20.forge` | **1.20.1** | **Forge** | `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :1.20.forge:runClient` |
+| `:1.21.fabric` | **1.21.1** | **Fabric** | `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :1.21.fabric:runClient` |
+| `:1.21.neoforge` | **1.21.1** | **NeoForge** | `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :1.21.neoforge:runClient` |
+| `:1.8.9` | **1.8.9** | **Forge / Fabric** | `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :1.8.9:runClient` |
+
+### Standalone Version Folders
+The following versions are also extracted into standalone folders in the repository root:
+- `1.21.4/` — Minecraft 1.21.4 port
+- `1.21.11/` — Minecraft 1.21.11 / snapshot port
+- `26.1.x/` — 26.1 generation
+- `26.2/` — 26.2 generation
+- `26.3/` — 26.3 generation
 
 ---
 
@@ -69,13 +79,16 @@ repositories {
 }
 
 dependencies {
-    // NeoForge & Fabric 1.21.1:
-    implementation("com.github.Makar986.AxolotlRenderingMakarsFork:1.21:v1.0.0")
+    // 1.21.1 NeoForge / Fabric:
+    implementation("com.github.Makar986.AxolotlRenderingMakarsFork:1.21.neoforge:v1.0.0")
+    // or Fabric:
+    // implementation("com.github.Makar986.AxolotlRenderingMakarsFork:1.21.fabric:v1.0.0")
 
-    // Or Forge & Fabric 1.20.1:
-    // implementation("com.github.Makar986.AxolotlRenderingMakarsFork:1.20:v1.0.0")
+    // 1.20.1 Forge / Fabric:
+    // implementation("com.github.Makar986.AxolotlRenderingMakarsFork:1.20.forge:v1.0.0")
+    // implementation("com.github.Makar986.AxolotlRenderingMakarsFork:1.20.fabric:v1.0.0")
 
-    // Or Forge & Fabric 1.8.9:
+    // 1.8.9:
     // implementation("com.github.Makar986.AxolotlRenderingMakarsFork:1.8.9:v1.0.0")
 }
 ```
@@ -87,13 +100,16 @@ repositories {
 }
 
 dependencies {
-    // NeoForge & Fabric 1.21.1:
-    implementation 'com.github.Makar986.AxolotlRenderingMakarsFork:1.21:v1.0.0'
+    // 1.21.1 NeoForge / Fabric:
+    implementation 'com.github.Makar986.AxolotlRenderingMakarsFork:1.21.neoforge:v1.0.0'
+    // or Fabric:
+    // implementation 'com.github.Makar986.AxolotlRenderingMakarsFork:1.21.fabric:v1.0.0'
 
-    // Or Forge & Fabric 1.20.1:
-    // implementation 'com.github.Makar986.AxolotlRenderingMakarsFork:1.20:v1.0.0'
+    // 1.20.1 Forge / Fabric:
+    // implementation 'com.github.Makar986.AxolotlRenderingMakarsFork:1.20.forge:v1.0.0'
+    // implementation 'com.github.Makar986.AxolotlRenderingMakarsFork:1.20.fabric:v1.0.0'
 
-    // Or Forge & Fabric 1.8.9:
+    // 1.8.9:
     // implementation 'com.github.Makar986.AxolotlRenderingMakarsFork:1.8.9:v1.0.0'
 }
 ```
@@ -102,18 +118,23 @@ dependencies {
 
 ## Testing & Launching
 
-### 1. In-game HUD Test Client (Instant Test)
-The repository includes a preconfigured test mod (`RenderingTestMod`) with an in-game HUD overlay displaying all features (ReGlass LiquidGlass, GaussianBlur, JSVG icons, and MSDF font rendering):
+Each loader/version can be launched directly in your IDE (IntelliJ IDEA run configurations) or via Gradle CLI:
 
 ```bash
-# Launch 1.21.1 client test:
-./gradlew :1.21:runClient
+# Launch Fabric 1.20.1 client directly:
+JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :1.20.fabric:runClient
 
-# Launch 1.20.1 client test:
-./gradlew :1.20:runClient
+# Launch Forge 1.20.1 client directly:
+JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :1.20.forge:runClient
 
-# Launch 1.8.9 client test:
-./gradlew :1.8.9:runClient
+# Launch Fabric 1.21.1 client directly:
+JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :1.21.fabric:runClient
+
+# Launch NeoForge 1.21.1 client directly:
+JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :1.21.neoforge:runClient
+
+# Launch 1.8.9 client:
+JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :1.8.9:runClient
 ```
 
 ### 2. Testing on NeoForge 1.21.1 & Forge Profiles
