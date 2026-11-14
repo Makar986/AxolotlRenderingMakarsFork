@@ -11,6 +11,7 @@ plugins {
 	id("net.fabricmc.fabric-loom-remap") version "1.17.+" apply false
 	id("net.fabricmc.fabric-loom") version "1.17.+" apply false
 	id("ploceus") version "1.17.+" apply false
+	id("net.neoforged.moddev") version "2.0.78" apply false
 }
 
 version = "${project.version}"
@@ -34,6 +35,8 @@ repositories {
 
 allprojects {
 	repositories {
+		maven("https://maven.neoforged.net/releases")
+		maven("https://maven.architectury.dev/")
 		maven("https://maven.terraformersmc.com/releases")
 		maven("https://maven.fabricmc.net")
 		maven("https://maven.quiltmc.org/repository/release")
@@ -67,6 +70,10 @@ subprojects {
 	apply(plugin = "dev.yumi.gradle.licenser")
 
 	extensions.getByType(JavaPluginExtension::class).withSourcesJar()
+
+	tasks.withType<Jar>().configureEach {
+		duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+	}
 
 	tasks.getByName("jar", Jar::class) {
 		filesMatching("LICENSE") {

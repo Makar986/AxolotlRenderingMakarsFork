@@ -49,6 +49,7 @@ tasks.withType(AbstractArchiveTask::class).configureEach {
 
 tasks.shadowJar {
 	archiveClassifier.set("")
+	exclude("fabric.mod.json")
 	mergeServiceFiles()
 
 	append("../LICENSE")

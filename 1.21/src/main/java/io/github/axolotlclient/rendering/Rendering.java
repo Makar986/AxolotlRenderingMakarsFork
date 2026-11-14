@@ -23,30 +23,36 @@
 package io.github.axolotlclient.rendering;
 
 import io.github.axolotlclient.rendering.font.Font;
-import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
-import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
-import net.fabricmc.fabric.api.resource.SimpleSynchronousResourceReloadListener;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.PackType;
+import io.github.axolotlclient.rendering.svg.SVGCache;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
+import net.minecraft.util.profiling.ProfilerFiller;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 
-public class Rendering implements ClientModInitializer {
-	@Override
-	public void onInitializeClient() {
-		ResourceManagerHelper.get(PackType.CLIENT_RESOURCES)
-			.registerReloadListener(new SimpleSynchronousResourceReloadListener() {
-				@Override
-				public ResourceLocation getFabricId() {
-					return ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID,
-						"font_reloader");
-				}
+@Mod("axolotlclient_rendering")
+@EventBusSubscriber(modid = "axolotlclient_rendering", bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+public class Rendering {
 
-				@Override
-				public void onResourceManagerReload(ResourceManager resourceManager) {
-					Font.reload();
-				}
-			});
-		ClientLifecycleEvents.CLIENT_STOPPING.register(mc -> Font.closeAll());
+	public Rendering() {
+	}
+
+	@SubscribeEvent
+	public static void onRegisterReloadListeners(RegisterClientReloadListenersEvent event) {
+		event.registerReloadListener(new SimplePreparableReloadListener<Void>() {
+			@Override
+			protected Void prepare(ResourceManager resourceManager, ProfilerFiller profiler) {
+				return null;
+			}
+
+			@Override
+			protected void apply(Void object, ResourceManager resourceManager, ProfilerFiller profiler) {
+				Font.reload();
+				SVGCache.getInstance().clear();
+			}
+		});
 	}
 }
