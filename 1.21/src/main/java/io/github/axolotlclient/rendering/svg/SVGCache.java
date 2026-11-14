@@ -73,9 +73,12 @@ public class SVGCache {
 					NativeImage pixels = tex.getPixels();
 					if (pixels != null) {
 						var buf = MemoryUtil.memAlloc(img.length);
-						buf.put(img).flip();
-						MemoryUtil.memCopy(MemoryUtil.memAddress(buf), ((NativeImageAccessor) (Object) pixels).getPointer(), img.length);
-						MemoryUtil.memFree(buf);
+						try {
+							buf.put(img).flip();
+							MemoryUtil.memCopy(MemoryUtil.memAddress(buf), ((NativeImageAccessor) (Object) pixels).getPointer(), img.length);
+						} finally {
+							MemoryUtil.memFree(buf);
+						}
 						minecraft.execute(tex::upload);
 					}
 				} catch (Exception e) {

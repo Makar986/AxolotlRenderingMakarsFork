@@ -64,7 +64,7 @@ public class MsdfFont implements Closeable {
 
 	public static MsdfFont load(InputStream jsonStream, InputStream pngStream, String name) {
 		MsdfFontData fontData = MsdfFontData.parse(jsonStream);
-		try {
+		try (pngStream) {
 			NativeImage nativeImage = NativeImage.read(pngStream);
 			DynamicTexture texture = new DynamicTexture(nativeImage);
 			String id = (name != null ? name.toLowerCase().replaceAll("[^a-z0-9_.-]", "_") : "font") + "_" + ID_GEN.getAndIncrement();
@@ -127,7 +127,12 @@ public class MsdfFont implements Closeable {
 	}
 
 	public void draw(GuiGraphics graphics, String text, float x, float y, float size, int color) {
+		draw(graphics.pose().last().pose(), text, x, y, size, color);
+	}
+
+	public void draw(Matrix4f matrix, String text, float x, float y, float size, int color) {
 		if (text == null || text.isEmpty()) return;
+		if ((color & 0xFF000000) == 0) color |= 0xFF000000;
 		List<MsdfGlyphQuad> quads = data.layout(text, x, y, size);
 		if (quads.isEmpty()) return;
 
@@ -138,7 +143,6 @@ public class MsdfFont implements Closeable {
 		RenderSystem.defaultBlendFunc();
 		RenderSystem.setShader(() -> ExRenderPipelines.MSDF_FONT_SHADER);
 
-		Matrix4f matrix = graphics.pose().last().pose();
 		BufferBuilder consumer = Tesselator.getInstance().getBuilder();
 		consumer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
 
@@ -153,10 +157,15 @@ public class MsdfFont implements Closeable {
 	}
 
 	public void drawWithShadow(GuiGraphics graphics, String text, float x, float y, float size, int color) {
+		drawWithShadow(graphics.pose().last().pose(), text, x, y, size, color);
+	}
+
+	public void drawWithShadow(Matrix4f matrix, String text, float x, float y, float size, int color) {
+		if ((color & 0xFF000000) == 0) color |= 0xFF000000;
 		int shadowColor = ((color & 0xFCFCFC) >> 2) | (color & 0xFF000000);
 		float offset = Math.max(1.0f, size * 0.05f);
-		draw(graphics, text, x + offset, y + offset, size, shadowColor);
-		draw(graphics, text, x, y, size, color);
+		draw(matrix, text, x + offset, y + offset, size, shadowColor);
+		draw(matrix, text, x, y, size, color);
 	}
 
 	public void drawCentered(GuiGraphics graphics, String text, float x, float y, float size, int color) {
@@ -174,7 +183,9 @@ public class MsdfFont implements Closeable {
 
 	@Override
 	public void close() {
-		if (dynamicTexture != null) {
+		if (textureLocation != null && Minecraft.getInstance() != null && Minecraft.getInstance().getTextureManager() != null) {
+			Minecraft.getInstance().getTextureManager().release(textureLocation);
+		} else if (dynamicTexture != null) {
 			dynamicTexture.close();
 		}
 	}

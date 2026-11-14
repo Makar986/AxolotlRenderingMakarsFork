@@ -61,7 +61,7 @@ public class MsdfFont implements Closeable {
 
 	public static MsdfFont load(InputStream jsonStream, InputStream pngStream, String name) {
 		MsdfFontData fontData = MsdfFontData.parse(jsonStream);
-		try {
+		try (pngStream) {
 			BufferedImage bufferedImage = ImageIO.read(pngStream);
 			DynamicTexture texture = new DynamicTexture(bufferedImage);
 			String id = (name != null ? name.toLowerCase().replaceAll("[^a-z0-9_.-]", "_") : "font") + "_" + ID_GEN.getAndIncrement();
@@ -125,6 +125,7 @@ public class MsdfFont implements Closeable {
 
 	public void draw(String text, float x, float y, float size, int color) {
 		if (text == null || text.isEmpty()) return;
+		if ((color & 0xFF000000) == 0) color |= 0xFF000000;
 		List<MsdfGlyphQuad> quads = data.layout(text, x, y, size);
 		if (quads.isEmpty()) return;
 
@@ -159,6 +160,7 @@ public class MsdfFont implements Closeable {
 	}
 
 	public void drawWithShadow(String text, float x, float y, float size, int color) {
+		if ((color & 0xFF000000) == 0) color |= 0xFF000000;
 		int shadowColor = ((color & 0xFCFCFC) >> 2) | (color & 0xFF000000);
 		float offset = Math.max(1.0f, size * 0.05f);
 		draw(text, x + offset, y + offset, size, shadowColor);
@@ -170,8 +172,21 @@ public class MsdfFont implements Closeable {
 		draw(text, x - width * 0.5f, y, size, color);
 	}
 
+	public MsdfFontAdapter asAdapter(float size) {
+		return new MsdfFontAdapter(this, size);
+	}
+
+	public MsdfFontAdapter asAdapter() {
+		return new MsdfFontAdapter(this, 9.0f);
+	}
+
 	@Override
 	public void close() {
-		// Nothing to manually destroy for DynamicTexture in 1.8.9
+		if (textureLocation != null && Minecraft.getInstance() != null && Minecraft.getInstance().getTextureManager() != null) {
+			Minecraft.getInstance().getTextureManager().close(textureLocation);
+		}
+		if (dynamicTexture != null) {
+			dynamicTexture.clearGlId();
+		}
 	}
 }

@@ -81,10 +81,13 @@ public class SVGCache {
 				try (var in = res.get().open()) {
 					var img = BatikAdapter.rasterizeSvg(in, w, h);
 					var buf = MemoryUtil.memAlloc(img.length);
-					buf.put(img).flip();
-					//noinspection DataFlowIssue
-					MemoryUtil.memCopy(MemoryUtil.memAddress(buf), ((NativeImageAccessor) (Object) n).getPointer(), img.length);
-					MemoryUtil.memFree(buf);
+					try {
+						buf.put(img).flip();
+						//noinspection DataFlowIssue
+						MemoryUtil.memCopy(MemoryUtil.memAddress(buf), ((NativeImageAccessor) (Object) n).getPointer(), img.length);
+					} finally {
+						MemoryUtil.memFree(buf);
+					}
 					minecraft.execute(tex::upload);
 				} catch (Exception e) {
 					log.error("Failed to load SVG resource! ", e);

@@ -23,7 +23,10 @@
 package io.github.axolotlclient.rendering.font.msdf;
 
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.network.chat.FormattedText;
 import net.minecraft.util.FormattedCharSequence;
+import org.joml.Matrix4f;
 
 public class MsdfFontAdapter extends Font {
 	private final MsdfFont font;
@@ -52,6 +55,32 @@ public class MsdfFontAdapter extends Font {
 			return true;
 		});
 		return width(sb.toString());
+	}
+
+	@Override
+	public int width(FormattedText text) {
+		return text != null ? width(text.getString()) : 0;
+	}
+
+	@Override
+	public int drawInBatch(String text, float x, float y, int color, boolean dropShadow, Matrix4f matrix, MultiBufferSource buffer, DisplayMode displayMode, int backgroundColor, int packedLightCoords, boolean bidirectional) {
+		var pose = new Matrix4f(matrix).translate(x, y, 0);
+		if (dropShadow) {
+			font.drawWithShadow(pose, text, 0, 0, size, color);
+		} else {
+			font.draw(pose, text, 0, 0, size, color);
+		}
+		return (int) (x + width(text));
+	}
+
+	@Override
+	public int drawInBatch(FormattedCharSequence text, float x, float y, int color, boolean dropShadow, Matrix4f matrix, MultiBufferSource buffer, DisplayMode displayMode, int backgroundColor, int packedLightCoords) {
+		StringBuilder sb = new StringBuilder();
+		text.accept((index, style, codePoint) -> {
+			sb.appendCodePoint(codePoint);
+			return true;
+		});
+		return drawInBatch(sb.toString(), x, y, color, dropShadow, matrix, buffer, displayMode, backgroundColor, packedLightCoords, false);
 	}
 
 	public MsdfFont getMsdfFont() {

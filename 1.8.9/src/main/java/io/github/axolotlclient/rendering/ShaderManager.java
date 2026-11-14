@@ -46,36 +46,48 @@ public class ShaderManager {
 		var fId = new Identifier(fragmentShader.getNamespace(), "shaders/" + fragmentShader.getPath() + ".fsh");
 
 		var program = glCreateProgram();
-		var vShader = createShader(vId, GL_VERTEX_SHADER);
-		var fShader = createShader(fId, GL_FRAGMENT_SHADER);
-		glAttachShader(program, vShader);
-		glAttachShader(program, fShader);
-		glLinkProgram(program);
-		int linked = glGetProgrami(program, GL_LINK_STATUS);
-		if (linked == 0) {
-			String programLog = glGetProgramInfoLog(program, glGetProgrami(program, GL_INFO_LOG_LENGTH));
-			throw new AssertionError("Could not link program: " + programLog);
+		int vShader = 0;
+		int fShader = 0;
+		try {
+			vShader = createShader(vId, GL_VERTEX_SHADER);
+			fShader = createShader(fId, GL_FRAGMENT_SHADER);
+			glAttachShader(program, vShader);
+			glAttachShader(program, fShader);
+			glLinkProgram(program);
+			int linked = glGetProgrami(program, GL_LINK_STATUS);
+			if (linked == 0) {
+				String programLog = glGetProgramInfoLog(program, glGetProgrami(program, GL_INFO_LOG_LENGTH));
+				throw new AssertionError("Could not link program: " + programLog);
+			}
+			return new Shader(program);
+		} catch (Throwable t) {
+			glDeleteProgram(program);
+			throw t;
+		} finally {
+			if (vShader != 0) glDeleteShader(vShader);
+			if (fShader != 0) glDeleteShader(fShader);
 		}
-		glDeleteShader(vShader);
-		glDeleteShader(fShader);
-		return new Shader(program);
 	}
 
 	private static int createShader(Identifier resource, int type) throws IOException {
 		int shader = glCreateShader(type);
+		try {
+			var res = Minecraft.getInstance().getResourceManager().getResource(resource);
+			try (var in = res.asStream(); var reader = new BufferedReader(new InputStreamReader(in))) {
+				var source = reader.lines().collect(Collectors.joining("\n"));
+				glShaderSource(shader, source);
+			}
 
-		var res = Minecraft.getInstance().getResourceManager().getResource(resource);
-		try (var in = res.asStream(); var reader = new BufferedReader(new InputStreamReader(in))) {
-			var source = reader.lines().collect(Collectors.joining("\n"));
-			glShaderSource(shader, source);
+			glCompileShader(shader);
+			if (glGetShaderi(shader, GL_COMPILE_STATUS) == 0) {
+				String shaderLog = glGetShaderInfoLog(shader, glGetShaderi(shader, GL_INFO_LOG_LENGTH));
+				throw new IOException("Could not compile shader " + resource + ": " + shaderLog);
+			}
+			return shader;
+		} catch (Throwable t) {
+			glDeleteShader(shader);
+			throw t;
 		}
-
-		glCompileShader(shader);
-		if (glGetShaderi(shader, GL_COMPILE_STATUS) == 0) {
-			String shaderLog = glGetShaderInfoLog(shader, glGetShaderi(shader, GL_INFO_LOG_LENGTH));
-			throw new IOException("Could not compile shader " + resource + ": " + shaderLog);
-		}
-		return shader;
 	}
 
 	public static void safeClose(Shader... shaders) {

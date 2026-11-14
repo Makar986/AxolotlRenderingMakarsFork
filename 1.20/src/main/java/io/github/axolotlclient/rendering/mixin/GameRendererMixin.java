@@ -47,7 +47,7 @@ public abstract class GameRendererMixin {
 		list.add(Pair.of(new ShaderInstance(resourceProvider, "axolotlclient-rendering_rounded_rect_tex", ExRenderPipelines.ROUNDED_RECT_TEX_FORMAT), s -> ExRenderPipelines.ROUNDED_RECT_TEX_SHADER = s));
 		list.add(Pair.of(new ShaderInstance(resourceProvider, "axolotlclient-rendering_rounded_rect_outline", ExRenderPipelines.ROUNDED_RECT_OUTLINE_FORMAT), s -> ExRenderPipelines.ROUNDED_RECT_OUTLINE_SHADER = s));
 		list.add(Pair.of(new ShaderInstance(resourceProvider, "axolotlclient-rendering_rounded_rect_tex_outline", ExRenderPipelines.ROUNDED_RECT_TEX_OUTLINE_FORMAT), s -> ExRenderPipelines.ROUNDED_RECT_TEX_OUTLINE_SHADER = s));
-		list.add(Pair.of(new ShaderInstance(resourceProvider, "axolotlclient-rendering_font", DefaultVertexFormat.POSITION_TEX_COLOR), s -> ExRenderPipelines.FONT_SHADER = s));
+		list.add(Pair.of(new ShaderInstance(resourceProvider, "axolotlclient-rendering_font", DefaultVertexFormat.POSITION_COLOR_TEX), s -> ExRenderPipelines.FONT_SHADER = s));
 		list.add(Pair.of(new ShaderInstance(resourceProvider, "axolotlclient-rendering_segment", ExRenderPipelines.ROUNDED_RECT_FORMAT), s -> ExRenderPipelines.SEGMENT_SHADER = s));
 		list.add(Pair.of(new ShaderInstance(resourceProvider, "axolotlclient-rendering_gaussian_blur", ExRenderPipelines.ROUNDED_RECT_TEX_FORMAT), s -> ExRenderPipelines.GAUSSIAN_BLUR_SHADER = s));
 		list.add(Pair.of(new ShaderInstance(resourceProvider, "axolotlclient-rendering_liquid_glass", ExRenderPipelines.ROUNDED_RECT_TEX_FORMAT), s -> ExRenderPipelines.LIQUID_GLASS_SHADER = s));

@@ -34,9 +34,12 @@ public final class DefaultMsdfFont {
 		if (INSTANCE == null) {
 			try (InputStream json = DefaultMsdfFont.class.getResourceAsStream("/assets/axolotlclient-rendering/fonts/msdf/default.json");
 				 InputStream png = DefaultMsdfFont.class.getResourceAsStream("/assets/axolotlclient-rendering/fonts/msdf/default.png")) {
-				if (json != null && png != null) {
-					INSTANCE = MsdfFont.load(json, png, "montserrat");
+				if (json == null || png == null) {
+					throw new java.io.FileNotFoundException("Default Montserrat MSDF font assets not found: " +
+						(json == null ? "default.json is missing; " : "") +
+						(png == null ? "default.png is missing" : ""));
 				}
+				INSTANCE = MsdfFont.load(json, png, "montserrat");
 			} catch (Exception e) {
 				throw new RuntimeException("Failed to load default Montserrat MSDF font", e);
 			}
