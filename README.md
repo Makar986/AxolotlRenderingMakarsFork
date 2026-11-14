@@ -59,12 +59,14 @@ Fork of [AxolotlClient-rendering](https://codeberg.org/AxolotlClient/AxolotlClie
 | `:1.8.9` | **1.8.9** | **Forge / Fabric** | `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :1.8.9:runClient` |
 
 ### Standalone Version Folders
-The following versions are also extracted into standalone folders in the repository root:
-- `1.21.4/` — Minecraft 1.21.4 port
-- `1.21.11/` — Minecraft 1.21.11 / snapshot port
-- `26.1.x/` — 26.1 generation
-- `26.2/` — 26.2 generation
-- `26.3/` — 26.3 generation
+Every version folder in the repository is explicitly namespaced by its modloader:
+- `1.21.4.fabric/` — Minecraft 1.21.4 (Fabric)
+- `1.21.11.fabric/` — Minecraft 1.21.11 (Fabric / RenderPipelines)
+- `26.1.x.fabric/` — 26.1 generation (Fabric)
+- `26.2.fabric/` — 26.2 generation (Fabric)
+- `26.3.fabric/` — 26.3 generation (Fabric)
+- `1.16.5.fabric/` — Minecraft 1.16.5 (Fabric)
+- `1.12.2.fabric/` — Minecraft 1.12.2 (Fabric / Ornithe)
 
 ---
 

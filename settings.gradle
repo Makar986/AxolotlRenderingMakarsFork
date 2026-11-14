@@ -33,17 +33,11 @@ include '1.20.forge'
 include '1.21.fabric'
 include '1.21.neoforge'
 
-// Aliases for compatibility
-include '1.20'
-project(':1.20').projectDir = file('1.20.fabric')
-include '1.21'
-project(':1.21').projectDir = file('1.21.neoforge')
-
-// Distinct standalone version folders
-// include '1.21.4'
-// include '1.21.11'
-// include '26.1.x'
-// include '26.2'
-// include '26.3'
-// include '1.16.5'
-// include '1.12.2'
+// Standalone version folders:
+// include '1.21.4.fabric'
+// include '1.21.11.fabric'
+// include '26.1.x.fabric'
+// include '26.2.fabric'
+// include '26.3.fabric'
+// include '1.16.5.fabric'
+// include '1.12.2.fabric'
