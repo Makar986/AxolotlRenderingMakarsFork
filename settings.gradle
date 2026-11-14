@@ -22,3 +22,6 @@ include '1.20'
 include '1.21'
 include '1.latest'
 
+// Optional extra subprojects (experimental legacy branches):
+// include '1.12.2'
+// include '1.16.5'

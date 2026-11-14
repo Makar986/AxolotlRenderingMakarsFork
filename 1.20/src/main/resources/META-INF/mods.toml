@@ -1,0 +1,18 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="LGPL-3.0-or-later"
+issueTrackerURL="https://github.com/Makar986/AxolotlRenderingMakarsFork/issues"
+
+[[mods]]
+modId="axolotlclient_rendering"
+version="${version}"
+displayName="AxolotlClient Rendering"
+displayURL="https://github.com/Makar986/AxolotlRenderingMakarsFork"
+logoFile="assets/axolotlclient-rendering/icon.png"
+authors="moehreag, Makar986"
+description='''
+Lightweight client rendering library featuring LiquidGlass, GaussianBlur, JSVG vector graphics, and TrueType fonts.
+'''
+
+[[mixins]]
+config="axolotlclient-rendering.mixins.json"

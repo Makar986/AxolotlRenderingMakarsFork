@@ -285,4 +285,72 @@ public class DrawUtil implements GuiGraphicsExtension {
 		bufferBuilder.vertex(x, y, 0.0).texture(0, 0).nextVertex();
 		tesselator.end();
 	}
+
+	@Override
+	public void axolotlclient_rendering$roundedGaussianBlur(float x, float y, float width, float height, float radius, float blurRadius, float sigma, int tintColor) {
+		var shader = ExRenderPipelines.GAUSSIAN_BLUR_PROGRAM;
+		if (shader == null) return;
+		var mc = Minecraft.getInstance();
+		var target = mc.getRenderTarget();
+		if (target != null) {
+			GlStateManager.bindTexture(target.colorTextureId);
+		}
+		GlStateManager.enableBlend();
+		GlStateManager.blendFuncSeparate(770, 771, 1, 0);
+		shader.bind();
+		shader.setUniform("Dimensions", x, y, width, height);
+		shader.setUniform("Rounding", radius, radius, radius, radius);
+		var win = getWindow();
+		shader.setUniform("ScreenSize", (float) win.getWidth(), (float) win.getHeight());
+		shader.setUniform("BlurRadius", blurRadius);
+		shader.setUniform("Sigma", sigma);
+		int c = Rendering.scaleARGB(tintColor);
+		GlStateManager.color4f((c >> 16 & 0xFF) / 255f, (c >> 8 & 0xFF) / 255f, (c & 0xFF) / 255f, (c >> 24 & 0xFF) / 255f);
+
+		Tesselator tesselator = Tesselator.getInstance();
+		BufferBuilder bufferBuilder = tesselator.getBuffer();
+		bufferBuilder.begin(7, DefaultVertexFormat.POSITION_TEX);
+		bufferBuilder.vertex(x, y + height, 0.0).texture(0.0, 0.0).nextVertex();
+		bufferBuilder.vertex(x + width, y + height, 0.0).texture(1.0, 0.0).nextVertex();
+		bufferBuilder.vertex(x + width, y, 0.0).texture(1.0, 1.0).nextVertex();
+		bufferBuilder.vertex(x, y, 0.0).texture(0.0, 1.0).nextVertex();
+		tesselator.end();
+		shader.unbind();
+	}
+
+	@Override
+	public void axolotlclient_rendering$liquidGlass(float x, float y, float width, float height, float rounding, int tintColor, int borderColor, float borderWidth, float blurRadius, float distortion) {
+		var shader = ExRenderPipelines.LIQUID_GLASS_PROGRAM;
+		if (shader == null) return;
+		var mc = Minecraft.getInstance();
+		var target = mc.getRenderTarget();
+		if (target != null) {
+			GlStateManager.bindTexture(target.colorTextureId);
+		}
+		GlStateManager.enableBlend();
+		GlStateManager.blendFuncSeparate(770, 771, 1, 0);
+		shader.bind();
+		shader.setUniform("Dimensions", x, y, width, height);
+		shader.setUniform("Rounding", rounding, rounding, rounding, rounding);
+		var win = getWindow();
+		shader.setUniform("ScreenSize", (float) win.getWidth(), (float) win.getHeight());
+		shader.setUniform("BlurRadius", blurRadius);
+		shader.setUniform("Distortion", distortion);
+		int tc = Rendering.scaleARGB(tintColor);
+		shader.setUniform("GlassTint", (tc >> 16 & 0xFF) / 255f, (tc >> 8 & 0xFF) / 255f, (tc & 0xFF) / 255f, (tc >> 24 & 0xFF) / 255f);
+		int bc = Rendering.scaleARGB(borderColor);
+		shader.setUniform("BorderColor", (bc >> 16 & 0xFF) / 255f, (bc >> 8 & 0xFF) / 255f, (bc & 0xFF) / 255f, (bc >> 24 & 0xFF) / 255f);
+		shader.setUniform("BorderWidth", borderWidth);
+		GlStateManager.color4f(1f, 1f, 1f, 1f);
+
+		Tesselator tesselator = Tesselator.getInstance();
+		BufferBuilder bufferBuilder = tesselator.getBuffer();
+		bufferBuilder.begin(7, DefaultVertexFormat.POSITION_TEX);
+		bufferBuilder.vertex(x, y + height, 0.0).texture(0.0, 0.0).nextVertex();
+		bufferBuilder.vertex(x + width, y + height, 0.0).texture(1.0, 0.0).nextVertex();
+		bufferBuilder.vertex(x + width, y, 0.0).texture(1.0, 1.0).nextVertex();
+		bufferBuilder.vertex(x, y, 0.0).texture(0.0, 1.0).nextVertex();
+		tesselator.end();
+		shader.unbind();
+	}
 }

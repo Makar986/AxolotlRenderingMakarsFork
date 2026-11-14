@@ -48,27 +48,8 @@ dependencies {
 
 	implementation(include(project(path = ":common", configuration = "shadow"))!!)
 
-	implementation("org.apache.xmlgraphics:batik-transcoder:1.19")
-	include("org.apache.xmlgraphics:batik-transcoder:1.19") {
-		isTransitive = false
-	}
-	include("org.apache.xmlgraphics:batik-anim:1.19")
-	include("org.apache.xmlgraphics:batik-shared-resources:1.19")
-	include("org.apache.xmlgraphics:batik-util:1.19")
-	include("org.apache.xmlgraphics:batik-constants:1.19")
-	include("org.apache.xmlgraphics:batik-i18n:1.19")
-	include("org.apache.xmlgraphics:xmlgraphics-commons:2.11")
-	include("org.apache.xmlgraphics:batik-css:1.19")
-	include("org.apache.xmlgraphics:batik-dom:1.19")
-	include("org.apache.xmlgraphics:batik-ext:1.19")
-	include("org.apache.xmlgraphics:batik-xml:1.19")
-	include("org.apache.xmlgraphics:batik-parser:1.19")
-	include("org.apache.xmlgraphics:batik-svg-dom:1.19")
-	include("org.apache.xmlgraphics:batik-bridge:1.19")
-	include("org.apache.xmlgraphics:batik-gvt:1.19")
-	include("org.apache.xmlgraphics:batik-script:1.19")
-	include("org.apache.xmlgraphics:batik-awt-util:1.19")
-	include("xml-apis:xml-apis-ext:1.3.04")
+	implementation("com.github.weisj:jsvg:1.6.1")
+	include("com.github.weisj:jsvg:1.6.1")
 }
 
 buildscript {
@@ -83,7 +64,6 @@ buildscript {
 }
 
 configurations.configureEach {
-	exclude("org.apache.xmlgraphics:batik-svggen:1.19")
 	exclude("xml-apis", "xml-apis")
 }
 
@@ -127,16 +107,14 @@ publishing {
 
 	repositories {
 		maven {
-			name = "owlMaven"
-			val repository = if (project.version.toString().contains("beta") || project.version.toString()
-					.contains("alpha")
-			) "snapshots" else "releases"
-			url = uri("https://maven.axolotlclient.com/$repository")
-			credentials(PasswordCredentials::class)
-			authentication {
-				create<BasicAuthentication>("basic")
+			name = "GitHubPackages"
+			url = uri("https://maven.pkg.github.com/Makar986/AxolotlRenderingMakarsFork")
+			credentials {
+				username = System.getenv("GITHUB_ACTOR") ?: "Makar986"
+				password = System.getenv("GITHUB_TOKEN") ?: ""
 			}
 		}
+		mavenLocal()
 	}
 }
 

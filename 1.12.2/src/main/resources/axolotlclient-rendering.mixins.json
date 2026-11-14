@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "package": "io.github.axolotlclient.rendering.mixin",
+  "plugin": "io.github.axolotlclient.rendering.AxolotlClientRenderingMixinPlugin",
+  "compatibilityLevel": "JAVA_17",
+  "client": [
+	"GameOptionsMixin",
+	"GlStateManagerAccessor",
+	"MinecraftMixin",
+	"StyleMixin"
+  ],
+  "injectors": {
+	"defaultRequire": 1
+  }
+}

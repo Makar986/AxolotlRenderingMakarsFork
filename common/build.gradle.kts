@@ -13,9 +13,9 @@ dependencies {
 	compileOnly("com.google.code.gson:gson:2.10")
 
 	compileOnly("org.slf4j:slf4j-api:1.7.36")
-	compileOnly("it.unimi.dsi:fastutil:8.5.9")
 
-	compileOnly("org.apache.xmlgraphics:batik-transcoder:1.19")
+	implementation("com.github.weisj:jsvg:1.6.1")
+	shadow("com.github.weisj:jsvg:1.6.1")
 }
 
 tasks.jar {
@@ -69,13 +69,13 @@ publishing {
 	}
 	repositories {
 		maven {
-			name = "owlMaven"
-			val repository = if(project.version.toString().contains("beta") || project.version.toString().contains("alpha")) "snapshots" else "releases"
-			url = uri("https://maven.axolotlclient.com/$repository")
-			credentials(PasswordCredentials::class)
-			authentication {
-				create<BasicAuthentication>("basic")
+			name = "GitHubPackages"
+			url = uri("https://maven.pkg.github.com/Makar986/AxolotlRenderingMakarsFork")
+			credentials {
+				username = System.getenv("GITHUB_ACTOR") ?: "Makar986"
+				password = System.getenv("GITHUB_TOKEN") ?: ""
 			}
 		}
+		mavenLocal()
 	}
 }

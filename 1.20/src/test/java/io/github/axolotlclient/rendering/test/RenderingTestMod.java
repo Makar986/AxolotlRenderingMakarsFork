@@ -92,6 +92,12 @@ public class RenderingTestMod implements ClientModInitializer {
 			guiGraphics.axolotlclient_rendering$segmentGradientH(x + 50, y, x, y + 30, 0xFF00FF00, 0xFF0000FF, r);
 
 			guiGraphics.axolotlclient_rendering$segmentGradientV(x, y - 20, x + 100, y, 0xFFFF0000, 0xFF00FF00, 1f);
+
+			// GaussianBlur demo
+			guiGraphics.axolotlclient_rendering$roundedGaussianBlur(400, 50, 120, 80, 10f, 6f, 3.5f);
+
+			// LiquidGlass demo
+			guiGraphics.axolotlclient_rendering$liquidGlass(400, 150, 140, 90, 12f, 0x25FFFFFF, 0x55FFFFFF, 1.2f, 5.0f, 4.0f);
 		});
 	}
 }

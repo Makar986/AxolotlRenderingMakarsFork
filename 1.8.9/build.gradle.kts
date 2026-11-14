@@ -81,27 +81,7 @@ dependencies {
 		"embedCompressed"(runtimeOnly("org.lwjgl:lwjgl-freetype:$lwjglVersion:natives-$platform")!!)
 	}
 
-	//implementation("org.apache.xmlgraphics:batik-transcoder:1.19")
-	implementation("embedCompressed"("org.apache.xmlgraphics:batik-transcoder:1.19") {
-		isTransitive = false
-	})
-	implementation("embedCompressed"("org.apache.xmlgraphics:batik-anim:1.19")!!)
-	implementation("embedCompressed"("org.apache.xmlgraphics:batik-shared-resources:1.19")!!)
-	implementation("embedCompressed"("org.apache.xmlgraphics:batik-util:1.19")!!)
-	implementation("embedCompressed"("org.apache.xmlgraphics:batik-constants:1.19")!!)
-	implementation("embedCompressed"("org.apache.xmlgraphics:batik-i18n:1.19")!!)
-	implementation("embedCompressed"("org.apache.xmlgraphics:xmlgraphics-commons:2.11")!!)
-	implementation("embedCompressed"("org.apache.xmlgraphics:batik-css:1.19")!!)
-	implementation("embedCompressed"("org.apache.xmlgraphics:batik-dom:1.19")!!)
-	implementation("embedCompressed"("org.apache.xmlgraphics:batik-ext:1.19")!!)
-	implementation("embedCompressed"("org.apache.xmlgraphics:batik-xml:1.19")!!)
-	implementation("embedCompressed"("org.apache.xmlgraphics:batik-parser:1.19")!!)
-	implementation("embedCompressed"("org.apache.xmlgraphics:batik-svg-dom:1.19")!!)
-	implementation("embedCompressed"("org.apache.xmlgraphics:batik-bridge:1.19")!!)
-	implementation("embedCompressed"("org.apache.xmlgraphics:batik-gvt:1.19")!!)
-	implementation("embedCompressed"("org.apache.xmlgraphics:batik-script:1.19")!!)
-	implementation("embedCompressed"("org.apache.xmlgraphics:batik-awt-util:1.19")!!)
-	implementation("embedCompressed"("xml-apis:xml-apis-ext:1.3.04")!!)
+	include(implementation("com.github.weisj:jsvg:1.6.1")!!)
 
 	include(implementation("org.kamranzafar:jtar:2.3")!!)
 	include(implementation("org.tukaani:xz:1.10")!!)
@@ -271,16 +251,14 @@ publishing {
 
 	repositories {
 		maven {
-			name = "owlMaven"
-			val repository = if (project.version.toString().contains("beta") || project.version.toString()
-					.contains("alpha")
-			) "snapshots" else "releases"
-			url = uri("https://maven.axolotlclient.com/$repository")
-			credentials(PasswordCredentials::class)
-			authentication {
-				create<BasicAuthentication>("basic")
+			name = "GitHubPackages"
+			url = uri("https://maven.pkg.github.com/Makar986/AxolotlRenderingMakarsFork")
+			credentials {
+				username = System.getenv("GITHUB_ACTOR") ?: "Makar986"
+				password = System.getenv("GITHUB_TOKEN") ?: ""
 			}
 		}
+		mavenLocal()
 	}
 }
 

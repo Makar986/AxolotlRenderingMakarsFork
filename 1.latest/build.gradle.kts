@@ -40,33 +40,13 @@ dependencies {
 
 	implementation("net.fabricmc.fabric-api:fabric-api:$fapiVersion+$minecraftFriendly")
 
-	compileOnly("com.terraformersmc:modmenu:18.0.0-alpha.5")
+	// compileOnly("com.terraformersmc:modmenu:18.0.0-alpha.5")
 
 	implementation(include(project(path = ":common", configuration = "shadow"))!!)
-
-	//include(implementation("org.lwjgl:lwjgl-harfbuzz:3.3.3")!!)
-	include(implementation("org.apache.xmlgraphics:batik-transcoder:1.19")!!)
-	include("org.apache.xmlgraphics:batik-anim:1.19")
-	include("org.apache.xmlgraphics:batik-shared-resources:1.19")
-	include("org.apache.xmlgraphics:batik-util:1.19")
-	include("org.apache.xmlgraphics:batik-constants:1.19")
-	include("org.apache.xmlgraphics:batik-i18n:1.19")
-	include("org.apache.xmlgraphics:xmlgraphics-commons:2.11")
-	include("org.apache.xmlgraphics:batik-css:1.19")
-	include("org.apache.xmlgraphics:batik-dom:1.19")
-	include("org.apache.xmlgraphics:batik-ext:1.19")
-	include("org.apache.xmlgraphics:batik-xml:1.19")
-	include("org.apache.xmlgraphics:batik-parser:1.19")
-	include("org.apache.xmlgraphics:batik-svg-dom:1.19")
-	include("org.apache.xmlgraphics:batik-bridge:1.19")
-	include("org.apache.xmlgraphics:batik-gvt:1.19")
-	include("org.apache.xmlgraphics:batik-script:1.19")
-	include("org.apache.xmlgraphics:batik-awt-util:1.19")
-	include("xml-apis:xml-apis-ext:1.3.04")
+	include(implementation("com.github.weisj:jsvg:1.6.1")!!)
 }
 
 configurations.configureEach {
-	exclude("org.apache.xmlgraphics:batik-svggen:1.19")
 	exclude("xml-apis", "xml-apis")
 }
 
@@ -81,14 +61,14 @@ tasks.processResources {
 tasks.withType(JavaCompile::class).configureEach {
 	options.encoding = "UTF-8"
 
-	if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_26)) {
-		options.release = 25
+	if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_21)) {
+		options.release = 21
 	}
 }
 
 java {
-	sourceCompatibility = JavaVersion.VERSION_25
-	targetCompatibility = JavaVersion.VERSION_25
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
 }
 
 tasks.runClient {

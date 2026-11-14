@@ -1,0 +1,16 @@
+[
+  {
+    "modid": "axolotlclient_rendering",
+    "name": "AxolotlClient Rendering",
+    "description": "Lightweight client rendering library with LiquidGlass, GaussianBlur, JSVG, and TTF font rendering.",
+    "version": "${version}",
+    "mcversion": "1.8.9",
+    "url": "https://github.com/Makar986/AxolotlRenderingMakarsFork",
+    "updateUrl": "",
+    "authorList": ["moehreag", "Makar986"],
+    "credits": "AxolotlClient team, Jannis Weis (JSVG)",
+    "logoFile": "assets/axolotlclient-rendering/icon.png",
+    "screenshots": [],
+    "dependencies": []
+  }
+]

@@ -1,0 +1,50 @@
+{
+	"schemaVersion": 1,
+	"id": "axolotlclient-rendering",
+	"version": "${version}",
+	"name": "AxolotlClient Rendering",
+	"description": "Rendering Library",
+	"authors": [
+		"moehreag"
+	],
+	"contributors": [
+
+	],
+	"contact": {
+		"homepage": "https://axolotlclient.com/",
+		"sources": "https://github.com/AxolotlClient/AxolotlClient-rendering/"
+	},
+	"license": "LGPL-3.0-or-later",
+	"icon": "assets/axolotlclient-rendering/icon.png",
+	"accessWidener": "axolotlclient-rendering.accesswidener",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"io.github.axolotlclient.rendering.Rendering"
+		]
+	},
+	"mixins": [
+		"axolotlclient-rendering.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.15.11",
+		"minecraft": "1.12.2",
+		"osl-keybinds": "*",
+		"osl-entrypoints": ""
+	},
+	"custom": {
+		"loom:injected_interfaces": {
+			"net/minecraft/unmapped/C_50927867": [
+				"io/github/axolotlclient/rendering/StyleExtension"
+			]
+		},
+		"modmenu": {
+			"parent": {
+				"id": "axolotlclient",
+				"name": "AxolotlClient",
+				"icon": "assets/axolotlclient-rendering/icon.png"
+			},
+			"badges": ["library"]
+		}
+	}
+}

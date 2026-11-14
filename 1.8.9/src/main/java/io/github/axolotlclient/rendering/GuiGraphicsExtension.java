@@ -347,4 +347,27 @@ public interface GuiGraphicsExtension {
 
 	}
 
+	/* Gaussian Blur */
+	default void axolotlclient_rendering$gaussianBlur(float x, float y, float width, float height, float blurRadius, float sigma) {
+		this.axolotlclient_rendering$roundedGaussianBlur(x, y, width, height, 0.0f, blurRadius, sigma, 0);
+	}
+
+	default void axolotlclient_rendering$roundedGaussianBlur(float x, float y, float width, float height, float radius, float blurRadius, float sigma) {
+		this.axolotlclient_rendering$roundedGaussianBlur(x, y, width, height, radius, blurRadius, sigma, 0);
+	}
+
+	default void axolotlclient_rendering$roundedGaussianBlur(float x, float y, float width, float height, float radius, float blurRadius, float sigma, int tintColor) {
+	}
+
+	/* Liquid Glass */
+	default void axolotlclient_rendering$liquidGlass(float x, float y, float width, float height, float rounding, int tintColor) {
+		this.axolotlclient_rendering$liquidGlass(x, y, width, height, rounding, tintColor, 0x40FFFFFF, 1.0f, 6.0f, 4.0f);
+	}
+
+	default void axolotlclient_rendering$liquidGlass(float x, float y, float width, float height, float rounding, int tintColor, int borderColor, float borderWidth, float blurRadius) {
+		this.axolotlclient_rendering$liquidGlass(x, y, width, height, rounding, tintColor, borderColor, borderWidth, blurRadius, 4.0f);
+	}
+
+	default void axolotlclient_rendering$liquidGlass(float x, float y, float width, float height, float rounding, int tintColor, int borderColor, float borderWidth, float blurRadius, float distortion) {
+	}
 }

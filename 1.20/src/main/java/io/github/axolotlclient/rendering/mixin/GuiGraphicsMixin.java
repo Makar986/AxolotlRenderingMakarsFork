@@ -323,4 +323,81 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 		BufferUploader.drawWithShader(bufferBuilder.end());
 	}
 
+	@Override
+	public void axolotlclient_rendering$roundedGaussianBlur(float x, float y, float width, float height, float radius, float blurRadius, float sigma, int tintColor) {
+		if (ExRenderPipelines.GAUSSIAN_BLUR_SHADER == null) return;
+		var mc = Minecraft.getInstance();
+		var renderTarget = mc.getMainRenderTarget();
+		if (renderTarget == null) return;
+
+		RenderSystem.setShaderTexture(0, renderTarget.getColorTextureId());
+		RenderSystem.enableBlend();
+		RenderSystem.defaultBlendFunc();
+		RenderSystem.setShader(() -> ExRenderPipelines.GAUSSIAN_BLUR_SHADER);
+
+		Matrix4f matrix4f = this.pose.last().pose();
+		BufferBuilder consumer = Tesselator.getInstance().getBuilder();
+		consumer.begin(VertexFormat.Mode.QUADS, ExRenderPipelines.ROUNDED_RECT_TEX_FORMAT);
+
+		consumer.vertex(matrix4f, x, y, 0).uv(0f, 1f).color(tintColor);
+		ExRenderPipelines.addRounding(consumer, radius, radius, radius, radius);
+		ExRenderPipelines.addDimensions(consumer, 0, 0, width, height);
+		consumer.endVertex();
+
+		consumer.vertex(matrix4f, x, y + height, 0).uv(0f, 0f).color(tintColor);
+		ExRenderPipelines.addRounding(consumer, radius, radius, radius, radius);
+		ExRenderPipelines.addDimensions(consumer, 0, height, width, height);
+		consumer.endVertex();
+
+		consumer.vertex(matrix4f, x + width, y + height, 0).uv(1f, 0f).color(tintColor);
+		ExRenderPipelines.addRounding(consumer, radius, radius, radius, radius);
+		ExRenderPipelines.addDimensions(consumer, width, height, width, height);
+		consumer.endVertex();
+
+		consumer.vertex(matrix4f, x + width, y, 0).uv(1f, 1f).color(tintColor);
+		ExRenderPipelines.addRounding(consumer, radius, radius, radius, radius);
+		ExRenderPipelines.addDimensions(consumer, width, 0, width, height);
+		consumer.endVertex();
+
+		BufferUploader.drawWithShader(consumer.end());
+	}
+
+	@Override
+	public void axolotlclient_rendering$liquidGlass(float x, float y, float width, float height, float rounding, int tintColor, int borderColor, float borderWidth, float blurRadius, float distortion) {
+		if (ExRenderPipelines.LIQUID_GLASS_SHADER == null) return;
+		var mc = Minecraft.getInstance();
+		var renderTarget = mc.getMainRenderTarget();
+		if (renderTarget == null) return;
+
+		RenderSystem.setShaderTexture(0, renderTarget.getColorTextureId());
+		RenderSystem.enableBlend();
+		RenderSystem.defaultBlendFunc();
+		RenderSystem.setShader(() -> ExRenderPipelines.LIQUID_GLASS_SHADER);
+
+		Matrix4f matrix4f = this.pose.last().pose();
+		BufferBuilder consumer = Tesselator.getInstance().getBuilder();
+		consumer.begin(VertexFormat.Mode.QUADS, ExRenderPipelines.ROUNDED_RECT_TEX_FORMAT);
+
+		consumer.vertex(matrix4f, x, y, 0).uv(0f, 1f).color(tintColor);
+		ExRenderPipelines.addRounding(consumer, rounding, rounding, rounding, rounding);
+		ExRenderPipelines.addDimensions(consumer, 0, 0, width, height);
+		consumer.endVertex();
+
+		consumer.vertex(matrix4f, x, y + height, 0).uv(0f, 0f).color(tintColor);
+		ExRenderPipelines.addRounding(consumer, rounding, rounding, rounding, rounding);
+		ExRenderPipelines.addDimensions(consumer, 0, height, width, height);
+		consumer.endVertex();
+
+		consumer.vertex(matrix4f, x + width, y + height, 0).uv(1f, 0f).color(tintColor);
+		ExRenderPipelines.addRounding(consumer, rounding, rounding, rounding, rounding);
+		ExRenderPipelines.addDimensions(consumer, width, height, width, height);
+		consumer.endVertex();
+
+		consumer.vertex(matrix4f, x + width, y, 0).uv(1f, 1f).color(tintColor);
+		ExRenderPipelines.addRounding(consumer, rounding, rounding, rounding, rounding);
+		ExRenderPipelines.addDimensions(consumer, width, 0, width, height);
+		consumer.endVertex();
+
+		BufferUploader.drawWithShader(consumer.end());
+	}
 }
