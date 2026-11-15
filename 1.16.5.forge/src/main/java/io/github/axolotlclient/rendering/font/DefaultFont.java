@@ -1,0 +1,64 @@
+/*
+ * Copyright © 2025 moehreag <moehreag@gmail.com> & Contributors
+ *
+ * This file is part of AxolotlClient (Rendering Mod).
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ *
+ * For more information, see the LICENSE file.
+ */
+
+package io.github.axolotlclient.rendering.font;
+
+import java.io.InputStream;
+
+import it.unimi.dsi.fastutil.longs.Long2FloatOpenHashMap;
+
+public final class DefaultFont {
+	private static final Font INTER;
+	private static final FontAdapter INTER_ADAPTER;
+
+	static {
+		try (InputStream regular = DefaultFont.class.getResourceAsStream("/assets/axolotlclient-rendering/fonts/inter_variable.ttf");
+			 InputStream italic = DefaultFont.class.getResourceAsStream("/assets/axolotlclient-rendering/fonts/inter_variable_italic.ttf");
+			 InputStream bold = DefaultFont.class.getResourceAsStream("/assets/axolotlclient-rendering/fonts/inter_bold.ttf");
+			 InputStream boldItalic = DefaultFont.class.getResourceAsStream("/assets/axolotlclient-rendering/fonts/inter_bold_italic.ttf")) {
+			if (regular == null || italic == null || bold == null || boldItalic == null) {
+				throw new IllegalStateException();
+			}
+			Long2FloatOpenHashMap boldItalicTag = new Long2FloatOpenHashMap();
+			boldItalicTag.put(Font.TAG_ITALIC, Font.ITALIC_ENABLED);
+			boldItalicTag.put(Font.TAG_WEIGHT, Font.WEIGHT_BOLD);
+			INTER = Font.read(regular, 9)
+				.addSubFont(Font.TAG_ITALIC, Font.ITALIC_ENABLED, Font.read(italic, 9))
+				.addSubFont(Font.TAG_WEIGHT, Font.WEIGHT_BOLD, Font.read(bold, 9))
+				.addSubFont(boldItalicTag, Font.read(boldItalic, 9));
+		} catch (Exception e) {
+			throw new RuntimeException("The Inter font is packaged with this library!", e);
+		}
+		INTER_ADAPTER = new FontAdapter(INTER);
+	}
+
+	private DefaultFont() {
+	}
+
+	public static Font inter() {
+		return INTER;
+	}
+
+	public static FontAdapter interAdapter() {
+		return INTER_ADAPTER;
+	}
+}

@@ -1,0 +1,26 @@
+modLoader="javafml"
+loaderVersion="[36,)"
+license="LGPL-3.0-or-later"
+
+[[mods]]
+modId="axolotlclient_rendering_test"
+version="${version}"
+displayName="AxolotlClient Rendering Test"
+authors="moehreag, Makar986"
+description='''
+Test mod for AxolotlClient Rendering Forge 1.16.5
+'''
+
+[[dependencies.axolotlclient_rendering_test]]
+    modId="forge"
+    mandatory=true
+    versionRange="[36,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.axolotlclient_rendering_test]]
+    modId="axolotlclient_rendering"
+    mandatory=true
+    versionRange="[1.0.0,)"
+    ordering="NONE"
+    side="BOTH"

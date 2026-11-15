@@ -36,6 +36,8 @@ repositories {
 
 allprojects {
 	repositories {
+		maven("https://repo.essential.gg/repository/maven-public/")
+		maven("https://maven.minecraftforge.net/")
 		maven("https://maven.neoforged.net/releases")
 		maven("https://maven.architectury.dev/")
 		maven("https://maven.terraformersmc.com/releases")

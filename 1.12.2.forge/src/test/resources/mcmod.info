@@ -1,0 +1,16 @@
+[
+  {
+    "modid": "axolotlclient_rendering_test",
+    "name": "AxolotlClient Rendering Test",
+    "description": "Test mod for AxolotlClient Rendering library.",
+    "version": "${version}",
+    "mcversion": "1.12.2",
+    "url": "",
+    "updateUrl": "",
+    "authorList": ["moehreag", "Makar986"],
+    "credits": "",
+    "logoFile": "",
+    "screenshots": [],
+    "dependencies": ["axolotlclient_rendering"]
+  }
+]

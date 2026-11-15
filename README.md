@@ -20,7 +20,7 @@ Fork of [AxolotlClient-rendering](https://codeberg.org/AxolotlClient/AxolotlClie
   - Subpixel kerning, custom sizing, text measurements, and drop shadow support.
 - **GaussianBlur Shader Effect**: Added separable Gaussian blur filter (`axolotlclient_rendering$roundedGaussianBlur`) supporting arbitrary blur radii, sigma control, tinting, and smooth rounded corners.
 - **Multi-Loader Compatibility**:
-  - **Forge**: 1.20.1
+  - **Forge**: 1.8.9, 1.12.2, 1.16.5, 1.20.1
   - **NeoForge**: 1.21.1+
   - **Fabric / Quilt / Ornithe**: 1.8.9, 1.12.2, 1.16.5, 1.20.1, 1.21+
 - **Artifact Size**: Library footprint reduced drastically by stripping heavy XML/Batik runtimes.
@@ -52,11 +52,14 @@ Fork of [AxolotlClient-rendering](https://codeberg.org/AxolotlClient/AxolotlClie
 
 | Subproject | Minecraft Version | Loader | Direct IDE / CLI Run Task |
 |---|---|---|---|
+| `:1.8.9.fabric` | **1.8.9** | **Fabric / Ornithe** | `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :1.8.9.fabric:runClient` |
+| `:1.8.9.forge` | **1.8.9** | **Forge** | `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :1.8.9.forge:runClient` |
+| `:1.12.2.forge` | **1.12.2** | **Forge** | `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :1.12.2.forge:runClient` |
+| `:1.16.5.forge` | **1.16.5** | **Forge** | `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :1.16.5.forge:runClient` |
 | `:1.20.fabric` | **1.20.1** | **Fabric** | `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :1.20.fabric:runClient` |
 | `:1.20.forge` | **1.20.1** | **Forge** | `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :1.20.forge:runClient` |
 | `:1.21.fabric` | **1.21.1** | **Fabric** | `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :1.21.fabric:runClient` |
 | `:1.21.neoforge` | **1.21.1** | **NeoForge** | `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :1.21.neoforge:runClient` |
-| `:1.8.9.fabric` | **1.8.9** | **Fabric / Ornithe** | `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :1.8.9.fabric:runClient` |
 
 ### Standalone Version Folders
 Every version folder in the repository is explicitly namespaced by its modloader:

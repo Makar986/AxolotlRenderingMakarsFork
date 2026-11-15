@@ -118,17 +118,19 @@ public class MsdfFontData {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	public static MsdfFontData parse(InputStream inputStream) {
 		try (Reader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
-			JsonObject root = JsonParser.parseReader(reader).getAsJsonObject();
+			JsonObject root = new JsonParser().parse(reader).getAsJsonObject();
 			return new MsdfFontData(root);
 		} catch (Exception e) {
 			throw new RuntimeException("Failed to parse MSDF font JSON", e);
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	public static MsdfFontData parse(String jsonString) {
-		JsonObject root = JsonParser.parseString(jsonString).getAsJsonObject();
+		JsonObject root = new JsonParser().parse(jsonString).getAsJsonObject();
 		return new MsdfFontData(root);
 	}
 
