@@ -11,8 +11,8 @@ plugins {
 	id("net.fabricmc.fabric-loom-remap") version "1.17.+" apply false
 	id("net.fabricmc.fabric-loom") version "1.17.+" apply false
 	id("ploceus") version "1.17.+" apply false
-	id("net.neoforged.moddev") version "2.0.78" apply false
-	id("net.neoforged.moddev.legacyforge") version "2.0.78" apply false
+	id("net.neoforged.moddev") version "2.0.148" apply false
+	id("net.neoforged.moddev.legacyforge") version "2.0.148" apply false
 }
 
 version = "${project.version}"

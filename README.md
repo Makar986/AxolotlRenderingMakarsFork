@@ -21,8 +21,8 @@ Fork of [AxolotlClient-rendering](https://codeberg.org/AxolotlClient/AxolotlClie
 - **GaussianBlur Shader Effect**: Added separable Gaussian blur filter (`axolotlclient_rendering$roundedGaussianBlur`) supporting arbitrary blur radii, sigma control, tinting, and smooth rounded corners.
 - **Multi-Loader Compatibility**:
   - **Forge**: 1.8.9, 1.12.2, 1.16.5, 1.20.1
-  - **NeoForge**: 1.21.1+
-  - **Fabric / Quilt / Ornithe**: 1.8.9, 1.12.2, 1.16.5, 1.20.1, 1.21+
+  - **NeoForge**: 1.21.1, 26.1, 26.2, 26.3
+  - **Fabric / Quilt / Ornithe**: 1.8.9, 1.12.2, 1.16.5, 1.20.1, 1.21+, 26.x
 - **Artifact Size**: Library footprint reduced drastically by stripping heavy XML/Batik runtimes.
 
 ---
@@ -60,14 +60,20 @@ Fork of [AxolotlClient-rendering](https://codeberg.org/AxolotlClient/AxolotlClie
 | `:1.20.forge` | **1.20.1** | **Forge** | `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :1.20.forge:runClient` |
 | `:1.21.fabric` | **1.21.1** | **Fabric** | `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :1.21.fabric:runClient` |
 | `:1.21.neoforge` | **1.21.1** | **NeoForge** | `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :1.21.neoforge:runClient` |
+| `:26.1.neoforge` | **26.1** | **NeoForge** | `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :26.1.neoforge:runClient` |
+| `:26.2.neoforge` | **26.2** | **NeoForge** | `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :26.2.neoforge:runClient` |
+| `:26.3.neoforge` | **26.3** | **NeoForge** | `JAVA_HOME=/usr/lib/jvm/java-21-openjdk ./gradlew :26.3.neoforge:runClient` |
 
 ### Standalone Version Folders
 Every version folder in the repository is explicitly namespaced by its modloader:
 - `1.21.4.fabric/` — Minecraft 1.21.4 (Fabric)
 - `1.21.11.fabric/` — Minecraft 1.21.11 (Fabric / RenderPipelines)
-- `26.1.x.fabric/` — 26.1 generation (Fabric)
-- `26.2.fabric/` — 26.2 generation (Fabric)
-- `26.3.fabric/` — 26.3 generation (Fabric)
+- `26.1.neoforge/` — Minecraft 26.1 (NeoForge)
+- `26.1.x.fabric/` — Minecraft 26.1 (Fabric)
+- `26.2.neoforge/` — Minecraft 26.2 (NeoForge)
+- `26.2.fabric/` — Minecraft 26.2 (Fabric)
+- `26.3.neoforge/` — Minecraft 26.3 (NeoForge)
+- `26.3.fabric/` — Minecraft 26.3 (Fabric)
 - `1.16.5.fabric/` — Minecraft 1.16.5 (Fabric)
 - `1.12.2.fabric/` — Minecraft 1.12.2 (Fabric / Ornithe)
 

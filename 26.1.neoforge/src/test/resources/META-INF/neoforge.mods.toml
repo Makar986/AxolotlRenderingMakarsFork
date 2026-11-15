@@ -1,0 +1,17 @@
+modLoader="javafml"
+loaderVersion="[1,)"
+license="LGPL-3.0-or-later"
+
+[[mods]]
+modId="axolotlclient_rendering_test"
+version="${version}"
+displayName="AxolotlClient Rendering Test"
+authors="moehreag, Makar986"
+description="Test mod for AxolotlClient Rendering"
+
+[[dependencies.axolotlclient_rendering_test]]
+    modId="axolotlclient_rendering"
+    type="required"
+    versionRange="*"
+    ordering="AFTER"
+    side="BOTH"

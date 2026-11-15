@@ -1,0 +1,32 @@
+#version 330
+#extension GL_ARB_separate_shader_objects : require
+
+#include <minecraft:dynamictransforms.glsl>
+
+layout(location = 3) in float outlineWidth;
+layout(location = 2) in vec4 vertexColor;
+layout(location = 1) in vec4 dimensions;
+layout(location = 0) in vec4 rounding;
+
+layout(location = 0) out vec4 fragColor;
+
+// https://www.shadertoy.com/view/4llXD7, MIT License
+float sdRoundBox(in vec2 pos, in vec2 halfDim, in vec4 radius) {
+	radius.xy = (pos.x>0.0)?radius.xy : radius.zw;
+	radius.x  = (pos.y>0.0)?radius.x  : radius.y;
+	vec2 q = abs(pos)-halfDim+radius.x;
+	return min(max(q.x, q.y), 0.0) + length(max(q, 0.0)) - radius.x;
+}
+
+void main() {
+	vec4 color = vertexColor;
+
+	vec2 hDim = dimensions.zw/2.;
+	float d = abs(sdRoundBox(dimensions.xy-hDim, hDim-outlineWidth, rounding-outlineWidth)) - outlineWidth;
+	color.a *= 1.0-smoothstep(0.0, 0.5, d);
+
+	if (color.a == 0.0) {
+		discard;
+	}
+	fragColor = color * ColorModulator;
+}
