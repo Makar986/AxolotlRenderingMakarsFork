@@ -24,14 +24,12 @@ package io.github.axolotlclient.rendering;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.FloatBuffer;
 import java.util.stream.Collectors;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.resources.IResource;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.ApiStatus;
 import org.lwjgl.opengl.GL20;
 
@@ -43,14 +41,13 @@ public class ShaderManager {
 	public static Shader createProgram(ResourceLocation id) throws IOException {
 		return createProgram(id, id);
 	}
-
 	public static Shader createProgram(ResourceLocation vertexShader, ResourceLocation fragmentShader) throws IOException {
-		ResourceLocation vId = new ResourceLocation(vertexShader.getNamespace(), "shaders/" + vertexShader.getPath() + ".vsh");
-		ResourceLocation fId = new ResourceLocation(fragmentShader.getNamespace(), "shaders/" + fragmentShader.getPath() + ".fsh");
+		var vId = new ResourceLocation(vertexShader.getNamespace(), "shaders/" + vertexShader.getPath() + ".vsh");
+		var fId = new ResourceLocation(fragmentShader.getNamespace(), "shaders/" + fragmentShader.getPath() + ".fsh");
 
-		int program = glCreateProgram();
-		int vShader = createShader(vId, GL_VERTEX_SHADER);
-		int fShader = createShader(fId, GL_FRAGMENT_SHADER);
+		var program = glCreateProgram();
+		var vShader = createShader(vId, GL_VERTEX_SHADER);
+		var fShader = createShader(fId, GL_FRAGMENT_SHADER);
 		glAttachShader(program, vShader);
 		glAttachShader(program, fShader);
 		glLinkProgram(program);
@@ -67,9 +64,9 @@ public class ShaderManager {
 	private static int createShader(ResourceLocation resource, int type) throws IOException {
 		int shader = glCreateShader(type);
 
-		IResource res = Minecraft.getInstance().getResourceManager().getResource(resource);
-		try (InputStream in = res.getInputStream(); BufferedReader reader = new BufferedReader(new InputStreamReader(in))) {
-			String source = reader.lines().collect(Collectors.joining("\n"));
+		var res = Minecraft.getInstance().getResourceManager().getResource(resource);
+		try (var in = res.getInputStream(); var reader = new BufferedReader(new InputStreamReader(in))) {
+			var source = reader.lines().collect(Collectors.joining("\n"));
 			glShaderSource(shader, source);
 		}
 
@@ -82,24 +79,14 @@ public class ShaderManager {
 	}
 
 	public static void safeClose(Shader... shaders) {
-		for (Shader shader : shaders) {
+		for (var shader : shaders) {
 			if (shader != null) {
 				shader.delete();
 			}
 		}
 	}
 
-	public static class Shader {
-		private final int programId;
-
-		public Shader(int programId) {
-			this.programId = programId;
-		}
-
-		public int programId() {
-			return programId;
-		}
-
+	public record Shader(int programId) {
 		public void bind() {
 			GL20.glUseProgram(programId);
 		}
@@ -114,6 +101,10 @@ public class ShaderManager {
 
 		public void setUniform(String name, float value) {
 			glUniform1f(glGetUniformLocation(programId, name), value);
+		}
+
+		public void setUniform(String name, float v0, float v1) {
+			glUniform2f(glGetUniformLocation(programId, name), v0, v1);
 		}
 
 		public void setUniform(String name, float v0, float v1, float v2, float v3) {

@@ -22,68 +22,103 @@
 
 package io.github.axolotlclient.rendering.test;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
-import io.github.axolotlclient.rendering.GuiGraphicsExtension;
 import io.github.axolotlclient.rendering.font.DefaultFont;
-import io.github.axolotlclient.rendering.font.Font;
-import io.github.axolotlclient.rendering.font.FontAdapter;
+import com.mojang.blaze3d.vertex.PoseStack;
+import io.github.axolotlclient.rendering.GuiGraphicsExtension;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.AbstractGui;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.resources.ResourceLocation;
 
 @Mod("axolotlclient_rendering_test")
 public class RenderingTestMod {
-
-	private static final AbstractGui gui = new AbstractGui() {};
+	private static final GuiComponent GUI = new GuiComponent() {};
 
 	public RenderingTestMod() {
-		MinecraftForge.EVENT_BUS.register(this);
+		MinecraftForge.EVENT_BUS.addListener(this::onRenderOverlay);
 	}
 
-	@SubscribeEvent
-	public void onRenderOverlay(RenderGameOverlayEvent.Post event) {
+	private void onRenderOverlay(RenderGameOverlayEvent.Post event) {
 		if (event.getType() != RenderGameOverlayEvent.ElementType.ALL) return;
+		PoseStack stack = event.getMatrixStack();
+		// GuiGraphicsMixin adds GuiGraphicsExtension to GuiComponent at runtime (no interface injection on Forge).
+		GuiGraphicsExtension guiGraphics = (GuiGraphicsExtension) GUI;
+		{
+			var font = DefaultFont.inter();
+			var adapter = DefaultFont.interAdapter();
 
-		MatrixStack stack = event.getMatrixStack();
-		GuiGraphicsExtension guiGraphics = (GuiGraphicsExtension) gui;
-		Font font = DefaultFont.inter();
-		FontAdapter adapter = DefaultFont.interAdapter();
+			guiGraphics.axolotlclient_rendering$roundedRectGradientVarying(stack, 10, 10, 60, 60, 0xFF777777, 0xFF777777, 0xFFFF7777, 0xFF777777, 5, 0, 0, 5);
+			guiGraphics.axolotlclient_rendering$roundedRectVarying(stack, 10, 60, 60, 80, 0xFF77CC77, 0, 5, 5, 0);
+			guiGraphics.axolotlclient_rendering$outlineRoundedRect(stack, 10, 10, 60, 50, 0xFF77AAAA, 5, 3);
+			guiGraphics.axolotlclient_rendering$roundedRect(stack, 80, 100, 180, 160, 0xFF777777, 9);
+			guiGraphics.axolotlclient_rendering$roundedRect(stack, 80, 10, 180, 30, 0x77777777, 9);
+			guiGraphics.axolotlclient_rendering$outlineRoundedRect(stack, 80, 10, 180, 30, 0x99FF3333, 9, 3);
+			guiGraphics.axolotlclient_rendering$roundedRect(stack, 80, 50, 180, 70, 0xAA777777, 10);
+			guiGraphics.axolotlclient_rendering$circleBlit(stack, new ResourceLocation("minecraft", "textures/gui/title/background/panorama_0.png"),
+				300, 120, 100);
+			guiGraphics.axolotlclient_rendering$outlineCircleBlit(stack, new ResourceLocation("minecraft", "textures/gui/title/background/panorama_1.png"),
+				300, 120, -1, 100, 5f);
 
-		guiGraphics.axolotlclient_rendering$roundedRectGradientVarying(stack, 10, 10, 60, 60, 0xFF777777, 0xFF777777, 0xFFFF7777, 0xFF777777, 5, 0, 0, 5);
-		guiGraphics.axolotlclient_rendering$roundedRectVarying(stack, 10, 60, 60, 80, 0xFF77CC77, 0, 5, 5, 0);
-		guiGraphics.axolotlclient_rendering$outlineRoundedRect(stack, 10, 10, 60, 50, 0xFF77AAAA, 5, 3);
-		guiGraphics.axolotlclient_rendering$roundedRect(stack, 80, 100, 180, 160, 0xFF777777, 9);
-		guiGraphics.axolotlclient_rendering$roundedRect(stack, 80, 10, 180, 30, 0x77777777, 9);
-		guiGraphics.axolotlclient_rendering$outlineRoundedRect(stack, 80, 10, 180, 30, 0x99FF3333, 9, 3);
-		guiGraphics.axolotlclient_rendering$roundedRect(stack, 80, 50, 180, 70, 0xAA777777, 10);
-		guiGraphics.axolotlclient_rendering$circleBlit(stack, new ResourceLocation("minecraft", "textures/gui/title/background/panorama_0.png"),
-			300, 120, 100);
-		guiGraphics.axolotlclient_rendering$outlineCircleBlit(stack, new ResourceLocation("minecraft", "textures/gui/title/background/panorama_1.png"),
-			300, 120, -1, 100, 5f);
+			var t = "Example §otext§r §nwith§r §kmultiple§r §mwords and §5some §a§lcolors§r.";
+			GUI.drawString(stack, Minecraft.getInstance().font, t, 20, 100, -1);
+			guiGraphics.axolotlclient_rendering$drawString(stack, font, t, 20, 110, -1);
+			font.withSize(12, () -> guiGraphics.axolotlclient_rendering$drawString(stack, font, t, 20, 125, -1));
+			var w = new TextComponent("Lorem ipsum dolor sit amet, consetetur sadipscing elitr, " +
+				"sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, " +
+				"sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. " +
+				"Stet clita kasd gubergren, no sea takimata sanctus est");
+			guiGraphics.axolotlclient_rendering$drawWordWrap(stack, font, w, 20, 150, 80, -1);
+			guiGraphics.axolotlclient_rendering$blitSVG(stack, new ResourceLocation("axolotlclient-rendering", "textures/svg/23.svg"),
+				guiGraphics.guiWidth() - 50, 0, 50, 50, -1);
+			GUI.drawString(stack, adapter, new TextComponent("AAAAaÄǍÄÅ"), 20, 140, -1);
+			//guiGraphics.drawWordWrap(stack, adapter, w, 100, 150, 80, -1);
+			//guiGraphics.drawWordWrap(stack, Minecraft.getInstance().font, w, 180, 150, 80, -1);
+			guiGraphics.axolotlclient_rendering$roundedVLine(stack, guiGraphics.guiWidth() - 30, 150 - 1, 200, 0xFF8833FF);
+			guiGraphics.axolotlclient_rendering$roundedRect(stack, guiGraphics.guiWidth() - 15, 150, guiGraphics.guiWidth() - 14, 200, 0xFF885533, 1.5f);
+			guiGraphics.axolotlclient_rendering$roundedRect(stack, guiGraphics.guiWidth() - 18, 150, guiGraphics.guiWidth() - 16, 200, 0xFF777777, 1.5f);
+			guiGraphics.axolotlclient_rendering$roundedRect(stack, guiGraphics.guiWidth() - 25, 150, guiGraphics.guiWidth() - 20, 200, 0xFF885533, 2.75f);
+			guiGraphics.axolotlclient_rendering$roundedRect(stack, guiGraphics.guiWidth() - 30, 220, guiGraphics.guiWidth() - 10, 230, 0xFFFFAA33, 5f);
+			guiGraphics.axolotlclient_rendering$outlineRoundedRect(stack, guiGraphics.guiWidth() - 30, 220, guiGraphics.guiWidth() - 10, 230, 0xFF222222, 5f, 1f);
 
-		String t = "Example §otext§r §nwith§r §kmultiple§r §mwords and §5some §a§lcolors§r.";
-		AbstractGui.drawString(stack, Minecraft.getInstance().font, t, 20, 100, -1);
-		guiGraphics.axolotlclient_rendering$drawString(stack, font, t, 20, 110, -1);
-		font.withSize(12, () -> guiGraphics.axolotlclient_rendering$drawString(stack, font, t, 20, 125, -1));
-		StringTextComponent w = new StringTextComponent("Lorem ipsum dolor sit amet, consetetur sadipscing elitr, " +
-			"sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, " +
-			"sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. " +
-			"Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.");
-		guiGraphics.axolotlclient_rendering$drawWordWrap(stack, font, w, 20, 140, 200, -1);
-		AbstractGui.drawString(stack, Minecraft.getInstance().font, "Using FontAdapter:", 20, 200, -1);
-		AbstractGui.drawString(stack, adapter, t, 20, 210, -1);
-		adapter.drawWordWrap(w, 20, 230, 200, -1);
+			guiGraphics.axolotlclient_rendering$roundedRect(stack, 250 - 5, 60 - 5, 300 + 5, 60 + 5, -1, 0);
+			guiGraphics.axolotlclient_rendering$segmentGradientH(stack, 250, 60, 300, 60, 0xFFFF0000, 0xFF00FF00, 5);
 
-		guiGraphics.axolotlclient_rendering$segment(stack, 20, 320, 100, 360, 0xFF00FF00, 0xFFFF0000, 0xFF0000FF, 0xFFFFFF00, 10);
+			var x = 280;
+			var y = 160;
+			var r = 5;
+			guiGraphics.axolotlclient_rendering$roundedRect(stack, x + 70 - r, y - 20 - r, x + 120 + r, y - 20 + r, -1, 0);
+			guiGraphics.axolotlclient_rendering$segmentGradientH(stack, x + 70, y - 20, x + 120, y - 20, 0xFFFF0000, 0xFF00FF00, r);
 
-		guiGraphics.axolotlclient_rendering$blitSVG(stack, new ResourceLocation("axolotlclient-rendering", "textures/svg/rainbow.svg"),
-			230, 20, 50, 50);
-		guiGraphics.axolotlclient_rendering$blitSVG(stack, new ResourceLocation("axolotlclient-rendering", "textures/svg/23.svg"),
-			230, 75, 50, 50, 0xFFFF0000);
+			guiGraphics.axolotlclient_rendering$segmentGradientH(stack, x + 50, y + 30, x + 100, y, 0xFF00FF00, 0xFF0000FF, r);
+			guiGraphics.axolotlclient_rendering$segmentGradientH(stack, x + 50, y, x + 100, y + 30, 0xFF00FF00, 0xFF0000FF, r);
+
+			guiGraphics.axolotlclient_rendering$segmentGradientH(stack, x + 50, y + 30, x + 100, y + 60, 0xFF00FF00, 0xFF0000FF, r);
+			guiGraphics.axolotlclient_rendering$segmentGradientH(stack, x + 50, y + 60, x + 100, y + 30, 0xFF00FF00, 0xFF0000FF, r);
+
+			guiGraphics.axolotlclient_rendering$segmentGradientH(stack, x + 50, y + 30, x, y + 60, 0xFF00FF00, 0xFF0000FF, r);
+			guiGraphics.axolotlclient_rendering$segmentGradientH(stack, x + 50, y + 60, x, y + 30, 0xFF00FF00, 0xFF0000FF, r);
+
+			guiGraphics.axolotlclient_rendering$segmentGradientH(stack, x + 50, y + 30, x, y, 0xFF00FF00, 0xFF0000FF, r);
+			guiGraphics.axolotlclient_rendering$segmentGradientH(stack, x + 50, y, x, y + 30, 0xFF00FF00, 0xFF0000FF, r);
+
+			guiGraphics.axolotlclient_rendering$segmentGradientV(stack, x, y - 20, x + 100, y, 0xFFFF0000, 0xFF00FF00, 1f);
+
+			// GaussianBlur demo
+			guiGraphics.axolotlclient_rendering$roundedGaussianBlur(stack, 400, 50, 120, 80, 10f, 6f, 3.5f);
+
+			// LiquidGlass demo (frosted glass, specular reflection, chromatic dispersion)
+			guiGraphics.axolotlclient_rendering$liquidGlass(stack, 400, 150, 140, 90, 12f, 0x25FFFFFF, 0x55FFFFFF, 1.2f, 5.0f, 4.0f);
+
+			// MSDF Font demo (Montserrat default built-in)
+			var msdfFont = io.github.axolotlclient.rendering.font.msdf.DefaultMsdfFont.montserrat();
+			if (msdfFont != null) {
+				guiGraphics.axolotlclient_rendering$drawMsdfString(stack, msdfFont, "MSDF Montserrat Font", 410, 165, 14f, 0xFFFFFFFF, true);
+				guiGraphics.axolotlclient_rendering$drawMsdfString(stack, msdfFont, "ReGlass Liquid Style", 410, 185, 11f, 0xFF77DDFF, true);
+				guiGraphics.axolotlclient_rendering$drawMsdfString(stack, msdfFont, "Sharp at 22px!", 410, 205, 22f, 0xFFFFCC00, true);
+			}
+		}
 	}
 }

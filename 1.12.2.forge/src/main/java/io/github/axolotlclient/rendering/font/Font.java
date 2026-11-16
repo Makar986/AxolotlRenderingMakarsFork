@@ -34,15 +34,10 @@ import java.util.*;
 import java.util.function.Consumer;
 
 import com.google.common.io.ByteStreams;
-import io.github.axolotlclient.rendering.StyleExtension;
-
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.BufferBuilder;
 import io.github.axolotlclient.rendering.ExRenderPipelines;
 import io.github.axolotlclient.rendering.Rendering;
 import io.github.axolotlclient.rendering.RenderingCommon;
+import io.github.axolotlclient.rendering.StyleExtension;
 import io.github.axolotlclient.rendering.util.ARGB;
 import it.unimi.dsi.fastutil.floats.Float2ObjectMap;
 import it.unimi.dsi.fastutil.floats.Float2ObjectOpenHashMap;
@@ -54,32 +49,46 @@ import it.unimi.dsi.fastutil.longs.*;
 import it.unimi.dsi.fastutil.objects.*;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.IResourceManager;
-import net.minecraft.client.resources.IResource;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.Style;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.ResourceLocation;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
-import org.lwjgl.PointerBuffer;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.MemoryUtil;
-import org.lwjgl.util.freetype.FT_Face;
-import org.lwjgl.util.freetype.FT_MM_Var;
-import org.lwjgl.util.freetype.FT_Vector;
-import org.lwjgl.util.freetype.TT_OS2;
 
-import static org.lwjgl.util.freetype.FreeType.*;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.font.FontRenderContext;
+import java.awt.font.GlyphVector;
+import java.awt.font.LineMetrics;
+import java.awt.font.TextAttribute;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.io.ByteArrayInputStream;
 
 @SuppressWarnings({"resource", "DataFlowIssue", "unused"})
-@Slf4j
+@Log4j2
 public class Font implements Closeable {
+
+	/*
+	 * 1.12.2 Forge port: Minecraft 1.12.2 ships LWJGL 2, so FreeType (LWJGL 3) is not available at runtime.
+	 * Glyphs are rasterized with java.awt instead. Variable font axes cannot be driven through AWT,
+	 * so the weight axis is emulated (synthetic bold at >= 600) and italics come from the italic sub font.
+	 */
+	private static final FontRenderContext FRC = new FontRenderContext(null, true, true);
+	private static final float SYNTHETIC_BOLD_THRESHOLD = 600;
 
 	public static final long TAG_WEIGHT = makeVariantTag('w', 'g', 'h', 't');
 	public static final long TAG_WIDTH = makeVariantTag('w', 'd', 't', 'h');
@@ -95,8 +104,10 @@ public class Font implements Closeable {
 		Font.fonts.removeIf(w -> w.get() == null);
 		Font.fonts.forEach(w -> {
 			Font f = w.get();
-			f.clearPageMap();
-			f.loadGlyphDimensions();
+			if (f != null) {
+				f.clearPageMap();
+				f.loadGlyphDimensions();
+			}
 		});
 	}
 
@@ -105,35 +116,29 @@ public class Font implements Closeable {
 		Font.fonts.removeIf(w -> w.get() == null);
 		Font.fonts.forEach(w -> {
 			Font font = w.get();
-			font.resizeInternal(font.mcSize);
+			if (font != null) {
+				font.resizeInternal(font.mcSize);
+			}
 		});
 	}
 
 	public static void closeAll() {
 		Font.fonts.removeIf(w -> w.get() == null);
-		Font.fonts.forEach(w -> w.get().close());
+		Font.fonts.forEach(w -> {
+			Font f = w.get();
+			if (f != null) {
+				f.close();
+			}
+		});
 	}
 
 	private static ScaledResolution window = new ScaledResolution(Minecraft.getMinecraft());
-	private static long ftLib;
-	private static int ftRefCount;
-	private static final Object LIBRARY_LOCK = new Object();
-	private static final Random RANDOM = new Random();
 
-	private static long getLibrary() {
-		synchronized (LIBRARY_LOCK) {
-			if (ftLib == 0L) {
-				try (MemoryStack memoryStack = MemoryStack.stackPush()) {
-					PointerBuffer buf = memoryStack.mallocPointer(1);
-					if (FT_Init_FreeType(buf) != FT_Err_Ok) {
-						throw new IllegalStateException("initializing FreeType lib");
-					}
-					ftLib = buf.get();
-				}
-			}
-			return ftLib;
-		}
+	public static ScaledResolution getWindow() {
+		return window != null ? window : new ScaledResolution(Minecraft.getMinecraft());
 	}
+
+	private static final Random RANDOM = new Random();
 
 	/**
 	 * Create a font from this file.
@@ -166,24 +171,27 @@ public class Font implements Closeable {
 	 * @throws IOException if an I/O exception occurs
 	 */
 	public static Font read(byte[] font, int size) throws IOException {
-		ByteBuffer buf = MemoryUtil.memAlloc(font.length);
-		buf.put(font).flip();
-		return read(buf, size);
+		return new Font(font, size);
 	}
 
 	/**
 	 * Create a font from this file.
 	 *
-	 * @param font the font file. <strong>This memory will be freed on {@link #close()}</strong>.
+	 * @param font the font file
 	 * @param size the font size in pixels
 	 * @throws IOException if an I/O exception occurs
 	 */
 	public static Font read(ByteBuffer font, int size) throws IOException {
-		return new Font(font, true, size, 0);
+		byte[] bytes = new byte[font.remaining()];
+		font.duplicate().get(bytes);
+		return read(bytes, size);
 	}
 
-	ByteBuffer fontMem;
-	FT_Face face;
+	private java.awt.Font baseFont;
+	private java.awt.Font sizedFont;
+	private java.awt.Font kerningFont;
+	private LineMetrics lineMetrics;
+	private final Long2FloatMap kerningCache = new Long2FloatOpenHashMap();
 	private boolean hasKerningInfo;
 	private int mcSize, size;
 	private int lineHeight;
@@ -195,54 +203,15 @@ public class Font implements Closeable {
 
 	private final Int2ObjectMap<Long2ObjectMap<Page>> pageMap = new Int2ObjectOpenHashMap<>();
 
-	Font(ByteBuffer font, boolean ownsFontMem, int size, long faceIndex) throws IOException {
-		fonts.add(new WeakReference<>(this));
-		this.fontMem = ownsFontMem ? font : null;
-		try (MemoryStack stack = MemoryStack.stackPush()) {
-			PointerBuffer faceBuf = stack.mallocPointer(1);
-			int error = FT_New_Memory_Face(getLibrary(), font, faceIndex, faceBuf);
-			if (error != FT_Err_Ok) {
-				if (error == FT_Err_Unknown_File_Format) {
-					throw new IOException("Unknown format for font");
-				}
-				throw new IOException("Error reading font");
-			}
-			face = FT_Face.create(faceBuf.get());
-			if (!"TrueType".equals(FT_Get_Font_Format(face))) {
-				FT_Done_Face(face);
-				throw new IOException("Unsupported font format");
-			}
-
-			if (FT_HAS_MULTIPLE_MASTERS(face)) {
-				PointerBuffer mmVarBuf = stack.mallocPointer(1);
-				FT_Get_MM_Var(face, mmVarBuf);
-				FT_MM_Var variants = FT_MM_Var.create(mmVarBuf.get());
-
-				for (org.lwjgl.util.freetype.FT_Var_Axis a : variants.axis()) {
-					variations.put(a.tag(), new ObjectFloatMutablePair<>(new VariationAxis(true, f16Dot16ToFP32(a.minimum()), f16Dot16ToFP32(a.def()), f16Dot16ToFP32(a.maximum()), a.tag(), a.strid()), a.def()));
-				}
-				synchronized (LIBRARY_LOCK) {
-					FT_Done_MM_Var(getLibrary(), variants);
-				}
-				if (hasVariant(TAG_WEIGHT)) {
-					setVariant(TAG_WEIGHT, WEIGHT_REGULAR);
-				}
-			}
-
-			if (FT_Select_Charmap(face, FT_ENCODING_UNICODE) != FT_Err_Ok) {
-				FT_Done_Face(face);
-				throw new IOException("No unicode charmap in font");
-			}
-
-			try {
-				resize(size);
-			} catch (RuntimeException e) {
-				FT_Done_Face(face);
-				throw e;
-			}
-
-			ftRefCount++;
+	Font(byte[] font, int size) throws IOException {
+		try {
+			baseFont = java.awt.Font.createFont(java.awt.Font.TRUETYPE_FONT, new ByteArrayInputStream(font));
+		} catch (java.awt.FontFormatException e) {
+			throw new IOException("Unsupported font format", e);
 		}
+		fonts.add(new WeakReference<>(this));
+		variations.put(TAG_WEIGHT, new ObjectFloatMutablePair<>(new VariationAxis(true, 100, WEIGHT_REGULAR, 900, TAG_WEIGHT, 0), WEIGHT_REGULAR));
+		resize(size);
 	}
 
 	public static int makeVariantTag(String tag) {
@@ -253,7 +222,7 @@ public class Font implements Closeable {
 	}
 
 	public static int makeVariantTag(char x1, char x2, char x3, char x4) {
-		return FT_MAKE_TAG(x1, x2, x3, x4);
+		return (x1 & 0xFF) << 24 | (x2 & 0xFF) << 16 | (x3 & 0xFF) << 8 | (x4 & 0xFF);
 	}
 
 	private static float f16Dot16ToFP32(final long value) {
@@ -304,13 +273,31 @@ public class Font implements Closeable {
 	}
 
 	private void setVariants() {
-		try (MemoryStack stack = MemoryStack.stackPush()) {
-			org.lwjgl.CLongBuffer buf = stack.mallocCLong(variations.size());
-			variations.values().forEach(p -> buf.put(fp32ToF16Dot16(p.valueFloat())));
-			buf.flip();
-			FT_Set_Var_Design_Coordinates(face, buf);
+		int style = getVariant(TAG_WEIGHT) >= SYNTHETIC_BOLD_THRESHOLD ? java.awt.Font.BOLD : java.awt.Font.PLAIN;
+		sizedFont = baseFont.deriveFont(style, (float) size);
+		Map<TextAttribute, Object> attrs = new HashMap<>();
+		attrs.put(TextAttribute.KERNING, TextAttribute.KERNING_ON);
+		kerningFont = sizedFont.deriveFont(attrs);
+		kerningCache.clear();
+		lineMetrics = sizedFont.getLineMetrics("Ag", FRC);
+		lineHeight = (int) Math.ceil(lineMetrics.getHeight());
+	}
+
+	private float kerning(int prevCodePt, int codePt) {
+		long key = (long) prevCodePt << 32 | (codePt & 0xFFFFFFFFL);
+		if (kerningCache.containsKey(key)) {
+			return kerningCache.get(key);
 		}
-		lineHeight = (int) (FT_MulFix(face.height(), face.size().metrics().y_scale()) / 64);
+		char[] chars = (new String(Character.toChars(prevCodePt)) + new String(Character.toChars(codePt))).toCharArray();
+		GlyphVector plain = sizedFont.createGlyphVector(FRC, chars);
+		GlyphVector kerned = kerningFont.layoutGlyphVector(FRC, chars, 0, chars.length, java.awt.Font.LAYOUT_LEFT_TO_RIGHT);
+		float k = 0;
+		if (plain.getNumGlyphs() == kerned.getNumGlyphs() && kerned.getNumGlyphs() > 1) {
+			int last = kerned.getNumGlyphs() - 1;
+			k = (float) (kerned.getGlyphPosition(last).getX() - plain.getGlyphPosition(last).getX());
+		}
+		kerningCache.put(key, k);
+		return k;
 	}
 
 	public void setVariant(long tag, float value) {
@@ -331,16 +318,20 @@ public class Font implements Closeable {
 	private void setVariantInternal(long tag, float value) {
 		for (ObjectFloatPair<VariationAxis> e : variations.values()) {
 			if (e.key().tag() == tag) {
-				e.value(value);
+				if (e instanceof ObjectFloatMutablePair) {
+					((ObjectFloatMutablePair<VariationAxis>) e).value(value);
+				}
 				break;
 			}
 		}
 	}
 
 	public void resetVariants() {
-		if (FT_IS_VARIATION(face)) {
+		if (!variations.isEmpty()) {
 			for (ObjectFloatPair<VariationAxis> e : variations.values()) {
-				e.value(e.key().def());
+				if (e instanceof ObjectFloatMutablePair) {
+					((ObjectFloatMutablePair<VariationAxis>) e).value(e.key().def());
+				}
 			}
 			setVariants();
 		}
@@ -371,14 +362,10 @@ public class Font implements Closeable {
 
 	private void resizeInternal(int mcSize) {
 		this.mcSize = mcSize;
-		size = mcSize * window.getScaleFactor();
-		if (FT_Set_Pixel_Sizes(face, 0, size) != FT_Err_Ok) {
-			throw new RuntimeException("Can't set font size " + size);
-		}
+		size = mcSize * getWindow().getScaleFactor();
+		setVariants();
 
-		lineHeight = (int) (FT_MulFix(face.height(), face.size().metrics().y_scale()) / 64);
-
-		hasKerningInfo = FT_HAS_KERNING(face);
+		hasKerningInfo = true;
 
 		loadGlyphDimensions();
 	}
@@ -416,21 +403,6 @@ public class Font implements Closeable {
 		subFonts.forEach(s -> s.font.close());
 		subFonts.clear();
 		clearPageMap();
-
-		synchronized (LIBRARY_LOCK) {
-			if (face != null) {
-				FT_Done_Face(face);
-				face = null;
-			}
-			if (--ftRefCount == 0) {
-				FT_Done_FreeType(ftLib);
-				ftLib = 0;
-			}
-		}
-		if (fontMem != null) {
-			MemoryUtil.memFree(fontMem);
-			fontMem = null;
-		}
 	}
 
 	public void renderText(String text, float x, float y, int color, boolean shadow, int alignFlags) {
@@ -445,7 +417,7 @@ public class Font implements Closeable {
 
 	private void renderTextCommon(float x, float y, int alignFlags, BuiltText builtText) {
 		float[] startOffset = getOffset(alignFlags, builtText);
-		float scale = (float) window.getScaleFactor();
+		float scale = (float) getWindow().getScaleFactor();
 
 		GlStateManager.pushMatrix();
 		GlStateManager.translate(x, y - 1f, 0);
@@ -458,7 +430,7 @@ public class Font implements Closeable {
 	}
 
 	float ascender() {
-		return MathHelper.floor(FT_MulFix(face.ascender(), face.size().metrics().y_scale()) / 64f);
+		return MathHelper.floor(activeSubFont.lineMetrics.getAscent());
 	}
 
 	private static float @NotNull [] getOffset(int alignFlags, BuiltText builtText) {
@@ -492,7 +464,7 @@ public class Font implements Closeable {
 		Tessellator tess = Tessellator.getInstance();
 		GlStateManager.enableBlend();
 		ExRenderPipelines.FONT_PROGRAM.bind();
-		GlStateManager.color(1, 1, 1);
+		GlStateManager.color(1, 1, 1, 1);
 		BufferBuilder vertexConsumer = tess.getBuffer();
 		for (Map.Entry<ResourceLocation, List<CoordData>> pageGlyphs : builtText.coordData().entrySet()) {
 			Minecraft.getMinecraft().getTextureManager().bindTexture(pageGlyphs.getKey());
@@ -515,7 +487,7 @@ public class Font implements Closeable {
 			tess.draw();
 		}
 		ExRenderPipelines.FONT_PROGRAM.unbind();
-		GlStateManager.color(1, 1, 1);
+		GlStateManager.color(1, 1, 1, 1);
 		GlStateManager.disableTexture2D();
 		if (!builtText.effects().isEmpty()) {
 			vertexConsumer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
@@ -546,14 +518,14 @@ public class Font implements Closeable {
 	}
 
 	public int lineHeight() {
-		return activeSubFont.lineHeight / window.getScaleFactor();
+		return activeSubFont.lineHeight / getWindow().getScaleFactor();
 	}
 
 	private float getWidth(int codePt, Style style) {
 		updateVariant(style);
 		Page page = getPage(codePt, false);
 		CharInfo c = page.charInfo[codePt & 0xFF];
-		return c.advanceX / window.getScaleFactor();
+		return c.advanceX / getWindow().getScaleFactor();
 	}
 
 	public List<ITextComponent> split(String text, int maxWidth) {
@@ -571,17 +543,17 @@ public class Font implements Closeable {
 		ObjectArrayList<EffectData> effects = new ObjectArrayList<>();
 		float[] fontBox = new float[]{Float.MAX_VALUE, Float.MAX_VALUE, Float.MIN_VALUE, Float.MIN_VALUE};
 
-		final int[] prevGlyphI = {0};
+		final int[] prevCodePt = {-1};
 
 		sink.accept((index, style, codePt) -> {
 			if (codePt == '\n') {
 				penX[0] = 0;
 				penY[0] += lineHeight();
-				prevGlyphI[0] = 0;
+				prevCodePt[0] = -1;
 				return true;
 			} else if (codePt == '\r') {
 				penX[0] = 0;
-				prevGlyphI[0] = 0;
+				prevCodePt[0] = -1;
 				return true;
 			}
 
@@ -592,7 +564,9 @@ public class Font implements Closeable {
 				textColor = ARGB.color(ARGB.alpha(color), styleColor.getValue());
 			} else if (style.getColor() != null && style.getColor().isColor()) {
 				textColor = ARGB.color(ARGB.alpha(color), TextRenderUtils.getColor(style.getColor()));
-			} else textColor = color;
+			} else {
+				textColor = color;
+			}
 
 			int shadowColor = shadow ? ARGB.scaleRGB(textColor, 0.25f) : 0;
 
@@ -607,25 +581,24 @@ public class Font implements Closeable {
 			int charX1 = c.x1;
 			int charY1 = c.y1;
 			if (style.getObfuscated() && codePt != ' ') {
-				IntList codePts = activeSubFont.glyphsByWidth.get(size).get(charAdvanceX);
-				codePt = codePts.getInt(RANDOM.nextInt(codePts.size()));
-				page = getPage(codePt, true);
+				Float2ObjectMap<IntList> bySize = activeSubFont.glyphsByWidth.get(size);
+				IntList codePts = bySize != null ? bySize.get(charAdvanceX) : null;
+				if (codePts != null && !codePts.isEmpty()) {
+					codePt = codePts.getInt(RANDOM.nextInt(codePts.size()));
+					page = getPage(codePt, true);
 
-				c = page.charInfo[codePt & 0xFF];
+					c = page.charInfo[codePt & 0xFF];
+				}
 			}
 
-			if (hasKerningInfo && prevGlyphI[0] > 0 && c.glyphI > 0) {
-				try (FT_Vector kerning = FT_Vector.create()) {
-					FT_Get_Kerning(activeSubFont.face, prevGlyphI[0], c.glyphI, FT_KERNING_DEFAULT, kerning);
-					penX[0] += kerning.x() / 64f;
-					penY[0] = kerning.y() / 64f;
-				}
+			if (hasKerningInfo && prevCodePt[0] > 0) {
+				penX[0] += activeSubFont.kerning(prevCodePt[0], codePt);
 			}
 
 			List<CoordData> list = screenAndTexCoords.computeIfAbsent(page.tex, unused -> new ObjectArrayList<>());
 
 			boolean hasShadow = ARGB.alpha(shadowColor) != 0;
-			float shadowOffset = 1f * window.getScaleFactor();
+			float shadowOffset = 1f * getWindow().getScaleFactor();
 			if (hasShadow) {
 				list.add(new CoordData(penX[0] + charX0 + shadowOffset, penY[0] - charY0 + shadowOffset,
 					c.u0, c.v0, c.u1, c.v1,
@@ -639,15 +612,9 @@ public class Font implements Closeable {
 			if (style.getStrikethrough() || style.getUnderlined()) {
 				float effectX = penX[0];
 				if (style.getStrikethrough()) {
-					long table = FT_Get_Sfnt_Table(activeSubFont.face, FT_SFNT_OS2);
-					float strikeoutpos = ascender() / 2f - shadowOffset;
-					short strikeoutThicknessFT = activeSubFont.face.underline_thickness();
-					if (table != 0L) {
-						TT_OS2 t = TT_OS2.create(table);
-						strikeoutThicknessFT = t.yStrikeoutSize();
-						strikeoutpos = FT_MulFix(t.yStrikeoutPosition(), activeSubFont.face.size().metrics().y_scale()) / 64f;
-					}
-					float strikeoutThickness = FT_MulFix(strikeoutThicknessFT, activeSubFont.face.size().metrics().y_scale()) / 64f;
+					LineMetrics lm = activeSubFont.lineMetrics;
+					float strikeoutpos = -lm.getStrikethroughOffset();
+					float strikeoutThickness = Math.max(1, lm.getStrikethroughThickness());
 					if (hasShadow) {
 						effects.add(new EffectData(effectX + shadowOffset, penY[0] - strikeoutpos + shadowOffset,
 							charAdvanceX, strikeoutThickness, shadowColor));
@@ -656,8 +623,8 @@ public class Font implements Closeable {
 						charAdvanceX, strikeoutThickness, textColor));
 				}
 				if (style.getUnderlined()) {
-					float underlinePos = FT_MulFix(activeSubFont.face.underline_position(), activeSubFont.face.size().metrics().y_scale()) / 64f;
-					float underlineThickness = FT_MulFix(activeSubFont.face.underline_thickness(), activeSubFont.face.size().metrics().y_scale()) / 64f;
+					float underlinePos = -activeSubFont.lineMetrics.getUnderlineOffset();
+					float underlineThickness = Math.max(1, activeSubFont.lineMetrics.getUnderlineThickness());
 					if (hasShadow) {
 						effects.add(new EffectData(effectX + shadowOffset, penY[0] - underlinePos + shadowOffset,
 							charAdvanceX, underlineThickness, shadowColor));
@@ -675,10 +642,9 @@ public class Font implements Closeable {
 			penX[0] += charAdvanceX;
 			penY[0] += charAdvanceY;
 
-			prevGlyphI[0] = c.glyphI;
+			prevCodePt[0] = codePt;
 			return true;
 		});
-
 
 		return new BuiltText(screenAndTexCoords, effects, fontBox);
 	}
@@ -745,14 +711,24 @@ public class Font implements Closeable {
 		private final Object2ObjectOpenHashMap<ResourceLocation, List<CoordData>> coordData;
 		private final List<EffectData> effects;
 		private final float[] textBox;
+
 		public BuiltText(Object2ObjectOpenHashMap<ResourceLocation, List<CoordData>> coordData, List<EffectData> effects, float[] textBox) {
 			this.coordData = coordData;
 			this.effects = effects;
 			this.textBox = textBox;
 		}
-		public Object2ObjectOpenHashMap<ResourceLocation, List<CoordData>> coordData() { return coordData; }
-		public List<EffectData> effects() { return effects; }
-		public float[] textBox() { return textBox; }
+
+		public Object2ObjectOpenHashMap<ResourceLocation, List<CoordData>> coordData() {
+			return coordData;
+		}
+
+		public List<EffectData> effects() {
+			return effects;
+		}
+
+		public float[] textBox() {
+			return textBox;
+		}
 	}
 
 	private Page loadPageGlyphDimensions(long pageIndex) {
@@ -763,27 +739,29 @@ public class Font implements Closeable {
 		int rowWidth = 0, maxRowWidth = 0, rowHeight = 0, totalHeight = 0;
 		for (int codePt = pageNo << 8; codePt < (pageNo + 1) << 8; codePt++) {
 			int tblRow = (codePt >> 4) & 0xF;
-			int glyphI = FT_Get_Char_Index(face, codePt);
-			if (FT_Load_Glyph(face, glyphI, FT_LOAD_NO_BITMAP | FT_LOAD_BITMAP_METRICS_ONLY) != FT_Err_Ok) {
-				log.error("Error loading glyph for while getting dimensions: {} ({})", Integer.toHexString(codePt), new String(Character.toChars(codePt)));
-				continue;
+			CharInfo c = page.charInfo[codePt & 0xFF] = new CharInfo();
+			int bmpWidth = 0, bmpRows = 0;
+			try {
+				GlyphVector gv = glyphVector(codePt);
+				Rectangle bounds = gv.getGlyphPixelBounds(0, FRC, 0, 0);
+				bmpWidth = Math.max(0, bounds.width);
+				bmpRows = Math.max(0, bounds.height);
+				c.x0 = bounds.x;
+				c.y0 = -bounds.y;
+				c.x1 = bmpWidth + bounds.x;
+				c.y1 = -bounds.y + bmpRows;
+				c.advanceX = gv.getGlyphMetrics(0).getAdvanceX();
+				c.advanceY = 0;
+				c.glyphI = gv.getGlyphCode(0);
+				if (sizedFont.canDisplay(codePt)) {
+					glyphsByWidth.computeIfAbsent(size, u -> new Float2ObjectOpenHashMap<>()).computeIfAbsent(c.advanceX, unused -> new IntArrayList()).add(codePt);
+				}
+			} catch (RuntimeException e) {
+				log.error("Error loading glyph while getting dimensions: {} ({})", Integer.toHexString(codePt), Character.toString((char) codePt), e);
 			}
 
-			org.lwjgl.util.freetype.FT_GlyphSlot slot = face.glyph();
-			org.lwjgl.util.freetype.FT_Bitmap bmp = slot.bitmap();
-
-			CharInfo c = page.charInfo[codePt & 0xFF] = new CharInfo();
-			c.x0 = slot.bitmap_left();
-			c.y0 = slot.bitmap_top();
-			c.x1 = bmp.width() + slot.bitmap_left();
-			c.y1 = slot.bitmap_top() + bmp.rows();
-			c.advanceX = slot.advance().x() / 64f;
-			c.advanceY = slot.advance().y() / 64f;
-			c.glyphI = glyphI;
-			glyphsByWidth.computeIfAbsent(size, u -> new Float2ObjectOpenHashMap<>()).computeIfAbsent(c.advanceX, unused -> new IntArrayList()).add(codePt);
-
-			rowWidth += bmp.width() + 2;
-			rowHeight = Math.max(bmp.rows(), rowHeight);
+			rowWidth += bmpWidth + 2;
+			rowHeight = Math.max(bmpRows, rowHeight);
 			if (((codePt + 1 >> 4) & 0xF) != tblRow) {
 				maxRowWidth = Math.max(rowWidth, maxRowWidth);
 				rowWidth = 0;
@@ -804,10 +782,12 @@ public class Font implements Closeable {
 		int pageNo = (int) pageIndex;
 		page.rendered = true;
 
-		ByteBuffer texData = MemoryUtil.memAlloc(tWidth * tHeight);
-		long pointer = MemoryUtil.memAddress(texData);
-		MemoryUtil.memSet(pointer, 0, (long) tWidth * tHeight);
-		org.lwjgl.util.freetype.FT_GlyphSlot slot = face.glyph();
+		BufferedImage image = new BufferedImage(tWidth, tHeight, BufferedImage.TYPE_BYTE_GRAY);
+		Graphics2D g = image.createGraphics();
+		g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+		g.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+		g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g.setColor(java.awt.Color.WHITE);
 
 		int curX = 2;
 		int curY = 2;
@@ -816,24 +796,22 @@ public class Font implements Closeable {
 			int tblRow = (codePt >> 4) & 0xF;
 
 			CharInfo c = page.charInfo[codePt & 0xFF];
-			if (FT_Load_Glyph(face, c.glyphI, FT_LOAD_RENDER) != FT_Err_Ok) {
-				log.error("Error loading glyph for render: {} ({})", Integer.toHexString(codePt), new String(Character.toChars(codePt)));
+			if (c == null) {
 				curX += 2;
 			} else {
-				org.lwjgl.util.freetype.FT_Bitmap bmp = slot.bitmap();
-				final int width = bmp.width();
-				final int height = bmp.rows();
+				final int width = c.width();
+				final int height = c.height();
 
 				c.u0 = (float) (curX) / tWidth;
 				c.v0 = (float) (curY) / tHeight;
-				c.u1 = (float) (curX + bmp.width()) / tWidth;
-				c.v1 = (float) (curY + bmp.rows()) / tHeight;
+				c.u1 = (float) (curX + width) / tWidth;
+				c.v1 = (float) (curY + height) / tHeight;
 
-				ByteBuffer buffer = bmp.buffer(bmp.width() * bmp.rows());
-				if (buffer != null) {
-					long src = MemoryUtil.memAddress(buffer);
-					for (int y = 0; y < height; y++) {
-						MemoryUtil.memCopy(src + ((long) y * width), pointer + (curX + (long) (curY + y) * tWidth), width);
+				if (width > 0 && height > 0) {
+					try {
+						g.drawGlyphVector(glyphVector(codePt), curX - c.x0, curY + c.y0);
+					} catch (RuntimeException e) {
+						log.error("Error loading glyph for render: {} ({})", Integer.toHexString(codePt), Character.toString((char) codePt), e);
 					}
 				}
 				curX += width + 2;
@@ -847,8 +825,13 @@ public class Font implements Closeable {
 			}
 		}
 
-		String family = face.family_nameString();
-		String style = face.style_nameString();
+		g.dispose();
+		byte[] pixels = ((DataBufferByte) image.getRaster().getDataBuffer()).getData();
+		ByteBuffer texData = BufferUtils.createByteBuffer(pixels.length);
+		texData.put(pixels).flip();
+
+		String family = baseFont.getFamily(Locale.ROOT);
+		String style = baseFont.getFontName(Locale.ROOT) + (getVariant(TAG_WEIGHT) >= SYNTHETIC_BOLD_THRESHOLD ? "_bold" : "");
 		page.tex = new ResourceLocation(RenderingCommon.MODID,
 			String.format("font_%s/%s/page_%d/%d",
 				family.replace(" ", "_").toLowerCase(Locale.ROOT),
@@ -875,10 +858,12 @@ public class Font implements Closeable {
 		GL11.glPixelStorei(3316, 0);
 		GL11.glPixelStorei(3315, 0);
 		GL11.glPixelStorei(3317, 1);
-		GL11.glTexSubImage2D(0xde1, 0, 0, 0, tWidth, tHeight, 0x1903, 5121, pointer);
-
-		MemoryUtil.memFree(texData);
+		GL11.glTexSubImage2D(0xde1, 0, 0, 0, tWidth, tHeight, 0x1903, 5121, texData);
 		Minecraft.getMinecraft().getTextureManager().loadTexture(page.tex, tex);
+	}
+
+	private GlyphVector glyphVector(int codePt) {
+		return sizedFont.createGlyphVector(FRC, Character.toChars(codePt));
 	}
 
 	public static final int ORIGIN_HORIZ_BASELINE = 0x00;
@@ -915,61 +900,146 @@ public class Font implements Closeable {
 		boolean rendered;
 	}
 
-
 	public static class CoordData {
 		private final float x, y, u, v, u1, v1;
 		private final int width, height, color;
+
 		public CoordData(float x, float y, float u, float v, float u1, float v1, int width, int height, int color) {
-			this.x = x; this.y = y; this.u = u; this.v = v; this.u1 = u1; this.v1 = v1;
-			this.width = width; this.height = height; this.color = color;
+			this.x = x;
+			this.y = y;
+			this.u = u;
+			this.v = v;
+			this.u1 = u1;
+			this.v1 = v1;
+			this.width = width;
+			this.height = height;
+			this.color = color;
 		}
-		public float x() { return x; }
-		public float y() { return y; }
-		public float u() { return u; }
-		public float v() { return v; }
-		public float u1() { return u1; }
-		public float v1() { return v1; }
-		public int width() { return width; }
-		public int height() { return height; }
-		public int color() { return color; }
+
+		public float x() {
+			return x;
+		}
+
+		public float y() {
+			return y;
+		}
+
+		public float u() {
+			return u;
+		}
+
+		public float v() {
+			return v;
+		}
+
+		public float u1() {
+			return u1;
+		}
+
+		public float v1() {
+			return v1;
+		}
+
+		public int width() {
+			return width;
+		}
+
+		public int height() {
+			return height;
+		}
+
+		public int color() {
+			return color;
+		}
 	}
 
 	public static class EffectData {
 		private final float x, y, width, height;
 		private final int color;
+
 		public EffectData(float x, float y, float width, float height, int color) {
-			this.x = x; this.y = y; this.width = width; this.height = height; this.color = color;
+			this.x = x;
+			this.y = y;
+			this.width = width;
+			this.height = height;
+			this.color = color;
 		}
-		public float x() { return x; }
-		public float y() { return y; }
-		public float width() { return width; }
-		public float height() { return height; }
-		public int color() { return color; }
+
+		public float x() {
+			return x;
+		}
+
+		public float y() {
+			return y;
+		}
+
+		public float width() {
+			return width;
+		}
+
+		public float height() {
+			return height;
+		}
+
+		public int color() {
+			return color;
+		}
 	}
 
 	private static class SubFont {
 		private final Long2FloatMap variant;
 		private final Font font;
+
 		public SubFont(Long2FloatMap variant, Font font) {
-			this.variant = variant; this.font = font;
+			this.variant = variant;
+			this.font = font;
 		}
-		public Long2FloatMap variant() { return variant; }
-		public Font font() { return font; }
+
+		public Long2FloatMap variant() {
+			return variant;
+		}
+
+		public Font font() {
+			return font;
+		}
 	}
 
 	private static class VariationAxis {
 		private final boolean supported;
-		private final float min, def, max;
-		private final long tag;
+		private final float min, def, max, tag;
 		private final int strid;
-		public VariationAxis(boolean supported, float min, float def, float max, long tag, int strid) {
-			this.supported = supported; this.min = min; this.def = def; this.max = max; this.tag = tag; this.strid = strid;
+
+		public VariationAxis(boolean supported, float min, float def, float max, float tag, int strid) {
+			this.supported = supported;
+			this.min = min;
+			this.def = def;
+			this.max = max;
+			this.tag = tag;
+			this.strid = strid;
 		}
-		public boolean supported() { return supported; }
-		public float min() { return min; }
-		public float def() { return def; }
-		public float max() { return max; }
-		public long tag() { return tag; }
-		public int strid() { return strid; }
+
+		public boolean supported() {
+			return supported;
+		}
+
+		public float min() {
+			return min;
+		}
+
+		public float def() {
+			return def;
+		}
+
+		public float max() {
+			return max;
+		}
+
+		public float tag() {
+			return tag;
+		}
+
+		public int strid() {
+			return strid;
+		}
 	}
 }

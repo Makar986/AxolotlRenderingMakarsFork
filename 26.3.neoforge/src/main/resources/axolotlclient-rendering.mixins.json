@@ -7,8 +7,9 @@
 		"AbstractWidgetMixin",
 		"ActiveTextCollectorParametersMixin",
 		"BufferBuilderAccessor",
-	  "GuiGraphicsExtractorMixin",
-	  "GuiGraphicsExtractorRenderingTextCollectorMixin",
+		"GuiGraphicsExtractorMixin",
+		"GuiGraphicsExtractorRenderingTextCollectorMixin",
+		"GuiRendererMixin",
 		"WindowMixin"
 	],
 	"injectors": {

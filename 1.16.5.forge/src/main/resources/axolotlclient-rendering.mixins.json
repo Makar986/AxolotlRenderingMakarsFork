@@ -1,0 +1,16 @@
+{
+	"required": true,
+	"minVersion": "0.8",
+	"package": "io.github.axolotlclient.rendering.mixin",
+	"compatibilityLevel": "JAVA_16",
+	"refmap": "axolotlclient-rendering.refmap.json",
+	"client": [
+		"GlStateManagerAccessor",
+		"GuiGraphicsMixin",
+		"NativeImageAccessor",
+		"WindowMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

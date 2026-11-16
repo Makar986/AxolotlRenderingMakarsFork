@@ -29,7 +29,7 @@ import io.github.axolotlclient.rendering.util.ARGB;
 import lombok.extern.slf4j.Slf4j;
 import net.fabricmc.api.ClientModInitializer;
 import net.ornithemc.osl.lifecycle.api.client.MinecraftClientEvents;
-import net.ornithemc.osl.resource.loader.api.ResourceLoaderEvents;
+import net.ornithemc.osl.resource.loader.api.client.ClientResourceLoaderEvents;
 import org.jetbrains.annotations.ApiStatus;
 
 @Slf4j
@@ -38,7 +38,7 @@ public class Rendering implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		ExRenderPipelines.init();
-		ResourceLoaderEvents.END_RESOURCE_RELOAD.register(Font::reload);
+		ClientResourceLoaderEvents.END_RESOURCE_RELOAD.register((manager, ctx) -> Font.reload());
 		MinecraftClientEvents.STOP.register(mc -> Font.closeAll());
 	}
 

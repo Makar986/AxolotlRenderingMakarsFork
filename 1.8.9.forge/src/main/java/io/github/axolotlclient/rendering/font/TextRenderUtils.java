@@ -27,11 +27,11 @@ import java.util.Map;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
 import net.minecraft.util.ChatStyle;
 import net.minecraft.util.EnumChatFormatting;
 
-@Slf4j
+@Log4j2
 public final class TextRenderUtils {
 
 	private static final Map<Character, EnumChatFormatting> formattingCodes;

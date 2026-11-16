@@ -150,3 +150,9 @@ modrinth {
 	changelog = "The changelog is available at https://codeberg.org/AxolotlClient/AxolotlClient-rendering/graph <br>" +
 		"Commit: [$abbrev](https://codeberg.org/AxolotlClient/AxolotlClient-rendering/commit/${id.name})"
 }
+
+// Fabric API 1.16.5's resource loader reads only one root path of a dev mod (the classes dir),
+// so resources must sit next to the classes or assets (shaders, fonts, svg) are not found in runClient.
+sourceSets.configureEach {
+	output.setResourcesDir(java.classesDirectory)
+}

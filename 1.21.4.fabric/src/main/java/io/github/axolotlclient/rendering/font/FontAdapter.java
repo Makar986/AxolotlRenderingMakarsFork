@@ -24,26 +24,24 @@ package io.github.axolotlclient.rendering.font;
 
 import java.util.List;
 
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.textures.GpuTextureView;
-import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import io.github.axolotlclient.rendering.ExRenderPipelines;
+import net.minecraft.client.renderer.CoreShaders;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.font.TextRenderable;
-import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.locale.Language;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringDecomposer;
-import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 
 /**
@@ -55,29 +53,28 @@ import org.joml.Matrix4f;
  * as barely any font will have an integer font size. In order to get correct results, use methods
  * in {@link io.github.axolotlclient.rendering.GuiGraphicsExtension} that directly accept a {@link io.github.axolotlclient.rendering.font.Font}.
  */
-@SuppressWarnings({"NullableProblems", "DataFlowIssue"})
+@SuppressWarnings({"NullableProblems", "unused"})
 public class FontAdapter extends Font {
 	private static final Minecraft mc = Minecraft.getInstance();
 	private final io.github.axolotlclient.rendering.font.Font font;
 
 	public FontAdapter(io.github.axolotlclient.rendering.font.Font font) {
-		super(null);
+		super(null, false);
 		this.font = font;
 	}
 
-	@Override
-	public void drawInBatch(String text, float x, float y, int color, boolean drawShadow, Matrix4f pose, MultiBufferSource bufferSource, DisplayMode mode, int backgroundColor, int packedLightCoords) {
-		mc.font.drawInBatch(text, x, y, color, drawShadow, pose, bufferSource, mode, backgroundColor, packedLightCoords);
+	static int adjustColor(int color) {
+		return (color & 0xFC000000) == 0 ? color | 0xFF000000 : color;
 	}
 
 	@Override
-	public void drawInBatch(Component text, float x, float y, int color, boolean drawShadow, Matrix4f pose, MultiBufferSource bufferSource, DisplayMode mode, int backgroundColor, int packedLightCoords) {
-		mc.font.drawInBatch(text, x, y, color, drawShadow, pose, bufferSource, mode, backgroundColor, packedLightCoords);
+	public int drawInBatch(String text, float x, float y, int color, boolean dropShadow, Matrix4f matrix, MultiBufferSource buffer, Font.DisplayMode displayMode, int backgroundColor, int packedLightCoords) {
+		return this.drawInternal(text, x, y, color, dropShadow, matrix, buffer, displayMode, backgroundColor, packedLightCoords, isBidirectional());
 	}
 
 	@Override
-	public void drawInBatch(FormattedCharSequence text, float x, float y, int color, boolean drawShadow, Matrix4f pose, MultiBufferSource bufferSource, DisplayMode mode, int backgroundColor, int packedLightCoords) {
-		mc.font.drawInBatch(text, x, y, color, drawShadow, pose, bufferSource, mode, backgroundColor, packedLightCoords);
+	public int drawInBatch(FormattedCharSequence text, float x, float y, int color, boolean dropShadow, Matrix4f matrix, MultiBufferSource buffer, Font.DisplayMode displayMode, int backgroundColor, int packedLightCoords) {
+		return this.drawInternal(text, x, y, color, dropShadow, matrix, buffer, displayMode, backgroundColor, packedLightCoords);
 	}
 
 	@Override
@@ -85,186 +82,71 @@ public class FontAdapter extends Font {
 		mc.font.drawInBatch8xOutline(text, x, y, color, backgroundColor, pose, bufferSource, packedLightCoords);
 	}
 
-	@Override
-	public PreparedText prepareText(String text, float x, float y, int color, boolean dropShadow, int backgroundColor) {
+	private int drawInternal(String text, float x, float y, int color, boolean dropShadow, Matrix4f matrix, MultiBufferSource buffer, Font.DisplayMode displayMode, int backgroundColor, int packedLightCoords, boolean bidirectional) {
 		var t = isBidirectional() ? bidirectionalShaping(text) : text;
-		var built = font.buildText(color, dropShadow, s -> StringDecomposer.iterateFormatted(t, Style.EMPTY, s));
-		return getPreparedText(x, y, built, backgroundColor);
+		renderText(x, y, matrix, buffer, font.buildText(adjustColor(color), dropShadow, s -> StringDecomposer.iterateFormatted(t, Style.EMPTY, s)), backgroundColor);
+		return (int) (x+width(text));
 	}
 
-	private @NotNull PreparedText getPreparedText(float x, float y, io.github.axolotlclient.rendering.font.Font.BuiltText built, int backgroundColor) {
-		var s = 1f / mc.getWindow().getGuiScale();
+	private void renderText(float x, float y, Matrix4f matrix, MultiBufferSource buffer, io.github.axolotlclient.rendering.font.Font.BuiltText built, int backgroundColor) {
+		RenderSystem.setShader(ExRenderPipelines.FONT_SHADER);
+		var s = (float) (1f / mc.getWindow().getGuiScale());
 		float[] startOffset = io.github.axolotlclient.rendering.font.Font.getOffset(0, built);
-		var transform = new Matrix4f().translate(x, y-1f, 0)
+		var pose = new Matrix4f(matrix).translate(x, y-1f, 0)
 			.scale(s, s, 1)
 			.translate(0, font.ascender(), 0)
 			.translate(-startOffset[0], -startOffset[1], 0);
-		return new PreparedText() {
-			@Override
-			public void visit(GlyphVisitor visitor) {
-				if (backgroundColor != 0) {
-					visitor.acceptEffect(new TextRenderable() {
-						@Override
-						public void render(Matrix4f matrix, VertexConsumer consumer, int packedLight, boolean noDepth) {
-							var pose = new Matrix4f(matrix).mul(transform);
-							consumer.addVertex(pose, x - 1f, y - 1f, 0.01f).setColor(backgroundColor);
-							consumer.addVertex(pose, x - 1f, y - 1f + built.textBox()[3] + 1f, 0.01f).setColor(backgroundColor);
-							consumer.addVertex(pose, x + built.textBox()[2] + 1f, y - 1f + built.textBox()[3] + 1f, 0.01f).setColor(backgroundColor);
-							consumer.addVertex(pose, x + built.textBox()[2] + 1f, y - 1f, 0.01f).setColor(backgroundColor);
-						}
+		if (backgroundColor != 0) {
+			var vertexConsumer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+			vertexConsumer.addVertex(pose, x - 1f, y - 1f, 0.01f).setColor(backgroundColor);
+			vertexConsumer.addVertex(pose, x - 1f, y - 1f + built.textBox()[3] + 1f, 0.01f).setColor(backgroundColor);
+			vertexConsumer.addVertex(pose, x + built.textBox()[2] + 1f, y - 1f + built.textBox()[3] + 1f, 0.01f).setColor(backgroundColor);
+			vertexConsumer.addVertex(pose, x + built.textBox()[2] + 1f, y - 1f, 0.01f).setColor(backgroundColor);
 
-						@Override
-						public RenderType renderType(DisplayMode displayMode) {
-							return null;
-						}
-
-						@Override
-						public GpuTextureView textureView() {
-							return null;
-						}
-
-						@Override
-						public RenderPipeline guiPipeline() {
-							return RenderPipelines.GUI;
-						}
-
-						@Override
-						public float left() {
-							return 0;
-						}
-
-						@Override
-						public float top() {
-							return 0;
-						}
-
-						@Override
-						public float right() {
-							return 0;
-						}
-
-						@Override
-						public float bottom() {
-							return 0;
-						}
-					});
-				}
-				for (var entry : built.coordData().entrySet()) {
-					visitor.acceptGlyph(new TextRenderable.Styled() {
-						@Override
-						public Style style() {
-							return null;
-						}
-
-						@Override
-						public void render(Matrix4f matrix, VertexConsumer consumer, int packedLight, boolean noDepth) {
-							var pose = new Matrix4f(matrix).mul(transform);
-							for (var g : entry.getValue()) {
-								consumer.addVertex(pose, g.x(), g.y(), 0).setUv(g.u(), g.v()).setColor(g.color());
-								consumer.addVertex(pose, g.x(), g.y() + g.height(), 0).setUv(g.u(), g.v1()).setColor(g.color());
-								consumer.addVertex(pose, g.x() + g.width(), g.y() + g.height(), 0).setUv(g.u1(), g.v1()).setColor(g.color());
-								consumer.addVertex(pose, g.x() + g.width(), g.y(), 0).setUv(g.u1(), g.v()).setColor(g.color());
-							}
-						}
-
-						@Override
-						public RenderType renderType(DisplayMode displayMode) {
-							return null;
-						}
-
-						@Override
-						public GpuTextureView textureView() {
-							return mc.getTextureManager().getTexture(entry.getKey()).getTextureView();
-						}
-
-						@Override
-						public RenderPipeline guiPipeline() {
-							return ExRenderPipelines.FONT;
-						}
-
-						@Override
-						public float left() {
-							return 0;
-						}
-
-						@Override
-						public float top() {
-							return 0;
-						}
-
-						@Override
-						public float right() {
-							return 0;
-						}
-
-						@Override
-						public float bottom() {
-							return 0;
-						}
-					});
-				}
-				if (!built.effects().isEmpty()) {
-					visitor.acceptEffect(new TextRenderable() {
-						@Override
-						public void render(Matrix4f matrix, VertexConsumer consumer, int packedLight, boolean noDepth) {
-							var pose = new Matrix4f(matrix).mul(transform);
-							for (var e : built.effects()) {
-								consumer.addVertex(pose, e.x(), e.y(), 0).setColor(e.color());
-								consumer.addVertex(pose, e.x(), e.y() + e.height(), 0).setColor(e.color());
-								consumer.addVertex(pose, e.x() + e.width(), e.y() + e.height(), 0).setColor(e.color());
-								consumer.addVertex(pose, e.x() + e.width(), e.y(), 0).setColor(e.color());
-							}
-						}
-
-						@Override
-						public RenderType renderType(DisplayMode displayMode) {
-							return null;
-						}
-
-						@Override
-						public GpuTextureView textureView() {
-							return null;
-						}
-
-						@Override
-						public RenderPipeline guiPipeline() {
-							return RenderPipelines.GUI;
-						}
-
-						@Override
-						public float left() {
-							return 0;
-						}
-
-						@Override
-						public float top() {
-							return 0;
-						}
-
-						@Override
-						public float right() {
-							return 0;
-						}
-
-						@Override
-						public float bottom() {
-							return 0;
-						}
-					});
-				}
+			BufferUploader.drawWithShader(vertexConsumer.buildOrThrow());
+		}
+		for (var pageGlyphs : built.coordData().object2ObjectEntrySet()) {
+			RenderSystem.setShaderTexture(0, pageGlyphs.getKey());
+			RenderSystem.defaultBlendFunc();
+			RenderSystem.enableBlend();
+			var vertexConsumer = buffer.getBuffer(ExRenderPipelines.FONT);
+			for (var g : pageGlyphs.getValue()) {
+				vertexConsumer.addVertex(pose, g.x(), g.y(), 0).setUv(g.u(), g.v()).setColor(g.color());
+				vertexConsumer.addVertex(pose, g.x(), g.y() + g.height(), 0).setUv(g.u(), g.v1()).setColor(g.color());
+				vertexConsumer.addVertex(pose, g.x() + g.width(), g.y() + g.height(), 0).setUv(g.u1(), g.v1()).setColor(g.color());
+				vertexConsumer.addVertex(pose, g.x() + g.width(), g.y(), 0).setUv(g.u1(), g.v()).setColor(g.color());
 			}
-
-			@Override
-			public @NotNull ScreenRectangle bounds() {
-				return new ScreenRectangle((int) (x + built.textBox()[0]), (int) (y + built.textBox()[1]), (int) built.textBox()[2], (int) built.textBox()[3]);
+			mc.renderBuffers().bufferSource().endBatch(ExRenderPipelines.FONT);
+		}
+		RenderSystem.setShader(CoreShaders.POSITION_COLOR);
+		if (!built.effects().isEmpty()) {
+			var vertexConsumer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+			for (var e : built.effects()) {
+				vertexConsumer.addVertex(pose, e.x(), e.y(), 0).setColor(e.color());
+				vertexConsumer.addVertex(pose, e.x(), e.y() + e.height(), 0).setColor(e.color());
+				vertexConsumer.addVertex(pose, e.x() + e.width(), e.y() + e.height(), 0).setColor(e.color());
+				vertexConsumer.addVertex(pose, e.x() + e.width(), e.y(), 0).setColor(e.color());
 			}
-		};
+			BufferUploader.drawWithShader(vertexConsumer.buildOrThrow());
+		}
+		RenderSystem.enableBlend();
 	}
 
-	@Override
-	public PreparedText prepareText(FormattedCharSequence text, float x, float y, int color, boolean dropShadow, boolean includeEmpty, int backgroundColor) {
-		var built = font.buildText(color, dropShadow, text::accept);
-		return getPreparedText(x, y, built, backgroundColor);
+	private int drawInternal(
+		FormattedCharSequence text,
+		float x,
+		float y,
+		int color,
+		boolean dropShadow,
+		Matrix4f matrix,
+		MultiBufferSource buffer,
+		Font.DisplayMode displayMode,
+		int backgroundColor,
+		int packedLightCoords
+	) {
+		var built = font.buildText(adjustColor(color), dropShadow, text::accept);
+		renderText(x, y, matrix, buffer, built, backgroundColor);
+		return (int) (x+width(text));
 	}
 
 	@Override
@@ -298,6 +180,11 @@ public class FontAdapter extends Font {
 	}
 
 	@Override
+	public int wordWrapHeight(String text, int maxWidth) {
+		return font.lineHeight() * getSplitter().splitLines(text, maxWidth, Style.EMPTY).size();
+	}
+
+	@Override
 	public int wordWrapHeight(FormattedText text, int maxWidth) {
 		return font.lineHeight() * getSplitter().splitLines(text, maxWidth, Style.EMPTY).size();
 	}
@@ -305,11 +192,6 @@ public class FontAdapter extends Font {
 	@Override
 	public List<FormattedCharSequence> split(FormattedText text, int maxWidth) {
 		return Language.getInstance().getVisualOrder(getSplitter().splitLines(text, maxWidth, Style.EMPTY));
-	}
-
-	@Override
-	public List<FormattedText> splitIgnoringLanguage(FormattedText text, int maxWidth) {
-		return getSplitter().splitLines(text, maxWidth, Style.EMPTY);
 	}
 
 	@Override

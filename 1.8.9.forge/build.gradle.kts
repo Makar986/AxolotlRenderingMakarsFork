@@ -1,39 +1,48 @@
 @file:Suppress("UnstableApiUsage")
 
+import java.util.Properties
+
 plugins {
-	id("java-library")
+	id("gg.essential.loom") version "1.15.52"
+	id("dev.architectury.architectury-pack200") version "0.1.3"
 	id("maven-publish")
-	id("net.neoforged.moddev.legacyforge")
-	id("io.github.p03w.machete")
+	id("io.freefair.lombok") version "9.2.0"
+	id("com.gradleup.shadow") version "9.6.1"
 }
+
+val rootProps = Properties().apply { file("../gradle.properties").reader().use { load(it) } }
 
 val mcVersion = "1.8.9"
-val forgeVer = "11.15.1.2318-1.8.9"
+val forgeVer = "1.8.9-11.15.1.2318-1.8.9"
 
-group = project.property("maven_group") as String
-version = "${project.property("version")}+$mcVersion"
-base.archivesName = project.property("archives_base_name").toString()
+group = rootProps.getProperty("maven_group")
+version = "${rootProps.getProperty("version")}+$mcVersion-forge"
+base.archivesName = rootProps.getProperty("archives_base_name")
 
-legacyForge {
-	setVersion("$mcVersion-$forgeVer")
+java {
+	toolchain.languageVersion = JavaLanguageVersion.of(8)
+}
 
-	runs {
-		create("client") {
-			client()
-		}
+loom {
+	forge {
+		pack200Provider.set(dev.architectury.pack200.java.Pack200Adapter())
 	}
-
-	mods {
-		create("axolotlclient_rendering") {
-			sourceSet(sourceSets.main.get())
+	runConfigs {
+		named("client") {
+			isIdeConfigGenerated = true
 		}
-		create("axolotlclient_rendering_test") {
-			sourceSet(sourceSets.test.get())
-		}
+		remove(findByName("server"))
 	}
 }
 
-val forgeJar = "/home/makar/.gradle/caches/essential-loom/minecraftMaven/net/minecraft/forge-1.8.9-11.15.1.2318-1.8.9-minecraft-merged-generated-intermediate/1.8.9-de.oceanlabs.mcp.mcp_stable.1_8_9.22-1.8.9-forge-1.8.9-11.15.1.2318-1.8.9/forge-1.8.9-11.15.1.2318-1.8.9-minecraft-merged-generated-intermediate-1.8.9-de.oceanlabs.mcp.mcp_stable.1_8_9.22-1.8.9-forge-1.8.9-11.15.1.2318-1.8.9.jar"
+repositories {
+	maven("https://repo.essential.gg/repository/maven-public/")
+	maven("https://maven.minecraftforge.net/")
+	mavenCentral()
+}
+
+val shade: Configuration by configurations.creating
+configurations.implementation.get().extendsFrom(shade)
 
 sourceSets {
 	main {
@@ -43,77 +52,59 @@ sourceSets {
 }
 
 dependencies {
-	compileOnly(files(forgeJar))
-	testImplementation(files(forgeJar))
+	minecraft("com.mojang:minecraft:$mcVersion")
+	mappings("de.oceanlabs.mcp:mcp_stable:22-1.8.9")
+	forge("net.minecraftforge:forge:$forgeVer")
 
-	compileOnly("org.lwjgl.lwjgl:lwjgl:2.9.3")
-	testImplementation("org.lwjgl.lwjgl:lwjgl:2.9.3")
-	compileOnly("org.lwjgl:lwjgl-freetype:3.4.3")
-	testImplementation("org.lwjgl:lwjgl-freetype:3.4.3")
-
-	compileOnly("org.slf4j:slf4j-api:1.7.36")
-	testImplementation("org.slf4j:slf4j-api:1.7.36")
-	compileOnly("org.apache.commons:commons-lang3:3.12.0")
-	testImplementation("org.apache.commons:commons-lang3:3.12.0")
-
-	compileOnly("it.unimi.dsi:fastutil:8.5.9")
-	testImplementation("it.unimi.dsi:fastutil:8.5.9")
-	compileOnly("com.google.guava:guava:17.0")
-	testImplementation("com.google.guava:guava:17.0")
-	compileOnly("com.google.code.gson:gson:2.10")
-	testImplementation("com.google.code.gson:gson:2.10")
-	compileOnly("org.apache.logging.log4j:log4j-api:2.15.0")
-	testImplementation("org.apache.logging.log4j:log4j-api:2.15.0")
-
-	implementation("com.github.weisj:jsvg:1.6.1")
-	jarJar("com.github.weisj:jsvg:1.6.1")
+	// Forge 1.8.9 has no jar-in-jar and does not ship these, so they are shaded + relocated.
+	shade("it.unimi.dsi:fastutil:8.5.9")
+	shade("com.github.weisj:jsvg:1.6.1")
 	compileOnly("org.jetbrains:annotations:24.0.1")
+
 	testImplementation(sourceSets.main.get().output)
 }
 
-configurations {
-	all {
-		exclude(group = "net.minecraftforge", module = "forge")
-	}
-	testCompileClasspath {
-		extendsFrom(configurations.compileClasspath.get())
-	}
-	testRuntimeClasspath {
-		extendsFrom(configurations.runtimeClasspath.get())
-	}
+tasks.shadowJar {
+	configurations = listOf(shade)
+	archiveClassifier = "dev-shadow"
+	relocate("it.unimi.dsi.fastutil", "io.github.axolotlclient.rendering.shadow.fastutil")
+	relocate("com.github.weisj.jsvg", "io.github.axolotlclient.rendering.shadow.jsvg")
+	minimize()
+	exclude("META-INF/versions/**", "module-info.class")
+}
+
+tasks.remapJar {
+	inputFile.set(tasks.shadowJar.flatMap { it.archiveFile })
+	archiveClassifier = ""
+}
+
+tasks.jar {
+	archiveClassifier = "dev"
+}
+
+tasks.runClient {
+	classpath(sourceSets.test.get().runtimeClasspath)
 }
 
 tasks.withType<JavaCompile>().configureEach {
 	options.encoding = "UTF-8"
 }
 
-tasks.named("createMinecraftArtifacts") {
-	onlyIf { false }
-}
-
-tasks.named("reobfJar") {
-	onlyIf { false }
-}
-
 tasks.processResources {
 	duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 	inputs.property("version", version)
-
 	filesMatching("mcmod.info") {
 		expand("version" to version)
 	}
 }
 
-java {
-	sourceCompatibility = JavaVersion.VERSION_1_8
-	targetCompatibility = JavaVersion.VERSION_1_8
+// src/test holds the in-game test mod (used by runClient), not unit tests.
+tasks.test {
+	enabled = false
 }
 
-publishing {
-	publications {
-		create<MavenPublication>("mavenJava") {
-			artifactId = base.archivesName.get()
-			from(components["java"])
-		}
-	}
+// FML 1.8.9 builds a mod's resource pack from its classes directory, so in dev
+// the resources must sit next to the classes or assets (shaders, svg) are not found.
+sourceSets.configureEach {
+	output.setResourcesDir(java.classesDirectory)
 }

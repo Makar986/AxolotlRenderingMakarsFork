@@ -3,12 +3,9 @@
 	"package": "io.github.axolotlclient.rendering.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"client": [
-		"AbstractStringWidgetMixin",
-		"AbstractWidgetMixin",
-		"ActiveTextCollectorParametersMixin",
 		"BufferBuilderAccessor",
 		"GuiGraphicsMixin",
-		"GuiGraphicsRenderingTextCollectorMixin",
+		"NativeImageAccessor",
 		"VertexFormatElementMixin",
 		"WindowMixin"
 	],

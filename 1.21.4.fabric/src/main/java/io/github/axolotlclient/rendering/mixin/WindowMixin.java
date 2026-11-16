@@ -33,7 +33,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class WindowMixin {
 
 	@Inject(method = "setGuiScale", at = @At("TAIL"))
-	private void onRescale(int guiScale, CallbackInfo ci) {
+	private void onRescale(double scaleFactor, CallbackInfo ci) {
 		Font.onScaleChange();
 	}
 }

@@ -25,7 +25,7 @@ plugins {
 
 val minecraftVersion = "1.12.2"
 val feather = "1"
-val osl = "0.18.0"
+val osl = "0.19.0"
 val lwjglVersion = "3.4.1"
 
 group = project.property("maven_group")!!
@@ -56,6 +56,14 @@ repositories {
 
 configurations {
 	create("embedCompressed")
+}
+
+// OSL 0.19.0 ships its keybinds/config modules only for older Minecraft versions (<= 17w15a / <= 1.9),
+// so Fabric Loader refuses to start with them on 1.12.2. This mod uses neither (only lifecycle-events
+// and resource-loader), so they are kept off the classpath.
+configurations.configureEach {
+	exclude(group = "net.ornithemc.osl-gen2", module = "keybinds")
+	exclude(group = "net.ornithemc.osl-gen2", module = "config")
 }
 
 dependencies {

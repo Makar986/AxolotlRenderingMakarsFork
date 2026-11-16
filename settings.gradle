@@ -34,10 +34,10 @@ pluginManagement {
 include 'common'
 
 include '1.8.9.fabric'
-include '1.8.9.forge'
+includeBuild '1.8.9.forge' // standalone: Essential Loom, see 1.8.9.forge/settings.gradle.kts
 
-include '1.12.2.forge'
-include '1.16.5.forge'
+includeBuild '1.12.2.forge' // standalone: Essential Loom, see 1.12.2.forge/settings.gradle.kts
+includeBuild '1.16.5.forge' // standalone: Essential Loom, see 1.16.5.forge/settings.gradle.kts
 
 include '1.20.fabric'
 include '1.20.forge'
@@ -50,10 +50,10 @@ include '26.2.neoforge'
 include '26.3.neoforge'
 
 // Standalone version folders:
-// include '1.21.4.fabric'
-// include '1.21.11.fabric'
-// include '26.1.x.fabric'
-// include '26.2.fabric'
-// include '26.3.fabric'
-// include '1.16.5.fabric'
-// include '1.12.2.fabric'
+include '1.21.4.fabric'
+include '1.21.11.fabric'
+include '26.1.x.fabric'
+include '26.2.fabric'
+include '26.3.fabric'
+include '1.16.5.fabric'
+include '1.12.2.fabric'

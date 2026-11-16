@@ -22,126 +22,239 @@
 
 package io.github.axolotlclient.rendering.mixin;
 
-import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
-import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import io.github.axolotlclient.rendering.*;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.*;
+import io.github.axolotlclient.rendering.ExRenderPipelines;
+import io.github.axolotlclient.rendering.GuiGraphicsExtension;
+import io.github.axolotlclient.rendering.LiquidGlassStyle;
 import io.github.axolotlclient.rendering.font.Font;
+import io.github.axolotlclient.rendering.font.msdf.MsdfFont;
 import io.github.axolotlclient.rendering.svg.SVGCache;
+import net.minecraft.client.renderer.CoreShaders;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.ActiveTextCollector;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.render.TextureSetup;
-import net.minecraft.client.gui.render.state.GuiRenderState;
-import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
-import org.joml.Matrix3x2f;
-import org.joml.Matrix3x2fStack;
+import org.joml.Matrix4f;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
 
 @Mixin(GuiGraphics.class)
 public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 
 	@Shadow
 	@Final
-	public GuiGraphics.ScissorStack scissorStack;
-
-	@Shadow
-	public abstract Matrix3x2fStack pose();
+	private PoseStack pose;
 
 	@Shadow
 	@Final
-	public GuiRenderState guiRenderState;
+	private MultiBufferSource.BufferSource bufferSource;
 
+	@SuppressWarnings("DeprecatedIsStillUsed")
+	// 1.21.2+ dropped GuiGraphics' managed/unmanaged drawing; flush() draws the pending batch right away,
+	// which keeps these shapes ordered with the immediately drawn textured shapes and text.
 	@Shadow
-	@Final
-	Minecraft minecraft;
+	public abstract void flush();
 
-	@Shadow
-	protected abstract void innerBlit(RenderPipeline pipeline, Identifier atlas, int x0, int x1, int y0, int y1, float u0, float u1, float v0, float v1, int color);
+	@Override
+	public void axolotlclient_rendering$segment(int x0, int y0, int x1, int y1, int colorX0Y0, int colorX0Y1, int colorX1Y1, int colorX1Y0, float radius) {
+		var matrix = pose.last().pose();
+		var consumer = bufferSource.getBuffer(ExRenderPipelines.SEGMENT);
+		var x0f = x0 <= x1 ? x0 - radius : x0 + radius;
+		var y0f = y0 <= y1 ? y0 - radius : y0 + radius;
+		var x1f = x0 <= x1 ? x1 + radius : x1 - radius;
+		var y1f = y0 <= y1 ? y1 + radius : y1 - radius;
+		var width = x1f - x0f;
+		var height = y1f - y0f;
+		int z = 0;
+		Runnable addX0Y0 = () -> {
+			consumer.addVertex(matrix, x0f, y0f, z).setColor(colorX0Y0);
+			ExRenderPipelines.addRounding(consumer, radius, 0, 0, 0);
+			ExRenderPipelines.addDimensions(consumer, 0, 0, width, height);
+		}, addX0Y1 = () -> {
+			consumer.addVertex(matrix, x0f, y1f, z).setColor(colorX0Y1);
+			ExRenderPipelines.addRounding(consumer, radius, 0, 0, 0);
+			ExRenderPipelines.addDimensions(consumer, 0, height, width, height);
+		}, addX1Y1 = () -> {
+			consumer.addVertex(matrix, x1f, y1f, z).setColor(colorX1Y1);
+			ExRenderPipelines.addRounding(consumer, radius, 0, 0, 0);
+			ExRenderPipelines.addDimensions(consumer, width, height, width, height);
+		}, addX1Y0 = () -> {
+			consumer.addVertex(matrix, x1f, y0f, z).setColor(colorX1Y0);
+			ExRenderPipelines.addRounding(consumer, radius, 0, 0, 0);
+			ExRenderPipelines.addDimensions(consumer, width, 0, width, height);
+		};
+		if (x0 <= x1 && y0 <= y1) {
+			addX0Y0.run();
+			addX0Y1.run();
+			addX1Y1.run();
+			addX1Y0.run();
+		} else if (x0 > x1 && y0 <= y1) {
+			addX0Y0.run();
+			addX1Y0.run();
+			addX1Y1.run();
+			addX0Y1.run();
+		} else if (x0 <= x1) {
+			addX0Y1.run();
+			addX0Y0.run();
+			addX1Y0.run();
+			addX1Y1.run();
+		} else {
+			addX1Y0.run();
+			addX0Y0.run();
+			addX0Y1.run();
+			addX1Y1.run();
+		}
+
+		this.flush();
+	}
 
 	@Override
 	public void axolotlclient_rendering$roundedRectGradientVarying(int x0, int y0, int x1, int y1, int colorTopLeft, int colorBottomLeft, int colorBottomRight, int colorTopRight, float roundingPxTopLeft, float roundingPxBottomLeft, float roundingPxBottomRight, float roundingPxTopRight) {
-		guiRenderState.submitGuiElement(new ColoredRoundedRectangleRenderState(ExRenderPipelines.ROUNDED_RECT,
-			TextureSetup.noTexture(),
-			new Matrix3x2f(pose()),
-			x0, y0, x1, y1,
-			colorTopLeft, colorBottomLeft, colorBottomRight, colorTopRight,
-			roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight,
-			scissorStack.peek()));
+		var matrix = pose.last().pose();
+		var consumer = bufferSource.getBuffer(ExRenderPipelines.ROUNDED_RECT);
+		int width = x1 - x0;
+		int height = y1 - y0;
+		int z = 0;
+		consumer.addVertex(matrix, x0, y0, z).setColor(colorTopLeft);
+		ExRenderPipelines.addRounding(consumer, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
+		ExRenderPipelines.addDimensions(consumer, 0, 0, width, height);
+
+		consumer.addVertex(matrix, x0, y1, z).setColor(colorBottomLeft);
+		ExRenderPipelines.addRounding(consumer, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
+		ExRenderPipelines.addDimensions(consumer, 0, height, width, height);
+
+		consumer.addVertex(matrix, x1, y1, z).setColor(colorBottomRight);
+		ExRenderPipelines.addRounding(consumer, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
+		ExRenderPipelines.addDimensions(consumer, width, height, width, height);
+
+		consumer.addVertex(matrix, x1, y0, z).setColor(colorTopRight);
+		ExRenderPipelines.addRounding(consumer, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
+		ExRenderPipelines.addDimensions(consumer, width, 0, width, height);
+		this.flush();
 	}
 
 	@Override
 	public void axolotlclient_rendering$outlineRoundedRectGradientVarying(int x0, int y0, int x1, int y1, int colorTopLeft, int colorBottomLeft, int colorBottomRight, int colorTopRight, float roundingPxTopLeft, float roundingPxBottomLeft, float roundingPxBottomRight, float roundingPxTopRight, float outlineWidth) {
-		guiRenderState.submitGuiElement(new ColoredRoundedRectangleOutlineRenderState(ExRenderPipelines.ROUNDED_RECT_OUTLINE,
-			TextureSetup.noTexture(),
-			new Matrix3x2f(pose()),
-			x0, y0, x1, y1,
-			colorTopLeft, colorBottomLeft, colorBottomRight, colorTopRight,
-			roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight,
-			outlineWidth, scissorStack.peek()));
+		var matrix = pose.last().pose();
+		var consumer = bufferSource.getBuffer(ExRenderPipelines.ROUNDED_RECT_OUTLINE);
+		int width = x1 - x0;
+		int height = y1 - y0;
+		int z = 0;
+		consumer.addVertex(matrix, x0, y0, z).setColor(colorTopLeft);
+		ExRenderPipelines.addRounding(consumer, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
+		ExRenderPipelines.addDimensions(consumer, 0, 0, width, height);
+		ExRenderPipelines.addOutlineWidth(consumer, outlineWidth);
+
+		consumer.addVertex(matrix, x0, y1, z).setColor(colorBottomLeft);
+		ExRenderPipelines.addRounding(consumer, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
+		ExRenderPipelines.addDimensions(consumer, 0, height, width, height);
+		ExRenderPipelines.addOutlineWidth(consumer, outlineWidth);
+
+		consumer.addVertex(matrix, x1, y1, z).setColor(colorBottomRight);
+		ExRenderPipelines.addRounding(consumer, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
+		ExRenderPipelines.addDimensions(consumer, width, height, width, height);
+		ExRenderPipelines.addOutlineWidth(consumer, outlineWidth);
+
+		consumer.addVertex(matrix, x1, y0, z).setColor(colorTopRight);
+		ExRenderPipelines.addRounding(consumer, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
+		ExRenderPipelines.addDimensions(consumer, width, 0, width, height);
+		ExRenderPipelines.addOutlineWidth(consumer, outlineWidth);
+		this.flush();
 	}
 
 	@Override
-	public void axolotlclient_rendering$roundedBlitVarying(Identifier location, int x, int y, float u, float v, int width, int height, int uWidth, int vHeight, int textureWidth, int textureHeight, int color, float roundingPxTopLeft, float roundingPxBottomLeft, float roundingPxBottomRight, float roundingPxTopRight) {
-		this.innerBlit(ExRenderPipelines.ROUNDED_RECT_TEX, location, x, x + width, y, y + height, u / textureWidth, (u + uWidth) / textureWidth, v / textureHeight, (v + vHeight) / textureHeight, color, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
+	public void axolotlclient_rendering$roundedBlitVarying(ResourceLocation location, int x, int y, float u, float v, int width, int height, int uWidth, int vHeight, int textureWidth, int textureHeight, int color, float roundingPxTopLeft, float roundingPxBottomLeft, float roundingPxBottomRight, float roundingPxTopRight) {
+		this.innerBlit(location, x, x + width, y, y + height, (u + 0.0F) / textureWidth, (u + uWidth) / textureWidth, (v + 0.0F) / textureHeight, (v + vHeight) / textureHeight, color, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
 	}
 
 	@Override
-	public void axolotlclient_rendering$roundedBlitVarying(Identifier atlas, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1, int color, float roundingPxTopLeft, float roundingPxBottomLeft, float roundingPxBottomRight, float roundingPxTopRight) {
-		this.innerBlit(ExRenderPipelines.ROUNDED_RECT_TEX, atlas, x0, x1, y0, y1, u0, u1, v0, v1, color, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
+	public void axolotlclient_rendering$roundedBlitVarying(ResourceLocation atlas, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1, int color, float roundingPxTopLeft, float roundingPxBottomLeft, float roundingPxBottomRight, float roundingPxTopRight) {
+		this.innerBlit(atlas, x0, x1, y0, y1, u0, u1, v0, v1, color, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
 	}
 
 	@Unique
-	private void innerBlit(RenderPipeline pipeline, Identifier atlas, int x0, int x1, int y0, int y1, float u0, float u1, float v0, float v1, int color, float roundingPxTopLeft, float roundingPxBottomLeft, float roundingPxBottomRight, float roundingPxTopRight) {
-		var tex = this.minecraft.getTextureManager().getTexture(atlas);
-		this.guiRenderState.submitGuiElement(
-			new ColoredRoundedRectangleBlitRenderState(
-				pipeline,
-				TextureSetup.singleTexture(tex.getTextureView(), tex.getSampler()),
-				new Matrix3x2f(this.pose()),
-				x0, y0, x1, y1,
-				u0, u1, v0, v1,
-				color, color, color, color,
-				roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight,
-				this.scissorStack.peek()
-			)
-		);
+	private void innerBlit(ResourceLocation atlas, int x0, int x1, int y0, int y1, float u0, float u1, float v0, float v1, int color, float roundingPxTopLeft, float roundingPxBottomLeft, float roundingPxBottomRight, float roundingPxTopRight) {
+		RenderSystem.setShaderTexture(0, atlas);
+		RenderSystem.enableBlend();
+		RenderSystem.setShader(ExRenderPipelines.ROUNDED_RECT_TEX_SHADER);
+		Matrix4f matrix = this.pose.last().pose();
+		int z = 0;
+		BufferBuilder consumer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, ExRenderPipelines.ROUNDED_RECT_TEX_FORMAT);
+		int width = x1 - x0;
+		int height = y1 - y0;
+		consumer.addVertex(matrix, x0, y0, z)
+			.setUv(u0, v0).setColor(color);
+		ExRenderPipelines.addRounding(consumer, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
+		ExRenderPipelines.addDimensions(consumer, 0, 0, width, height);
+
+		consumer.addVertex(matrix, x0, y1, z);
+		consumer.setUv(u0, v1).setColor(color);
+		ExRenderPipelines.addRounding(consumer, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
+		ExRenderPipelines.addDimensions(consumer, 0, height, width, height);
+
+
+		consumer.addVertex(matrix, x1, y1, z);
+		consumer.setUv(u1, v1).setColor(color);
+		ExRenderPipelines.addRounding(consumer, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
+		ExRenderPipelines.addDimensions(consumer, width, height, width, height);
+
+		consumer.addVertex(matrix, x1, y0, z);
+		consumer.setUv(u1, v0).setColor(color);
+		ExRenderPipelines.addRounding(consumer, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
+		ExRenderPipelines.addDimensions(consumer, width, 0, width, height);
+		BufferUploader.drawWithShader(consumer.buildOrThrow());
 	}
 
 	@Override
-	public void axolotlclient_rendering$outlineRoundedBlitVarying(Identifier location, int x, int y, float u, float v, int width, int height, int uWidth, int vHeight, int textureWidth, int textureHeight, int color, float roundingPxTopLeft, float roundingPxBottomLeft, float roundingPxBottomRight, float roundingPxTopRight, float outlineWidth) {
-		this.innerBlit(ExRenderPipelines.ROUNDED_RECT_TEX_OUTLINE, location, x, x + width, y, y + height,
-			u / textureWidth, (u + uWidth) / textureWidth, v / textureHeight, (v + vHeight) / textureHeight, color, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight, outlineWidth);
+	public void axolotlclient_rendering$outlineRoundedBlitVarying(ResourceLocation location, int x, int y, float u, float v, int width, int height, int uWidth, int vHeight, int textureWidth, int textureHeight, int color, float roundingPxTopLeft, float roundingPxBottomLeft, float roundingPxBottomRight, float roundingPxTopRight, float outlineWidth) {
+		this.innerBlit(location, x, x + width, y, y + height, u / textureWidth, (u + uWidth) / textureWidth, v / textureHeight, (v + vHeight) / textureHeight, color, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight, outlineWidth);
 	}
 
 	@Override
-	public void axolotlclient_rendering$outlineRoundedBlitVarying(Identifier atlas, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1, int color, float roundingPxTopLeft, float roundingPxBottomLeft, float roundingPxBottomRight, float roundingPxTopRight, float outlineWidth) {
-		this.innerBlit(ExRenderPipelines.ROUNDED_RECT_TEX_OUTLINE, atlas, x0, x1, y0, y1, u0, u1, v0, v1, color, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight, outlineWidth);
+	public void axolotlclient_rendering$outlineRoundedBlitVarying(ResourceLocation atlas, int x0, int y0, int x1, int y1, float u0, float u1, float v0, float v1, int color, float roundingPxTopLeft, float roundingPxBottomLeft, float roundingPxBottomRight, float roundingPxTopRight, float outlineWidth) {
+		this.innerBlit(atlas, x0, x1, y0, y1, u0, u1, v0, v1, color, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight, outlineWidth);
 	}
 
 	@Unique
-	private void innerBlit(RenderPipeline pipeline, Identifier atlas, int x0, int x1, int y0, int y1, float u0, float u1, float v0, float v1, int color, float roundingPxTopLeft, float roundingPxBottomLeft, float roundingPxBottomRight, float roundingPxTopRight, float outlineWidth) {
-		var tex = this.minecraft.getTextureManager().getTexture(atlas);
-		this.guiRenderState.submitGuiElement(
-			new ColoredRoundedRectangleBlitOutlineRenderState(
-				pipeline,
-				TextureSetup.singleTexture(tex.getTextureView(), tex.getSampler()),
-				new Matrix3x2f(this.pose()),
-				x0, y0, x1, y1,
-				u0, u1, v0, v1,
-				color, color, color, color,
-				roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight,
-				outlineWidth, this.scissorStack.peek()
-			)
-		);
+	private void innerBlit(ResourceLocation atlas, int x0, int x1, int y0, int y1, float u0, float u1, float v0, float v1, int color, float roundingPxTopLeft, float roundingPxBottomLeft, float roundingPxBottomRight, float roundingPxTopRight, float outlineWidth) {
+		RenderSystem.setShaderTexture(0, atlas);
+		RenderSystem.enableBlend();
+		RenderSystem.setShader(ExRenderPipelines.ROUNDED_RECT_TEX_OUTLINE_SHADER);
+		Matrix4f matrix = this.pose.last().pose();
+		int z = 0;
+		BufferBuilder consumer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, ExRenderPipelines.ROUNDED_RECT_TEX_OUTLINE_FORMAT);
+		int width = x1 - x0;
+		int height = y1 - y0;
+		consumer.addVertex(matrix, x0, y0, z)
+			.setUv(u0, v0).setColor(color);
+		ExRenderPipelines.addRounding(consumer, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
+		ExRenderPipelines.addDimensions(consumer, 0, 0, width, height);
+		ExRenderPipelines.addOutlineWidth(consumer, outlineWidth);
+
+		consumer.addVertex(matrix, x0, y1, z);
+		consumer.setUv(u0, v1).setColor(color);
+		ExRenderPipelines.addRounding(consumer, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
+		ExRenderPipelines.addDimensions(consumer, 0, height, width, height);
+		ExRenderPipelines.addOutlineWidth(consumer, outlineWidth);
+
+		consumer.addVertex(matrix, x1, y1, z);
+		consumer.setUv(u1, v1).setColor(color);
+		ExRenderPipelines.addRounding(consumer, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
+		ExRenderPipelines.addDimensions(consumer, width, height, width, height);
+		ExRenderPipelines.addOutlineWidth(consumer, outlineWidth);
+
+		consumer.addVertex(matrix, x1, y0, z);
+		consumer.setUv(u1, v0).setColor(color);
+		ExRenderPipelines.addRounding(consumer, roundingPxTopLeft, roundingPxBottomLeft, roundingPxBottomRight, roundingPxTopRight);
+		ExRenderPipelines.addDimensions(consumer, width, 0, width, height);
+		ExRenderPipelines.addOutlineWidth(consumer, outlineWidth);
+		BufferUploader.drawWithShader(consumer.buildOrThrow());
 	}
 
 	@Override
@@ -160,17 +273,127 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 	}
 
 	@Override
-	public void axolotlclient_rendering$blitSVG(Identifier location, int x, int y, int width, int height, int color) {
+	public void axolotlclient_rendering$blitSVG(ResourceLocation location, int x, int y, int width, int height, int color) {
 		var scale = Minecraft.getInstance().getWindow().getGuiScale();
-		var key = SVGCache.getInstance().load(location, width * scale, height * scale);
-		innerBlit(RenderPipelines.GUI_TEXTURED, key, x, x + width, y, y + height, 0, 1f, 0f, 1, color);
+		var key = SVGCache.getInstance().load(location, (float) (width * scale), (float) (height * scale));
+		RenderSystem.setShaderTexture(0, key);
+		RenderSystem.enableBlend();
+		RenderSystem.setShader(CoreShaders.POSITION_TEX_COLOR);
+		Matrix4f matrix4f = this.pose.last().pose();
+		BufferBuilder bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
+		bufferBuilder.addVertex(matrix4f, x, y, 0).setUv((float) 0, 0f).setColor(color);
+		bufferBuilder.addVertex(matrix4f, x, y + height, 0).setUv((float) 0, (float) 1).setColor(color);
+		bufferBuilder.addVertex(matrix4f, x + width, y + height, 0).setUv(1f, (float) 1).setColor(color);
+		bufferBuilder.addVertex(matrix4f, x + width, y, 0).setUv(1f, 0f).setColor(color);
+		BufferUploader.drawWithShader(bufferBuilder.buildOrThrow());
 	}
 
-	@WrapOperation(method = "textRendererForWidget", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;createDefaultTextParameters(F)Lnet/minecraft/client/gui/ActiveTextCollector$Parameters;"))
-	private ActiveTextCollector.Parameters allowCustomFontRenderingForWidgets(GuiGraphics instance, float v, Operation<ActiveTextCollector.Parameters> original, AbstractWidget widget) {
-		var font = widget.axolotlclient_rendering$getFont();
-		var o = original.call(instance, v);
-		if (font != null) return o.axolotlclient_rendering$withFont(font);
-		return o;
+	@Override
+	public void axolotlclient_rendering$roundedGaussianBlur(float x, float y, float width, float height, float radius, float blurRadius, float sigma, int tintColor) {
+		var mc = Minecraft.getInstance();
+		var renderTarget = mc.getMainRenderTarget();
+		if (renderTarget == null) return;
+
+		RenderSystem.setShaderTexture(0, renderTarget.getColorTextureId());
+		RenderSystem.enableBlend();
+		RenderSystem.defaultBlendFunc();
+		if (RenderSystem.setShader(ExRenderPipelines.GAUSSIAN_BLUR_SHADER) == null) return;
+
+		Matrix4f matrix4f = this.pose.last().pose();
+		BufferBuilder consumer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, ExRenderPipelines.ROUNDED_RECT_TEX_FORMAT);
+
+		consumer.addVertex(matrix4f, x, y, 0).setUv(0f, 1f).setColor(tintColor);
+		ExRenderPipelines.addRounding(consumer, radius, radius, radius, radius);
+		ExRenderPipelines.addDimensions(consumer, 0, 0, width, height);
+
+		consumer.addVertex(matrix4f, x, y + height, 0).setUv(0f, 0f).setColor(tintColor);
+		ExRenderPipelines.addRounding(consumer, radius, radius, radius, radius);
+		ExRenderPipelines.addDimensions(consumer, 0, height, width, height);
+
+		consumer.addVertex(matrix4f, x + width, y + height, 0).setUv(1f, 0f).setColor(tintColor);
+		ExRenderPipelines.addRounding(consumer, radius, radius, radius, radius);
+		ExRenderPipelines.addDimensions(consumer, width, height, width, height);
+
+		consumer.addVertex(matrix4f, x + width, y, 0).setUv(1f, 1f).setColor(tintColor);
+		ExRenderPipelines.addRounding(consumer, radius, radius, radius, radius);
+		ExRenderPipelines.addDimensions(consumer, width, 0, width, height);
+
+		BufferUploader.drawWithShader(consumer.buildOrThrow());
+	}
+
+	@Override
+	public void axolotlclient_rendering$liquidGlass(float x, float y, float width, float height, float rounding, int tintColor, int borderColor, float borderWidth, float blurRadius, float distortion) {
+		LiquidGlassStyle style = LiquidGlassStyle.create()
+			.tint(tintColor, ((tintColor >> 24) & 0xFF) / 255.0f)
+			.border(borderColor, borderWidth)
+			.blurRadius(blurRadius)
+			.refractionDispersion(distortion > 0 ? distortion * 1.5f : 7.0f);
+		this.axolotlclient_rendering$liquidGlass(x, y, width, height, rounding, style);
+	}
+
+	@Override
+	public void axolotlclient_rendering$liquidGlass(float x, float y, float width, float height, float rounding, LiquidGlassStyle style) {
+		if (style == null) return;
+		var mc = Minecraft.getInstance();
+		var renderTarget = mc.getMainRenderTarget();
+		if (renderTarget == null) return;
+
+		RenderSystem.setShaderTexture(0, renderTarget.getColorTextureId());
+		RenderSystem.enableBlend();
+		RenderSystem.defaultBlendFunc();
+		var shader = RenderSystem.setShader(ExRenderPipelines.LIQUID_GLASS_SHADER);
+		if (shader == null) return;
+		if (shader.getUniform("Optics0") != null) {
+			shader.getUniform("Optics0").set(style.getRefThickness(), style.getRefFactor(), style.getRefDispersion(), style.getRefFresnelRange());
+		}
+		if (shader.getUniform("Optics1") != null) {
+			shader.getUniform("Optics1").set(style.getRefFresnelHardness(), style.getRefFresnelFactor(), style.getGlareRange(), style.getGlareHardness());
+		}
+		if (shader.getUniform("Border") != null) {
+			int bc = style.getBorderColor();
+			float br = ((bc >> 16) & 0xFF) / 255.0f;
+			float bg = ((bc >> 8) & 0xFF) / 255.0f;
+			float bb = (bc & 0xFF) / 255.0f;
+			shader.getUniform("Border").set(style.getBorderWidth(), br, bg, bb);
+		}
+		if (shader.getUniform("Extra") != null) {
+			shader.getUniform("Extra").set(style.getBlurRadius(), style.getShadowExpand(), style.getShadowFactor(), style.getShadowColorAlpha());
+		}
+
+		Matrix4f matrix4f = this.pose.last().pose();
+		BufferBuilder consumer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, ExRenderPipelines.ROUNDED_RECT_TEX_FORMAT);
+
+		int tint = style.getTintColor();
+		if ((tint & 0xFF000000) == 0 && style.getTintAlpha() > 0.0f) {
+			tint |= ((int) (style.getTintAlpha() * 255.0f) << 24);
+		}
+
+		consumer.addVertex(matrix4f, x, y, 0).setUv(0f, 1f).setColor(tint);
+		ExRenderPipelines.addRounding(consumer, rounding, rounding, rounding, rounding);
+		ExRenderPipelines.addDimensions(consumer, 0, 0, width, height);
+
+		consumer.addVertex(matrix4f, x, y + height, 0).setUv(0f, 0f).setColor(tint);
+		ExRenderPipelines.addRounding(consumer, rounding, rounding, rounding, rounding);
+		ExRenderPipelines.addDimensions(consumer, 0, height, width, height);
+
+		consumer.addVertex(matrix4f, x + width, y + height, 0).setUv(1f, 0f).setColor(tint);
+		ExRenderPipelines.addRounding(consumer, rounding, rounding, rounding, rounding);
+		ExRenderPipelines.addDimensions(consumer, width, height, width, height);
+
+		consumer.addVertex(matrix4f, x + width, y, 0).setUv(1f, 1f).setColor(tint);
+		ExRenderPipelines.addRounding(consumer, rounding, rounding, rounding, rounding);
+		ExRenderPipelines.addDimensions(consumer, width, 0, width, height);
+
+		BufferUploader.drawWithShader(consumer.buildOrThrow());
+	}
+
+	@Override
+	public void axolotlclient_rendering$drawMsdfString(MsdfFont font, String text, float x, float y, float size, int color, boolean dropShadow) {
+		if (font == null || text == null || text.isEmpty()) return;
+		if (dropShadow) {
+			font.drawWithShadow((GuiGraphics) (Object) this, text, x, y, size, color);
+		} else {
+			font.draw((GuiGraphics) (Object) this, text, x, y, size, color);
+		}
 	}
 }

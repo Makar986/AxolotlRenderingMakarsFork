@@ -79,6 +79,20 @@ public class RenderingTestMod {
 		guiGraphics.axolotlclient_rendering$roundedRect(g.guiWidth() - 30, 220, g.guiWidth() - 10, 230, 0xFFFFAA33, 5f);
 		guiGraphics.axolotlclient_rendering$outlineRoundedRect(g.guiWidth() - 30, 220, g.guiWidth() - 10, 230, 0xFF222222, 5f, 1f);
 
+		// GaussianBlur demo
+		guiGraphics.axolotlclient_rendering$roundedGaussianBlur(400, 50, 120, 80, 10f, 6f, 3.5f);
+
+		// LiquidGlass demo (frosted glass, specular reflection, chromatic dispersion)
+		guiGraphics.axolotlclient_rendering$liquidGlass(400, 150, 140, 90, 12f, 0x25FFFFFF, 0x55FFFFFF, 1.2f, 5.0f, 4.0f);
+
+		// MSDF Font demo (Montserrat default built-in)
+		var msdfFont = io.github.axolotlclient.rendering.font.msdf.DefaultMsdfFont.montserrat();
+		if (msdfFont != null) {
+			guiGraphics.axolotlclient_rendering$drawMsdfString(msdfFont, "MSDF Montserrat Font", 410, 165, 14f, 0xFFFFFFFF, true);
+			guiGraphics.axolotlclient_rendering$drawMsdfString(msdfFont, "ReGlass Liquid Style", 410, 185, 11f, 0xFF77DDFF, true);
+			guiGraphics.axolotlclient_rendering$drawMsdfString(msdfFont, "Sharp at 22px!", 410, 205, 22f, 0xFFFFCC00, true);
+		}
+
 		var x = 280;
 		var y = 160;
 		var r = 5;

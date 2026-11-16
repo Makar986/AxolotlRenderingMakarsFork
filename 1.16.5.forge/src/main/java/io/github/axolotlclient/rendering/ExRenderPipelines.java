@@ -25,7 +25,9 @@ package io.github.axolotlclient.rendering;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.resources.ResourceManager;
 
 public class ExRenderPipelines {
 
@@ -40,18 +42,16 @@ public class ExRenderPipelines {
 		MSDF_FONT_PROGRAM;
 
 	public static void init() {
-		load();
-	}
-
-	public static void reload() {
-		closeAll();
-		load();
-	}
-
-	public static void closeAll() {
-		ShaderManager.safeClose(ROUNDED_RECT_PROGRAM, ROUNDED_RECT_TEX_PROGRAM,
-			ROUNDED_RECT_OUTLINE_PROGRAM, ROUNDED_RECT_TEX_OUTLINE_PROGRAM,
-			FONT_PROGRAM, SEGMENT_PROGRAM, GAUSSIAN_BLUR_PROGRAM, LIQUID_GLASS_PROGRAM, MSDF_FONT_PROGRAM);
+		Platform.registerReloadListener(resourceManager -> {
+				ShaderManager.safeClose(ROUNDED_RECT_PROGRAM, ROUNDED_RECT_TEX_PROGRAM,
+					ROUNDED_RECT_OUTLINE_PROGRAM, ROUNDED_RECT_TEX_OUTLINE_PROGRAM,
+					FONT_PROGRAM, SEGMENT_PROGRAM, GAUSSIAN_BLUR_PROGRAM, LIQUID_GLASS_PROGRAM, MSDF_FONT_PROGRAM);
+				load();
+		});
+		Platform.onClientStopping(() ->
+			ShaderManager.safeClose(ROUNDED_RECT_PROGRAM, ROUNDED_RECT_TEX_PROGRAM,
+				ROUNDED_RECT_OUTLINE_PROGRAM, ROUNDED_RECT_TEX_OUTLINE_PROGRAM,
+				FONT_PROGRAM, SEGMENT_PROGRAM, GAUSSIAN_BLUR_PROGRAM, LIQUID_GLASS_PROGRAM, MSDF_FONT_PROGRAM));
 	}
 
 	private static void load() {

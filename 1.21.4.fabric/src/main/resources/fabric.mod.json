@@ -16,7 +16,7 @@
 	"license": "LGPL-3.0-or-later",
 	"icon": "assets/axolotlclient-rendering/icon.png",
 	"accessWidener": "axolotlclient-rendering.accesswidener",
-	"environment": "*",
+	"environment": "client",
 	"entrypoints": {
 		"client": [
 			"io.github.axolotlclient.rendering.Rendering"
@@ -27,20 +27,22 @@
 	],
 	"depends": {
 		"fabricloader": ">=0.15.11",
-		"minecraft": "1.21.x",
+		"minecraft": ">=1.21.2 <=1.21.4",
 		"fabric-api": "*"
 	},
 	"custom": {
 		"loom:injected_interfaces": {
 			"net/minecraft/class_332": [
 				"io/github/axolotlclient/rendering/GuiGraphicsExtension"
-			],
-			"net/minecraft/class_12225\u0024class_12227": [
-				"io/github/axolotlclient/rendering/ActiveTextCollectorParametersExtension"
-			],
-			"net/minecraft/class_339": [
-				"io/github/axolotlclient/rendering/AbstractWidgetExtension"
 			]
+		},
+		"modmenu": {
+			"parent": {
+				"id": "axolotlclient",
+				"name": "AxolotlClient",
+				"icon": "assets/axolotlclient-rendering/icon.png"
+			},
+			"badges": ["library"]
 		}
 	}
 }

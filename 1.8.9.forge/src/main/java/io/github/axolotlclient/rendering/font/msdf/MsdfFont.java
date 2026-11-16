@@ -33,6 +33,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.util.ResourceLocation;
 
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.Closeable;
@@ -68,6 +71,12 @@ public class MsdfFont implements Closeable {
 			String id = (name != null ? name.toLowerCase().replaceAll("[^a-z0-9_.-]", "_") : "font") + "_" + ID_GEN.getAndIncrement();
 			ResourceLocation location = new ResourceLocation(RenderingCommon.MODID, "msdf_" + id);
 			Minecraft.getMinecraft().getTextureManager().loadTexture(location, texture);
+			// MSDF needs bilinear sampling of the atlas: with the default GL_NEAREST the distance field turns into visible pixel steps.
+			GlStateManager.bindTexture(texture.getGlTextureId());
+			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
+			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
 			return new MsdfFont(fontData, location, texture);
 		} catch (IOException e) {
 			throw new RuntimeException("Failed to load MSDF atlas texture for " + name, e);

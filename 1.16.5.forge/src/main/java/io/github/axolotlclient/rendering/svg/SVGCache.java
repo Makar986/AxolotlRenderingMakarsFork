@@ -22,21 +22,23 @@
 
 package io.github.axolotlclient.rendering.svg;
 
-import java.io.InputStream;
-import java.nio.ByteBuffer;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
+import com.mojang.blaze3d.platform.NativeImage;
+import io.github.axolotlclient.rendering.RenderingCommon;
 import io.github.axolotlclient.rendering.mixin.NativeImageAccessor;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import lombok.extern.log4j.Log4j2;
+import io.github.axolotlclient.rendering.Platform;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.client.renderer.texture.MissingTextureSprite;
-import net.minecraft.client.renderer.texture.NativeImage;
-import net.minecraft.resources.IResource;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.server.packs.resources.ResourceManager;
 import org.lwjgl.system.MemoryUtil;
 
 @Log4j2
@@ -51,33 +53,32 @@ public class SVGCache {
 	private final Minecraft minecraft = Minecraft.getInstance();
 
 	private SVGCache() {
-	}
-
-	public void clear() {
-		cache.clear();
+		Platform.registerReloadListener(resourceManager -> {
+				cache.clear();
+		});
 	}
 
 	public ResourceLocation load(ResourceLocation loc, float w, float h) {
-		ResourceLocation key = new ResourceLocation(loc.getNamespace(), loc.getPath() + "/" + Float.floatToIntBits(w) + "x" + Float.floatToIntBits(h));
+		var key = new ResourceLocation(loc.getNamespace(), loc.getPath() + "/" + Float.floatToIntBits(w) + "x" + Float.floatToIntBits(h));
 		if (!cache.contains(key)) {
 			cache.add(key);
-			Optional<IResource> res = Optional.empty();
+			Optional<Resource> res = Optional.empty();
 			try {
 				res = Optional.ofNullable(minecraft.getResourceManager().getResource(loc));
 			} catch (Exception ignored) {
 			}
-			if (!res.isPresent()) {
-				return MissingTextureSprite.getLocation();
+			if (res.isEmpty()) {
+				return MissingTextureAtlasSprite.getLocation();
 			}
-			NativeImage n = new NativeImage(NativeImage.PixelFormat.RGBA, (int) (w + 0.5), (int) (h + 0.5), false);
+			var n = new NativeImage(NativeImage.Format.RGBA, (int) (w + 0.5), (int) (h + 0.5), false);
 			MemoryUtil.memSet(((NativeImageAccessor) (Object) n).getPointer(), 0, (long) n.getHeight() * n.getWidth() * 4);
-			DynamicTexture tex = new DynamicTexture(n);
+			var tex = new DynamicTexture(n);
 			minecraft.getTextureManager().register(key, tex);
-			IResource resource = res.get();
+			var resource = res.get();
 			CompletableFuture.runAsync(() -> {
-				try (InputStream in = resource.getInputStream()) {
-					byte[] img = BatikAdapter.rasterizeSvg(in, w, h);
-					ByteBuffer buf = MemoryUtil.memAlloc(img.length);
+				try (var in = resource.getInputStream()) {
+					var img = BatikAdapter.rasterizeSvg(in, w, h);
+					var buf = MemoryUtil.memAlloc(img.length);
 					buf.put(img).flip();
 					//noinspection DataFlowIssue
 					MemoryUtil.memCopy(MemoryUtil.memAddress(buf), ((NativeImageAccessor) (Object) n).getPointer(), img.length);
@@ -85,7 +86,7 @@ public class SVGCache {
 					minecraft.execute(tex::upload);
 				} catch (Exception e) {
 					log.error("Failed to load SVG resource! ", e);
-					minecraft.getTextureManager().register(key, MissingTextureSprite.getTexture());
+					minecraft.getTextureManager().register(key, MissingTextureAtlasSprite.getTexture());
 				}
 			});
 		}

@@ -37,7 +37,15 @@ repositories {
 allprojects {
 	repositories {
 		maven("https://repo.essential.gg/repository/maven-public/")
-		maven("https://maven.minecraftforge.net/")
+		maven("https://maven.minecraftforge.net/") {
+			// Never ask Forge's maven for Fabric artifacts or Loom's locally generated ones (minecraft-merged-*, remapped.*):
+			// when it is slow, each of those lookups times out there before the right repository is tried.
+			content {
+				excludeGroupByRegex("net\\.fabricmc(\\..*)?")
+				excludeGroupByRegex("remapped(\\..*)?")
+				excludeGroup("net.minecraft")
+			}
+		}
 		maven("https://maven.neoforged.net/releases")
 		maven("https://maven.architectury.dev/")
 		maven("https://maven.terraformersmc.com/releases")

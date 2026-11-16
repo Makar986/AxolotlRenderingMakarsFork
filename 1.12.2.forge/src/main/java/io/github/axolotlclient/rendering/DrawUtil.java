@@ -30,6 +30,8 @@ import net.minecraft.client.renderer.Tessellator;
 import io.github.axolotlclient.rendering.font.Font;
 import io.github.axolotlclient.rendering.svg.SVGCache;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.shader.Framebuffer;
+import org.lwjgl.opengl.GL11;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.text.ITextComponent;
@@ -351,5 +353,95 @@ public class DrawUtil implements GuiGraphicsExtension {
 		bufferBuilder.pos(x+width, y, 0.0).tex(1f, 0).endVertex();
 		bufferBuilder.pos(x, y, 0.0).tex(0, 0).endVertex();
 		tesselator.draw();
+	}
+
+	@Override
+	public void axolotlclient_rendering$roundedGaussianBlur(float x, float y, float width, float height, float radius, float blurRadius, float sigma, int tintColor) {
+		ShaderManager.Shader shader = ExRenderPipelines.GAUSSIAN_BLUR_PROGRAM;
+		if (shader == null) return;
+		Minecraft mc = Minecraft.getMinecraft();
+		Framebuffer target = mc.getFramebuffer();
+		if (target != null) {
+			GlStateManager.bindTexture(target.framebufferTexture);
+		}
+		GlStateManager.enableBlend();
+		GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+		shader.bind();
+		shader.setUniform("Dimensions", x, y, width, height);
+		shader.setUniform("Rounding", radius, radius, radius, radius);
+		shader.setUniform("ScreenSize", (float) mc.displayWidth, (float) mc.displayHeight);
+		shader.setUniform("BlurRadius", blurRadius);
+		shader.setUniform("Sigma", sigma);
+		int c = Rendering.scaleARGB(tintColor);
+		GlStateManager.color((c >> 16 & 0xFF) / 255f, (c >> 8 & 0xFF) / 255f, (c & 0xFF) / 255f, (c >> 24 & 0xFF) / 255f);
+
+		Tessellator tesselator = Tessellator.getInstance();
+		BufferBuilder bufferBuilder = tesselator.getBuffer();
+		bufferBuilder.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
+		bufferBuilder.pos(x, y + height, 0.0).tex(0.0, 0.0).endVertex();
+		bufferBuilder.pos(x + width, y + height, 0.0).tex(1.0, 0.0).endVertex();
+		bufferBuilder.pos(x + width, y, 0.0).tex(1.0, 1.0).endVertex();
+		bufferBuilder.pos(x, y, 0.0).tex(0.0, 1.0).endVertex();
+		tesselator.draw();
+		shader.unbind();
+	}
+
+	@Override
+	public void axolotlclient_rendering$liquidGlass(float x, float y, float width, float height, float rounding, int tintColor, int borderColor, float borderWidth, float blurRadius, float distortion) {
+		LiquidGlassStyle style = LiquidGlassStyle.create()
+			.tint(tintColor, ((tintColor >> 24) & 0xFF) / 255.0f)
+			.border(borderColor, borderWidth)
+			.blurRadius(blurRadius)
+			.refractionDispersion(distortion > 0 ? distortion * 1.5f : 7.0f);
+		this.axolotlclient_rendering$liquidGlass(x, y, width, height, rounding, style);
+	}
+
+	@Override
+	public void axolotlclient_rendering$liquidGlass(float x, float y, float width, float height, float rounding, LiquidGlassStyle style) {
+		ShaderManager.Shader shader = ExRenderPipelines.LIQUID_GLASS_PROGRAM;
+		if (shader == null || style == null) return;
+		Minecraft mc = Minecraft.getMinecraft();
+		Framebuffer target = mc.getFramebuffer();
+		if (target != null) {
+			GlStateManager.bindTexture(target.framebufferTexture);
+		}
+		GlStateManager.enableBlend();
+		GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
+		shader.bind();
+		shader.setUniform("Dimensions", x, y, width, height);
+		shader.setUniform("Rounding", rounding, rounding, rounding, rounding);
+		shader.setUniform("ScreenSize", (float) mc.displayWidth, (float) mc.displayHeight);
+		shader.setUniform("BlurRadius", style.getBlurRadius());
+		shader.setUniform("Optics0", style.getRefThickness(), style.getRefFactor(), style.getRefDispersion(), style.getRefFresnelRange());
+		shader.setUniform("Optics1", style.getRefFresnelHardness(), style.getRefFresnelFactor(), style.getGlareRange(), style.getGlareHardness());
+
+		int tc = Rendering.scaleARGB(style.getTintColor());
+		float ta = style.getTintAlpha() > 0 ? style.getTintAlpha() : ((tc >> 24 & 0xFF) / 255f);
+		shader.setUniform("GlassTint", (tc >> 16 & 0xFF) / 255f, (tc >> 8 & 0xFF) / 255f, (tc & 0xFF) / 255f, ta);
+
+		int bc = Rendering.scaleARGB(style.getBorderColor());
+		shader.setUniform("BorderColor", (bc >> 16 & 0xFF) / 255f, (bc >> 8 & 0xFF) / 255f, (bc & 0xFF) / 255f, (bc >> 24 & 0xFF) / 255f);
+		shader.setUniform("BorderWidth", style.getBorderWidth());
+		GlStateManager.color(1f, 1f, 1f, 1f);
+
+		Tessellator tesselator = Tessellator.getInstance();
+		BufferBuilder bufferBuilder = tesselator.getBuffer();
+		bufferBuilder.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX);
+		bufferBuilder.pos(x, y + height, 0.0).tex(0.0, 0.0).endVertex();
+		bufferBuilder.pos(x + width, y + height, 0.0).tex(1.0, 0.0).endVertex();
+		bufferBuilder.pos(x + width, y, 0.0).tex(1.0, 1.0).endVertex();
+		bufferBuilder.pos(x, y, 0.0).tex(0.0, 1.0).endVertex();
+		tesselator.draw();
+		shader.unbind();
+	}
+
+	@Override
+	public void axolotlclient_rendering$drawMsdfString(io.github.axolotlclient.rendering.font.msdf.MsdfFont font, String text, float x, float y, float size, int color, boolean dropShadow) {
+		if (font == null) return;
+		if (dropShadow) {
+			font.drawWithShadow(text, x, y, size, color);
+		} else {
+			font.draw(text, x, y, size, color);
+		}
 	}
 }

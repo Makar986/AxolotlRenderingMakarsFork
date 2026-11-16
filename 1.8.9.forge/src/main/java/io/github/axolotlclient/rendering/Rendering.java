@@ -25,7 +25,7 @@ package io.github.axolotlclient.rendering;
 import io.github.axolotlclient.rendering.font.Font;
 import io.github.axolotlclient.rendering.svg.SVGCache;
 import io.github.axolotlclient.rendering.util.ARGB;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.IReloadableResourceManager;
@@ -37,7 +37,7 @@ import org.jetbrains.annotations.ApiStatus;
 
 import java.lang.reflect.Field;
 
-@Slf4j
+@Log4j2
 @Mod(modid = "axolotlclient_rendering", name = "AxolotlClient Rendering", version = "1.0.0", clientSideOnly = true)
 public class Rendering {
 

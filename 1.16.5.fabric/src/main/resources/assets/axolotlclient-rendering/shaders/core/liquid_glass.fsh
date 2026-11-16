@@ -105,12 +105,12 @@ void main() {
 
 	// Tint mixing
 	vec4 tint = GlassTint.a > 0.0 ? GlassTint : vertexColor;
-	vec3 glass = mix(dispPixel.rgb, tint.rgb, tint.a * 0.8);
+	vec4 outColor = mix(dispPixel, vec4(tint.rgb, 1.0), tint.a * 0.8);
 
 	// ReGlass Fresnel edge reflection
 	float fresnelFactor = clamp(pow(1.0 + dist / 1500.0 * pow(500.0 / max(refFresRange, 1e-4), 2.0) + refFresHard, 5.0), 0.0, 1.0);
 	vec3 fresTint = mix(vec3(1.0), tint.rgb, tint.a * 0.5);
-	outColor = mix(vec4(glass, 1.0), vec4(fresTint, 1.0), fresnelFactor * refFresFac * 0.7 * nlen);
+	outColor = mix(outColor, vec4(fresTint, 1.0), fresnelFactor * refFresFac * 0.7 * nlen);
 
 	// ReGlass Glare
 	float glareGeo = clamp(pow(1.0 + dist / 1500.0 * pow(500.0 / max(glareRange, 1e-4), 2.0) + glareHard, 5.0), 0.0, 1.0);

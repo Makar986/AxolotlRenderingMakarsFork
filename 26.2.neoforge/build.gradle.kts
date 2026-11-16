@@ -25,6 +25,17 @@ neoForge {
 		create("client") {
 			client()
 			systemProperty("neoforge.enabledGameTestNamespaces", "axolotlclient_rendering")
+			// The in-game test scene lives in src/test; run with its classpath (it includes main).
+			sourceSet = sourceSets.test.get()
+		}
+	}
+
+	mods {
+		create("axolotlclient_rendering") {
+			sourceSet(sourceSets.main.get())
+		}
+		create("axolotlclient_rendering_test") {
+			sourceSet(sourceSets.test.get())
 		}
 	}
 }

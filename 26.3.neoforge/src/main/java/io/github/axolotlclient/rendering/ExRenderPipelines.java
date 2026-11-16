@@ -37,6 +37,11 @@ public class ExRenderPipelines {
 
 	public static final String ROUNDING_SEMANTIC_NAME = "Rounding";
 	public static final String DIMENSIONS_SEMANTIC_NAME = "Dimensions";
+	// Per-element effect parameters for blur / liquid glass (the GUI is drawn in batches, so no uniforms).
+	public static final String EFFECT0_SEMANTIC_NAME = "Effect0";
+	public static final String EFFECT1_SEMANTIC_NAME = "Effect1";
+	public static final String EFFECT2_SEMANTIC_NAME = "Effect2";
+	public static final String EFFECT3_SEMANTIC_NAME = "Effect3";
 	public static final RenderPipeline ROUNDED_RECT = RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
 		.withLocation(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "rounded_rect"))
 		.withVertexShader(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "core/rounded_rect"))
@@ -110,6 +115,73 @@ public class ExRenderPipelines {
 		event.registerPipeline(ROUNDED_RECT_OUTLINE);
 		event.registerPipeline(ROUNDED_RECT_TEX_OUTLINE);
 		event.registerPipeline(FONT);
+		event.registerPipeline(GAUSSIAN_BLUR);
+		event.registerPipeline(LIQUID_GLASS);
+		event.registerPipeline(MSDF_FONT);
+	}
+
+	/**
+	 * Samples {@link BackdropTexture} (a copy of the frame taken right before the GUI is drawn).
+	 * Effect0 = (blurRadius, sigma, -, -).
+	 */
+	public static final RenderPipeline GAUSSIAN_BLUR = RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
+		.withLocation(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "gaussian_blur"))
+		.withVertexShader(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "core/gaussian_blur"))
+		.withFragmentShader(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "core/gaussian_blur"))
+		.withVertexBinding(0, VertexFormat.builder(0)
+			.addAttribute(DefaultVertexFormat.POSITION_SEMANTIC_NAME, GpuFormat.RGB32_FLOAT)
+			.addAttribute(DefaultVertexFormat.COLOR_SEMANTIC_NAME, GpuFormat.RGBA8_UNORM)
+			.addAttribute(DefaultVertexFormat.UV0_SEMANTIC_NAME, GpuFormat.RG32_FLOAT)
+			.addAttribute(ROUNDING_SEMANTIC_NAME, GpuFormat.RGBA32_FLOAT)
+			.addAttribute(DIMENSIONS_SEMANTIC_NAME, GpuFormat.RGBA32_FLOAT)
+			.addAttribute(EFFECT0_SEMANTIC_NAME, GpuFormat.RGBA32_FLOAT)
+			.build())
+		.build();
+
+	/**
+	 * Samples {@link BackdropTexture}.
+	 * Effect0 = optics (refThickness, refFactor, refDispersion, refFresnelRange),
+	 * Effect1 = optics (refFresnelHardness, refFresnelFactor, glareRange, glareHardness),
+	 * Effect2 = (blurRadius, borderWidth, -, -), Effect3 = border color (rgba).
+	 */
+	public static final RenderPipeline LIQUID_GLASS = RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
+		.withLocation(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "liquid_glass"))
+		.withVertexShader(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "core/liquid_glass"))
+		.withFragmentShader(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "core/liquid_glass"))
+		.withVertexBinding(0, VertexFormat.builder(0)
+			.addAttribute(DefaultVertexFormat.POSITION_SEMANTIC_NAME, GpuFormat.RGB32_FLOAT)
+			.addAttribute(DefaultVertexFormat.COLOR_SEMANTIC_NAME, GpuFormat.RGBA8_UNORM)
+			.addAttribute(DefaultVertexFormat.UV0_SEMANTIC_NAME, GpuFormat.RG32_FLOAT)
+			.addAttribute(ROUNDING_SEMANTIC_NAME, GpuFormat.RGBA32_FLOAT)
+			.addAttribute(DIMENSIONS_SEMANTIC_NAME, GpuFormat.RGBA32_FLOAT)
+			.addAttribute(EFFECT0_SEMANTIC_NAME, GpuFormat.RGBA32_FLOAT)
+			.addAttribute(EFFECT1_SEMANTIC_NAME, GpuFormat.RGBA32_FLOAT)
+			.addAttribute(EFFECT2_SEMANTIC_NAME, GpuFormat.RGBA32_FLOAT)
+			.addAttribute(EFFECT3_SEMANTIC_NAME, GpuFormat.RGBA32_FLOAT)
+			.build())
+		.build();
+
+	public static final RenderPipeline MSDF_FONT = RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
+		.withLocation(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "msdf_font"))
+		.withVertexShader(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "core/msdf_font"))
+		.withFragmentShader(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "core/msdf_font"))
+		.build();
+
+	public static void addEffect(VertexConsumer consumer, int index, float x, float y, float z, float w) {
+		String name = switch (index) {
+			case 0 -> EFFECT0_SEMANTIC_NAME;
+			case 1 -> EFFECT1_SEMANTIC_NAME;
+			case 2 -> EFFECT2_SEMANTIC_NAME;
+			case 3 -> EFFECT3_SEMANTIC_NAME;
+			default -> throw new IllegalArgumentException("effect index " + index);
+		};
+		var offset = beginElement(consumer, name);
+		if (offset != -1L) {
+			MemoryUtil.memPutFloat(offset, x);
+			MemoryUtil.memPutFloat(offset + 4L, y);
+			MemoryUtil.memPutFloat(offset + 8L, z);
+			MemoryUtil.memPutFloat(offset + 12L, w);
+		}
 	}
 
 	public static void addRounding(VertexConsumer consumer, float tl, float bl, float br, float tr) {

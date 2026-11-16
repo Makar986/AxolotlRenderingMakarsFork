@@ -60,10 +60,15 @@ public class ExRenderPipelines {
 			"This should not be possible unless other mods are broken.");
 	}
 
-	public static final int NUM_CUSTOM_VERTEX_FORMAT_ELEMENTS = 4;
+	public static final int NUM_CUSTOM_VERTEX_FORMAT_ELEMENTS = 8;
 	private static final VertexFormatElement ROUNDING = VertexFormatElement.register(nextUnusedVFEIndex(), 0, VertexFormatElement.Type.FLOAT, false, 4);
 	private static final VertexFormatElement DIMENSIONS = VertexFormatElement.register(nextUnusedVFEIndex(), 0, VertexFormatElement.Type.FLOAT, false, 4);
 	private static final VertexFormatElement OUTLINE_WIDTH = VertexFormatElement.register(nextUnusedVFEIndex(), 0, VertexFormatElement.Type.FLOAT, false, 1);
+	// Per-element effect parameters for blur / liquid glass (the GUI is drawn in batches, so no uniforms).
+	private static final VertexFormatElement EFFECT0 = VertexFormatElement.register(nextUnusedVFEIndex(), 0, VertexFormatElement.Type.FLOAT, false, 4);
+	private static final VertexFormatElement EFFECT1 = VertexFormatElement.register(nextUnusedVFEIndex(), 0, VertexFormatElement.Type.FLOAT, false, 4);
+	private static final VertexFormatElement EFFECT2 = VertexFormatElement.register(nextUnusedVFEIndex(), 0, VertexFormatElement.Type.FLOAT, false, 4);
+	private static final VertexFormatElement EFFECT3 = VertexFormatElement.register(nextUnusedVFEIndex(), 0, VertexFormatElement.Type.FLOAT, false, 4);
 
 	public static final RenderPipeline ROUNDED_RECT = RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
 		.withLocation(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "rounded_rect"))
@@ -137,6 +142,73 @@ public class ExRenderPipelines {
 		event.registerPipeline(ROUNDED_RECT_OUTLINE);
 		event.registerPipeline(ROUNDED_RECT_TEX_OUTLINE);
 		event.registerPipeline(FONT);
+		event.registerPipeline(GAUSSIAN_BLUR);
+		event.registerPipeline(LIQUID_GLASS);
+		event.registerPipeline(MSDF_FONT);
+	}
+
+	/**
+	 * Samples {@link BackdropTexture} (a copy of the frame taken right before the GUI is drawn).
+	 * Effect0 = (blurRadius, sigma, -, -).
+	 */
+	public static final RenderPipeline GAUSSIAN_BLUR = RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
+		.withLocation(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "gaussian_blur"))
+		.withVertexShader(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "core/gaussian_blur"))
+		.withFragmentShader(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "core/gaussian_blur"))
+		.withVertexFormat(VertexFormat.builder()
+			.add("Position", VertexFormatElement.POSITION)
+			.add("Color", VertexFormatElement.COLOR)
+			.add("UV0", VertexFormatElement.UV0)
+			.add("Rounding", ROUNDING)
+			.add("Dimensions", DIMENSIONS)
+			.add("Effect0", EFFECT0)
+			.build(), VertexFormat.Mode.QUADS)
+		.build();
+
+	/**
+	 * Samples {@link BackdropTexture}.
+	 * Effect0 = optics (refThickness, refFactor, refDispersion, refFresnelRange),
+	 * Effect1 = optics (refFresnelHardness, refFresnelFactor, glareRange, glareHardness),
+	 * Effect2 = (blurRadius, borderWidth, -, -), Effect3 = border color (rgba).
+	 */
+	public static final RenderPipeline LIQUID_GLASS = RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
+		.withLocation(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "liquid_glass"))
+		.withVertexShader(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "core/liquid_glass"))
+		.withFragmentShader(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "core/liquid_glass"))
+		.withVertexFormat(VertexFormat.builder()
+			.add("Position", VertexFormatElement.POSITION)
+			.add("Color", VertexFormatElement.COLOR)
+			.add("UV0", VertexFormatElement.UV0)
+			.add("Rounding", ROUNDING)
+			.add("Dimensions", DIMENSIONS)
+			.add("Effect0", EFFECT0)
+			.add("Effect1", EFFECT1)
+			.add("Effect2", EFFECT2)
+			.add("Effect3", EFFECT3)
+			.build(), VertexFormat.Mode.QUADS)
+		.build();
+
+	public static final RenderPipeline MSDF_FONT = RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
+		.withLocation(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "msdf_font"))
+		.withVertexShader(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "core/msdf_font"))
+		.withFragmentShader(Identifier.fromNamespaceAndPath(RenderingCommon.MODID, "core/msdf_font"))
+		.build();
+
+	public static void addEffect(VertexConsumer consumer, int index, float x, float y, float z, float w) {
+		VertexFormatElement element = switch (index) {
+			case 0 -> EFFECT0;
+			case 1 -> EFFECT1;
+			case 2 -> EFFECT2;
+			case 3 -> EFFECT3;
+			default -> throw new IllegalArgumentException("effect index " + index);
+		};
+		var offset = beginElement(consumer, element);
+		if (offset != -1L) {
+			MemoryUtil.memPutFloat(offset, x);
+			MemoryUtil.memPutFloat(offset + 4L, y);
+			MemoryUtil.memPutFloat(offset + 8L, z);
+			MemoryUtil.memPutFloat(offset + 12L, w);
+		}
 	}
 
 	public static void addRounding(VertexConsumer consumer, float tl, float bl, float br, float tr) {

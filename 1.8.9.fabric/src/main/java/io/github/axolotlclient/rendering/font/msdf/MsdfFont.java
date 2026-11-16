@@ -23,6 +23,8 @@
 package io.github.axolotlclient.rendering.font.msdf;
 
 import net.minecraft.client.render.platform.GlStateManager;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
 import net.minecraft.client.render.vertex.BufferBuilder;
 import net.minecraft.client.render.vertex.DefaultVertexFormat;
 import net.minecraft.client.render.vertex.Tesselator;
@@ -67,6 +69,12 @@ public class MsdfFont implements Closeable {
 			String id = (name != null ? name.toLowerCase().replaceAll("[^a-z0-9_.-]", "_") : "font") + "_" + ID_GEN.getAndIncrement();
 			Identifier location = new Identifier(RenderingCommon.MODID, "msdf_" + id);
 			Minecraft.getInstance().getTextureManager().register(location, texture);
+			// MSDF needs bilinear sampling of the atlas: with the default GL_NEAREST the distance field turns into visible pixel steps.
+			GlStateManager.bindTexture(texture.getGlId());
+			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
+			GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
 			return new MsdfFont(fontData, location, texture);
 		} catch (IOException e) {
 			throw new RuntimeException("Failed to load MSDF atlas texture for " + name, e);

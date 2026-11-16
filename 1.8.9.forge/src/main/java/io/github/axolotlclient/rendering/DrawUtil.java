@@ -364,4 +364,14 @@ public class DrawUtil implements GuiGraphicsExtension {
 		tesselator.draw();
 		shader.unbind();
 	}
+
+	@Override
+	public void axolotlclient_rendering$drawMsdfString(io.github.axolotlclient.rendering.font.msdf.MsdfFont font, String text, float x, float y, float size, int color, boolean dropShadow) {
+		if (font == null) return;
+		if (dropShadow) {
+			font.drawWithShadow(text, x, y, size, color);
+		} else {
+			font.draw(text, x, y, size, color);
+		}
+	}
 }

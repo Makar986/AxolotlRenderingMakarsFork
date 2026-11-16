@@ -22,8 +22,6 @@
 
 package io.github.axolotlclient.rendering.font;
 
-import java.io.InputStream;
-
 import it.unimi.dsi.fastutil.longs.Long2FloatOpenHashMap;
 
 public final class DefaultFont {
@@ -31,14 +29,14 @@ public final class DefaultFont {
 	private static final FontAdapter INTER_ADAPTER;
 
 	static {
-		try (InputStream regular = DefaultFont.class.getResourceAsStream("/assets/axolotlclient-rendering/fonts/inter_variable.ttf");
-			 InputStream italic = DefaultFont.class.getResourceAsStream("/assets/axolotlclient-rendering/fonts/inter_variable_italic.ttf");
-			 InputStream bold = DefaultFont.class.getResourceAsStream("/assets/axolotlclient-rendering/fonts/inter_bold.ttf");
-			 InputStream boldItalic = DefaultFont.class.getResourceAsStream("/assets/axolotlclient-rendering/fonts/inter_bold_italic.ttf")) {
+		try (var regular = DefaultFont.class.getResourceAsStream("/assets/axolotlclient-rendering/fonts/inter_variable.ttf");
+			 var italic = DefaultFont.class.getResourceAsStream("/assets/axolotlclient-rendering/fonts/inter_variable_italic.ttf");
+			 var bold = DefaultFont.class.getResourceAsStream("/assets/axolotlclient-rendering/fonts/inter_bold.ttf");
+			 var boldItalic = DefaultFont.class.getResourceAsStream("/assets/axolotlclient-rendering/fonts/inter_bold_italic.ttf")) {
 			if (regular == null || italic == null || bold == null || boldItalic == null) {
 				throw new IllegalStateException();
 			}
-			Long2FloatOpenHashMap boldItalicTag = new Long2FloatOpenHashMap();
+			var boldItalicTag = new Long2FloatOpenHashMap();
 			boldItalicTag.put(Font.TAG_ITALIC, Font.ITALIC_ENABLED);
 			boldItalicTag.put(Font.TAG_WEIGHT, Font.WEIGHT_BOLD);
 			INTER = Font.read(regular, 9)

@@ -183,4 +183,47 @@ public abstract class GuiGraphicsExtractorMixin implements GuiGraphicsExtractorE
 		if (font != null) return ((ActiveTextCollectorParametersExtension) (Object) o).axolotlclient_rendering$withFont(font);
 		return o;
 	}
+
+	@Override
+	public void axolotlclient_rendering$roundedGaussianBlur(float x, float y, float width, float height, float radius, float blurRadius, float sigma, int tintColor) {
+		this.guiRenderState.addGuiElement(new EffectRenderStates.GaussianBlur(BackdropTexture.request(),
+			new Matrix3x2f(this.pose()), x, y, width, height, radius, blurRadius, sigma, tintColor, ((GuiGraphicsExtractor) (Object) this).peekScissorStack()));
+	}
+
+	@Override
+	public void axolotlclient_rendering$liquidGlass(float x, float y, float width, float height, float rounding, int tintColor, int borderColor, float borderWidth, float blurRadius, float distortion) {
+		LiquidGlassStyle style = LiquidGlassStyle.create()
+			.tint(tintColor, ((tintColor >> 24) & 0xFF) / 255.0f)
+			.border(borderColor, borderWidth)
+			.blurRadius(blurRadius)
+			.refractionDispersion(distortion > 0 ? distortion * 1.5f : 7.0f);
+		this.axolotlclient_rendering$liquidGlass(x, y, width, height, rounding, style);
+	}
+
+	@Override
+	public void axolotlclient_rendering$liquidGlass(float x, float y, float width, float height, float rounding, LiquidGlassStyle style) {
+		if (style == null) return;
+		this.guiRenderState.addGuiElement(new EffectRenderStates.LiquidGlass(BackdropTexture.request(),
+			new Matrix3x2f(this.pose()), x, y, width, height, rounding, style, ((GuiGraphicsExtractor) (Object) this).peekScissorStack()));
+	}
+
+	@Override
+	public void axolotlclient_rendering$drawMsdfString(io.github.axolotlclient.rendering.font.msdf.MsdfFont font, String text, float x, float y, float size, int color, boolean dropShadow) {
+		if (font == null || text == null || text.isEmpty()) return;
+		if ((color & 0xFF000000) == 0) color |= 0xFF000000;
+		if (dropShadow) {
+			int shadowColor = ((color & 0xFCFCFC) >> 2) | (color & 0xFF000000);
+			float offset = Math.max(1.0f, size * 0.05f);
+			axolotlclient_rendering$submitMsdf(font, text, x + offset, y + offset, size, shadowColor);
+		}
+		axolotlclient_rendering$submitMsdf(font, text, x, y, size, color);
+	}
+
+	@Unique
+	private void axolotlclient_rendering$submitMsdf(io.github.axolotlclient.rendering.font.msdf.MsdfFont font, String text, float x, float y, float size, int color) {
+		var quads = font.layout(text, x, y, size);
+		if (quads.isEmpty()) return;
+		this.guiRenderState.addGuiElement(EffectRenderStates.MsdfText.of(font.textureSetup(),
+			new Matrix3x2f(this.pose()), quads, color, ((GuiGraphicsExtractor) (Object) this).peekScissorStack()));
+	}
 }

@@ -9,9 +9,9 @@ plugins {
 	id("io.github.p03w.machete")
 }
 
-val minecraftVersion = "26.2-rc-2"
+val minecraftVersion = "26.2"
 val minecraftFriendly = "26.2"
-val fapiVersion = "0.152.0"
+val fapiVersion = "0.161.0"
 
 group = project.property("maven_group") as String
 version = "${project.property("version")}+$minecraftFriendly"

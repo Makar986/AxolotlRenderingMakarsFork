@@ -29,8 +29,9 @@
 	"depends": {
 		"fabricloader": ">=0.15.11",
 		"minecraft": "1.12.2",
-		"osl-keybinds": "*",
-		"osl-entrypoints": ""
+		"osl-entrypoints": "*",
+		"osl-lifecycle-events": "*",
+		"osl-resource-loader": "*"
 	},
 	"custom": {
 		"loom:injected_interfaces": {

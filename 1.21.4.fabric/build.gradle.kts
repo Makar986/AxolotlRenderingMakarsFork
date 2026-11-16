@@ -1,5 +1,9 @@
 @file:Suppress("UnstableApiUsage")
 
+import org.eclipse.jgit.api.Git
+import org.eclipse.jgit.storage.file.FileRepositoryBuilder
+
+
 plugins {
 	id("net.fabricmc.fabric-loom-remap")
 	id("io.github.p03w.machete")
@@ -25,12 +29,8 @@ loom {
 	}
 }
 
-repositories {
-	mavenCentral()
-}
-
 dependencies {
-	minecraft("com.mojang:minecraft:$minecraftVersion")
+	minecraft("com.mojang:minecraft:${minecraftVersion}")
 	mappings(loom.layered {
 		officialMojangMappings {
 			nameSyntheticMembers = true
@@ -40,16 +40,20 @@ dependencies {
 
 	modImplementation("net.fabricmc:fabric-loader:${project.property("fabric_loader")}")
 
-	modImplementation("net.fabricmc.fabric-api:fabric-api:$fapiVersion+$minecraftFriendly")
+	modImplementation("net.fabricmc.fabric-api:fabric-api:${fapiVersion}+${minecraftFriendly}")
+
+	modCompileOnlyApi("com.terraformersmc:modmenu:13.0.3") {
+		exclude(group = "net.fabricmc")
+	}
 
 	implementation(include(project(path = ":common", configuration = "shadow"))!!)
 	include(implementation("com.github.weisj:jsvg:1.6.1")!!)
 }
 
 configurations.configureEach {
-	exclude("org.apache.xmlgraphics:batik-svggen:1.19")
 	exclude("xml-apis", "xml-apis")
 }
+
 
 tasks.processResources {
 	inputs.property("version", version)
@@ -60,6 +64,9 @@ tasks.processResources {
 }
 
 tasks.withType(JavaCompile::class).configureEach {
+	// Ensure that the encoding is set to UTF-8, no matter what the system default is
+	// this fixes some edge cases with special characters not displaying correctly
+	// see http://yodaconditions.net/blog/fix-for-java-file-encoding-problems-with-gradle.html
 	options.encoding = "UTF-8"
 
 	if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_22)) {
@@ -75,11 +82,6 @@ java {
 tasks.runClient {
 	classpath(sourceSets.getByName("test").runtimeClasspath)
 	jvmArgs("-XX:+AllowEnhancedClassRedefinition", "-XX:+IgnoreUnrecognizedVMOptions")
-	//environment("LD_PRELOAD" to "/usr/lib/librenderdoc.so")
-}
-
-tasks.runServer {
-	jvmArgs("-XX:+AllowEnhancedClassRedefinition", "-XX:+IgnoreUnrecognizedVMOptions")
 }
 
 // Configure the maven publication
@@ -93,16 +95,14 @@ publishing {
 
 	repositories {
 		maven {
-			name = "owlMaven"
-			val repository = if (project.version.toString().contains("beta") || project.version.toString()
-					.contains("alpha")
-			) "snapshots" else "releases"
-			url = uri("https://moehreag.duckdns.org/maven/$repository")
-			credentials(PasswordCredentials::class)
-			authentication {
-				create<BasicAuthentication>("basic")
+			name = "GitHubPackages"
+			url = uri("https://maven.pkg.github.com/Makar986/AxolotlRenderingMakarsFork")
+			credentials {
+				username = System.getenv("GITHUB_ACTOR") ?: "Makar986"
+				password = System.getenv("GITHUB_TOKEN") ?: ""
 			}
 		}
+		mavenLocal()
 	}
 }
 
@@ -112,7 +112,7 @@ tasks.modrinth {
 
 modrinth {
 	token = System.getenv("MODRINTH_TOKEN")
-	projectId = ""
+	projectId = "2qX7WO3l"
 	versionNumber = "${project.version}"
 	versionType = if (project.version.toString().contains("beta")) {
 		"beta"
@@ -122,36 +122,17 @@ modrinth {
 		"release"
 	}
 	uploadFile = tasks.remapJar.get()
-	gameVersions.set(listOf(minecraftVersion))
+	gameVersions.set(listOf("1.21", "1.21.1"))
 	loaders.set(listOf("quilt", "fabric"))
 	additionalFiles.set(listOf(tasks.remapSourcesJar))
 	dependencies {
 		required.project("fabric-api")
 	}
 
-	// Changelog fetching: Credit LambdAurora.
-	// https://github.com/LambdAurora/LambDynamicLights/blob/1ef85f486084873b5d97b8a08df72f57859a3295/build.gradle#L145
-	// License: MIT
-	val changelogText = file("../CHANGELOG.md").readText()
-	val regexVersion =
-		((project.version) as String).split("+")[0].replace("\\.".toRegex(), "\\.").replace("\\+".toRegex(), "+")
-	val changelogRegex = "###? ${regexVersion}\\n\\n(( *- .+\\n)+)".toRegex()
-	val matcher = changelogRegex.find(changelogText)
-
-	if (matcher != null) {
-		var changelogContent = matcher.groups[1]?.value
-
-		val changelogLines = changelogText.split("\n")
-		val linkRefRegex = "^\\[([A-z0-9 _\\-/+.]+)]: ".toRegex()
-		for (line in changelogLines.reversed()) {
-			if ((linkRefRegex.matches(line)))
-				changelogContent += "\n" + line
-			else break
-		}
-		changelog = changelogContent
-	} else {
-		afterEvaluate {
-			tasks.modrinth.configure { enabled = false }
-		}
-	}
+	var git = Git(FileRepositoryBuilder().setGitDir(project.rootDir.resolve(".git")).build())
+	val id = git.log().setMaxCount(1)().first().id
+	val abbrev = git.repository.newObjectReader()
+		.abbreviate(id, 8).name()
+	changelog = "The changelog is available at https://codeberg.org/AxolotlClient/AxolotlClient-rendering/graph <br>" +
+		"Commit: [$abbrev](https://codeberg.org/AxolotlClient/AxolotlClient-rendering/commit/${id.name})"
 }

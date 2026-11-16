@@ -36,8 +36,14 @@ import java.util.Locale;
 import java.util.function.Consumer;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import io.github.axolotlclient.rendering.FontRenderStates;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import io.github.axolotlclient.rendering.ExRenderPipelines;
 import io.github.axolotlclient.rendering.RenderingCommon;
+import io.github.axolotlclient.rendering.mixin.NativeImageAccessor;
 import io.github.axolotlclient.rendering.util.ARGB;
 import it.unimi.dsi.fastutil.floats.Float2ObjectMap;
 import it.unimi.dsi.fastutil.floats.Float2ObjectOpenHashMap;
@@ -50,20 +56,20 @@ import it.unimi.dsi.fastutil.objects.*;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.minecraft.client.renderer.CoreShaders;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.*;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
-import org.joml.Matrix3x2f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
@@ -97,7 +103,6 @@ public class Font implements Closeable {
 		});
 	}
 
-	@ApiStatus.Internal
 	public static void onScaleChange() {
 		Font.fonts.removeIf(w -> w.refersTo(null));
 		Font.fonts.forEach(w -> {
@@ -106,7 +111,6 @@ public class Font implements Closeable {
 		});
 	}
 
-	@ApiStatus.Internal
 	public static void closeAll() {
 		Font.fonts.removeIf(w -> w.refersTo(null));
 		Font.fonts.forEach(w -> w.get().close());
@@ -368,7 +372,7 @@ public class Font implements Closeable {
 
 	private void resizeInternal(int mcSize) {
 		this.mcSize = mcSize;
-		size = mcSize * Minecraft.getInstance().getWindow().getGuiScale();
+		size = (int) (mcSize * Minecraft.getInstance().getWindow().getGuiScale());
 		if (FT_Set_Pixel_Sizes(face, 0, size) != FT_Err_Ok) {
 			throw new RuntimeException("Can't set font size " + size);
 		}
@@ -447,16 +451,16 @@ public class Font implements Closeable {
 
 	private void renderTextCommon(GuiGraphics graphics, float x, float y, int alignFlags, BuiltText builtText) {
 		float[] startOffset = getOffset(alignFlags, builtText);
-		var scale = Minecraft.getInstance().getWindow().getGuiScale();
+		var scale = (float) Minecraft.getInstance().getWindow().getGuiScale();
 
-		graphics.pose().pushMatrix();
-		graphics.pose().translate(x, y - 1f);
-		graphics.pose().scale(1f / scale);
-		graphics.pose().translate(0, ascender());
-		graphics.pose().translate(-startOffset[0], -startOffset[1]);
+		graphics.pose().pushPose();
+		graphics.pose().translate(x, y - 1f, 0);
+		graphics.pose().scale(1f / scale, 1f / scale, 1);
+		graphics.pose().translate(0, ascender(), 0);
+		graphics.pose().translate(-startOffset[0], -startOffset[1], 0);
 
 		renderTextCommon(graphics, builtText);
-		graphics.pose().popMatrix();
+		graphics.pose().popPose();
 	}
 
 	float ascender() {
@@ -487,16 +491,34 @@ public class Font implements Closeable {
 	}
 
 	private void renderTextCommon(GuiGraphics graphics, BuiltText builtText) {
-		var box = builtText.textBox();
-		var scissor = graphics.scissorStack.peek();
-		var rect = new ScreenRectangle(Mth.ceil(box[0]), Mth.ceil(box[1]), Mth.ceil(box[2]), Mth.ceil(box[3])).transformMaxBounds(graphics.pose());
-		rect = scissor != null ? scissor.intersection(rect) : rect;
+		RenderSystem.setShader(ExRenderPipelines.FONT_SHADER);
+		var pose = graphics.pose().last().pose();
 		for (var pageGlyphs : builtText.coordData().object2ObjectEntrySet()) {
-			graphics.guiRenderState.submitGuiElement(new FontRenderStates.PageGlyphs(pageGlyphs.getKey(), new Matrix3x2f(graphics.pose()), pageGlyphs.getValue(), rect, scissor));
+			RenderSystem.setShaderTexture(0, pageGlyphs.getKey());
+			RenderSystem.enableBlend();
+			graphics.drawSpecial(bufferSource -> {
+				var vertexConsumer = bufferSource.getBuffer(ExRenderPipelines.FONT);
+				for (var g : pageGlyphs.getValue()) {
+					vertexConsumer.addVertex(pose, g.x(), g.y(), 0).setUv(g.u(), g.v()).setColor(g.color());
+					vertexConsumer.addVertex(pose, g.x(), g.y() + g.height(), 0).setUv(g.u(), g.v1()).setColor(g.color());
+					vertexConsumer.addVertex(pose, g.x() + g.width(), g.y() + g.height(), 0).setUv(g.u1(), g.v1()).setColor(g.color());
+					vertexConsumer.addVertex(pose, g.x() + g.width(), g.y(), 0).setUv(g.u1(), g.v()).setColor(g.color());
+				}
+			});
+			//BufferUploader.drawWithShader(vertexConsumer.buildOrThrow());
 		}
+		RenderSystem.setShader(CoreShaders.POSITION_COLOR);
 		if (!builtText.effects().isEmpty()) {
-			graphics.guiRenderState.submitGuiElement(new FontRenderStates.Effects(new Matrix3x2f(graphics.pose()), builtText.effects(), rect, scissor));
+			var vertexConsumer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+			for (var e : builtText.effects()) {
+				vertexConsumer.addVertex(pose, e.x(), e.y(), 0).setColor(e.color());
+				vertexConsumer.addVertex(pose, e.x(), e.y() + e.height(), 0).setColor(e.color());
+				vertexConsumer.addVertex(pose, e.x() + e.width(), e.y() + e.height(), 0).setColor(e.color());
+				vertexConsumer.addVertex(pose, e.x() + e.width(), e.y(), 0).setColor(e.color());
+			}
+			BufferUploader.drawWithShader(vertexConsumer.buildOrThrow());
 		}
+		RenderSystem.enableBlend();
 	}
 
 	public float width(String text) {
@@ -512,14 +534,14 @@ public class Font implements Closeable {
 	}
 
 	public int lineHeight() {
-		return activeSubFont.lineHeight / Minecraft.getInstance().getWindow().getGuiScale();
+		return (int) (activeSubFont.lineHeight / Minecraft.getInstance().getWindow().getGuiScale());
 	}
 
 	private float getWidth(int codePt, Style style) {
 		updateVariant(style);
 		var page = getPage(codePt, false);
 		var c = page.charInfo[codePt & 0xFF];
-		return c.advanceX / Minecraft.getInstance().getWindow().getGuiScale();
+		return (float) (c.advanceX / Minecraft.getInstance().getWindow().getGuiScale());
 	}
 
 	public List<FormattedCharSequence> split(String text, int maxWidth) {
@@ -533,7 +555,7 @@ public class Font implements Closeable {
 	BuiltText buildText(int color, boolean shadow, Consumer<FormattedCharSink> sink) {
 		final float[] penX = {0};
 		final float[] penY = {0};
-		var screenAndTexCoords = new Object2ObjectOpenHashMap<Identifier, List<CoordData>>();
+		var screenAndTexCoords = new Object2ObjectOpenHashMap<ResourceLocation, List<CoordData>>();
 		var effects = new ObjectArrayList<EffectData>();
 		var fontBox = new float[]{Float.MAX_VALUE, Float.MAX_VALUE, Float.MIN_VALUE, Float.MIN_VALUE};
 
@@ -555,16 +577,7 @@ public class Font implements Closeable {
 			var styleColor = style.getColor();
 			int textColor = styleColor != null ? ARGB.color(ARGB.alpha(color), styleColor.getValue()) : color;
 
-			var styleShadowColor = style.getShadowColor();
-			int shadowColor;
-			if (style.getShadowColor() != null) {
-				var textAlpha = ARGB.alphaFloat(textColor);
-				var shadowAlpha = ARGB.alphaFloat(styleShadowColor);
-				shadowColor = textAlpha != 1 ? ARGB.color(ARGB.as8BitChannel(textAlpha * shadowAlpha), styleShadowColor)
-					: styleShadowColor;
-			} else {
-				shadowColor = shadow ? ARGB.scaleRGB(textColor, 0.25f) : 0;
-			}
+			int shadowColor = shadow ? ARGB.scaleRGB(textColor, 0.25f) : 0;
 
 			var page = getPage(codePt, true);
 
@@ -595,7 +608,7 @@ public class Font implements Closeable {
 			var list = screenAndTexCoords.computeIfAbsent(page.tex, unused -> new ObjectArrayList<>());
 
 			var hasShadow = ARGB.alpha(shadowColor) != 0;
-			var shadowOffset = 1f * Minecraft.getInstance().getWindow().getGuiScale();
+			var shadowOffset = (float) (1f * Minecraft.getInstance().getWindow().getGuiScale());
 			if (hasShadow) {
 				list.add(new CoordData(penX[0] + charX0 + shadowOffset, penY[0] - charY0 + shadowOffset,
 					c.u0, c.v0, c.u1, c.v1,
@@ -610,7 +623,7 @@ public class Font implements Closeable {
 				var effectX = penX[0];
 				if (style.isStrikethrough()) {
 					var table = FT_Get_Sfnt_Table(activeSubFont.face, FT_SFNT_OS2);
-					var strikeoutpos = lineHeight() / 2f + shadowOffset;
+					var strikeoutpos = ascender() / 2f - shadowOffset;
 					var strikeoutThicknessFT = activeSubFont.face.underline_thickness();
 					if (table != 0) {
 						var t = TT_OS2.create(table);
@@ -711,7 +724,7 @@ public class Font implements Closeable {
 		}
 	}
 
-	record BuiltText(Object2ObjectOpenHashMap<Identifier, List<CoordData>> coordData,
+	record BuiltText(Object2ObjectOpenHashMap<ResourceLocation, List<CoordData>> coordData,
 					 List<EffectData> effects, float[] textBox) {
 
 	}
@@ -766,7 +779,7 @@ public class Font implements Closeable {
 		page.rendered = true;
 
 		var texData = new NativeImage(NativeImage.Format.LUMINANCE, tWidth, tHeight, false);
-		MemoryUtil.memSet(texData.getPointer(), 0, (long) tWidth * tHeight);
+		MemoryUtil.memSet(((NativeImageAccessor) (Object) texData).getPointer(), 0, (long) tWidth * tHeight);
 		var slot = face.glyph();
 
 		int curX = 2;
@@ -778,31 +791,26 @@ public class Font implements Closeable {
 			var c = page.charInfo[codePt & 0xFF];
 			if (FT_Load_Glyph(face, c.glyphI, FT_LOAD_RENDER) != FT_Err_Ok) {
 				log.error("Error loading glyph for render: {} ({})", Integer.toHexString(codePt), Character.toString(codePt));
-				continue;
-			}
-			var bmp = slot.bitmap();
-			final int width = bmp.width();
-			final int height = bmp.rows();
+				curX += 2;
+			} else {
+				var bmp = slot.bitmap();
+				final int width = bmp.width();
+				final int height = bmp.rows();
 
-			var tblImgY = curY;
-			var tblImgX = curX;
+				c.u0 = (float) (curX) / texData.getWidth();
+				c.v0 = (float) (curY) / texData.getHeight();
+				c.u1 = (float) (curX + bmp.width()) / texData.getWidth();
+				c.v1 = (float) (curY + bmp.rows()) / texData.getHeight();
 
-			c.u0 = (float) (tblImgX) / texData.getWidth();
-			c.v0 = (float) (tblImgY) / texData.getHeight();
-			c.u1 = (float) (tblImgX + bmp.width()) / texData.getWidth();
-			c.v1 = (float) (tblImgY + bmp.rows()) / texData.getHeight();
-
-			curX += width + 2;
-			rowHeight = Math.max(rowHeight, height);
-			{
 				var buffer = bmp.buffer(bmp.width() * bmp.rows());
-				if (buffer == null) {
-					continue;
+				if (buffer != null) {
+					long src = MemoryUtil.memAddress(buffer);
+					for (int y = 0; y < height; y++) {
+						MemoryUtil.memCopy(src + ((long) y * width), ((NativeImageAccessor) (Object) texData).getPointer() + (curX + (long) (curY + y) * tWidth), width);
+					}
 				}
-				long src = MemoryUtil.memAddress(buffer);
-				for (int y = 0; y < height; y++) {
-					MemoryUtil.memCopy(src + ((long) y * width), texData.getPointer() + (tblImgX + (long) (tblImgY + y) * tWidth), width);
-				}
+				curX += width + 2;
+				rowHeight = Math.max(rowHeight, height);
 			}
 
 			if (((codePt + 1 >> 4) & 0xF) != tblRow) {
@@ -812,13 +820,15 @@ public class Font implements Closeable {
 			}
 		}
 
-		page.tex = Identifier.fromNamespaceAndPath(RenderingCommon.MODID,
+		var family = face.family_nameString();
+		var style = face.style_nameString();
+		page.tex = ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID,
 			"font_%s/%s/page_%d/%d".formatted(
-				face.family_nameString().replace(" ", "_").toLowerCase(Locale.ROOT),
-				face.style_nameString().replace(" ", "_").toLowerCase(Locale.ROOT),
+				family.replace(" ", "_").toLowerCase(Locale.ROOT),
+				style.replace(" ", "_").toLowerCase(Locale.ROOT),
 				pageIndex, size
 			));
-		var tex = new DynamicTexture(page.tex::toString, texData);
+		var tex = new DynamicTexture(texData);
 		Minecraft.getInstance().getTextureManager().register(page.tex, tex);
 	}
 
@@ -850,7 +860,7 @@ public class Font implements Closeable {
 	}
 
 	static class Page {
-		Identifier tex;
+		ResourceLocation tex;
 		CharInfo[] charInfo = new CharInfo[256];
 		int texWidth, texHeight;
 		boolean rendered;

@@ -70,6 +70,8 @@ public class MsdfFont implements Closeable {
 			String id = (name != null ? name.toLowerCase().replaceAll("[^a-z0-9_.-]", "_") : "font") + "_" + ID_GEN.getAndIncrement();
 			ResourceLocation location = ResourceLocation.fromNamespaceAndPath(RenderingCommon.MODID, "msdf_" + id);
 			Minecraft.getInstance().getTextureManager().register(location, texture);
+			// MSDF needs bilinear sampling of the atlas: with the default GL_NEAREST the distance field turns into visible pixel steps.
+			texture.setFilter(true, false);
 			return new MsdfFont(fontData, location, texture);
 		} catch (IOException e) {
 			throw new RuntimeException("Failed to load MSDF atlas texture for " + name, e);
