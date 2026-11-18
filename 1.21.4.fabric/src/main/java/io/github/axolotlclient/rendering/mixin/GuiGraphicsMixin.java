@@ -22,6 +22,8 @@
 
 package io.github.axolotlclient.rendering.mixin;
 
+import io.github.axolotlclient.rendering.BackdropCopy;
+
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import io.github.axolotlclient.rendering.ExRenderPipelines;
@@ -294,7 +296,8 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 		var renderTarget = mc.getMainRenderTarget();
 		if (renderTarget == null) return;
 
-		RenderSystem.setShaderTexture(0, renderTarget.getColorTextureId());
+		this.flush(); // pending GUI batches must be in the framebuffer before it is copied
+		RenderSystem.setShaderTexture(0, BackdropCopy.capture(renderTarget.width, renderTarget.height));
 		RenderSystem.enableBlend();
 		RenderSystem.defaultBlendFunc();
 		if (RenderSystem.setShader(ExRenderPipelines.GAUSSIAN_BLUR_SHADER) == null) return;
@@ -338,7 +341,8 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 		var renderTarget = mc.getMainRenderTarget();
 		if (renderTarget == null) return;
 
-		RenderSystem.setShaderTexture(0, renderTarget.getColorTextureId());
+		this.flush(); // pending GUI batches must be in the framebuffer before it is copied
+		RenderSystem.setShaderTexture(0, BackdropCopy.capture(renderTarget.width, renderTarget.height));
 		RenderSystem.enableBlend();
 		RenderSystem.defaultBlendFunc();
 		var shader = RenderSystem.setShader(ExRenderPipelines.LIQUID_GLASS_SHADER);

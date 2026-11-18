@@ -22,6 +22,8 @@
 
 package io.github.axolotlclient.rendering.mixin;
 
+import io.github.axolotlclient.rendering.BackdropCopy;
+
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.MemoryTracker;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -447,7 +449,7 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 		ShaderManager.Shader shader = ExRenderPipelines.GAUSSIAN_BLUR_PROGRAM;
 		if (shader == null) return;
 		Minecraft mc = Minecraft.getInstance();
-		RenderSystem.bindTexture(mc.getMainRenderTarget().getColorTextureId());
+		RenderSystem.bindTexture(BackdropCopy.capture(mc.getMainRenderTarget().width, mc.getMainRenderTarget().height));
 		RenderSystem.enableBlend();
 		RenderSystem.defaultBlendFunc();
 		shader.bind();
@@ -478,7 +480,7 @@ public abstract class GuiGraphicsMixin implements GuiGraphicsExtension {
 		ShaderManager.Shader shader = ExRenderPipelines.LIQUID_GLASS_PROGRAM;
 		if (shader == null || style == null) return;
 		Minecraft mc = Minecraft.getInstance();
-		RenderSystem.bindTexture(mc.getMainRenderTarget().getColorTextureId());
+		RenderSystem.bindTexture(BackdropCopy.capture(mc.getMainRenderTarget().width, mc.getMainRenderTarget().height));
 		RenderSystem.enableBlend();
 		RenderSystem.defaultBlendFunc();
 		shader.bind();

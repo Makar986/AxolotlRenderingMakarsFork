@@ -293,7 +293,7 @@ public class DrawUtil implements GuiGraphicsExtension {
 		var mc = Minecraft.getInstance();
 		var target = mc.getRenderTarget();
 		if (target != null) {
-			GlStateManager.bindTexture(target.colorTextureId);
+			GlStateManager.bindTexture(BackdropCopy.capture(target.width, target.height));
 		}
 		GlStateManager.enableBlend();
 		GlStateManager.blendFuncSeparate(770, 771, 1, 0);
@@ -335,7 +335,7 @@ public class DrawUtil implements GuiGraphicsExtension {
 		var mc = Minecraft.getInstance();
 		var target = mc.getRenderTarget();
 		if (target != null) {
-			GlStateManager.bindTexture(target.colorTextureId);
+			GlStateManager.bindTexture(BackdropCopy.capture(target.width, target.height));
 		}
 		GlStateManager.enableBlend();
 		GlStateManager.blendFuncSeparate(770, 771, 1, 0);
